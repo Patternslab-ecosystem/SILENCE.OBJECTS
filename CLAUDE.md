@@ -16,7 +16,7 @@ SILENCE.OBJECTS is a B2B SaaS Dashboard & Investor Portal for PatternLabs. It pr
 - **Monorepo**: pnpm 10.x workspaces (`apps/*`, `packages/*`)
 - **Build orchestration**: None (no Turborepo — planned but missing)
 - **Deployment**: Vercel (nextjs framework preset)
-- **Planned integrations**: Supabase (auth/db), Anthropic API — neither wired up
+- **Planned integrations**: Supabase (auth/db), Anthropic API, Stripe (payments), n8n (workflow automation) — none wired up in code
 
 ## Repository Structure (Actual)
 
@@ -35,6 +35,7 @@ SILENCE.OBJECTS/
 │   │   │       └── dashboard/page.tsx # Investor KPI dashboard (8 metrics + bar chart + table)
 │   │   ├── .gitignore              # .next, node_modules, .env.local
 │   │   ├── next.config.js          # transpilePackages: ["@repo/ui"]
+│   │   ├── next-env.d.ts           # Auto-generated Next.js type declarations
 │   │   ├── tailwind.config.js      # Content: ./app + ../../packages/ui/src
 │   │   ├── postcss.config.js       # tailwindcss + autoprefixer
 │   │   ├── tsconfig.json           # ES2017, Next.js plugin, @/* -> ./app/*
@@ -171,7 +172,14 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Server-only keys (e.g., `ANTHROPIC_API_KEY`) must NOT have the prefix
 - None of these variables are currently consumed by any code
 
+**Missing env vars for planned integrations** (not in `.env.example` yet):
+- `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` — for Stripe payment integration
+- `N8N_WEBHOOK_URL` / `N8N_API_KEY` — for n8n workflow automation
+- `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` — for LinkedIn OAuth (currently just a stub)
+
 ## Deployment
+
+### Vercel Configuration
 
 Configured in `vercel.json` (root):
 
@@ -186,7 +194,24 @@ Configured in `vercel.json` (root):
 
 Domains: `patternslab.app` (portal), `patternslab.work` (investor portal)
 
-**Note**: There is a duplicate `apps/vercel.json` with identical content — this is a stray file and should be removed.
+### Vercel "No Next.js detected" — Troubleshooting
+
+This error occurs because the monorepo root has no `next.config.js` — it's in `apps/portal/`. Vercel auto-detection looks at the root directory and fails to find Next.js.
+
+**Fixes (pick one):**
+
+1. **Set Root Directory in Vercel Project Settings** to `apps/portal` — but then `pnpm install` at the workspace root won't resolve `@repo/ui`. You'd need to set Install Command to `cd ../.. && pnpm install` or use `vercel.json` overrides. Not recommended for monorepos.
+
+2. **Keep root directory as `.` (repo root) and ensure `vercel.json` is correct** — the current `vercel.json` has `"framework": "nextjs"` which should override auto-detection. Verify these Vercel project settings:
+   - Root Directory: `.` (blank/default = repo root)
+   - Framework Preset: Next.js (or "Other" if using custom build)
+   - Build Command: Override with `pnpm --filter=portal build`
+   - Output Directory: Override with `apps/portal/.next`
+   - Install Command: Override with `pnpm install`
+
+3. **The actual blocker is the TypeScript error** — even with correct Vercel config, `pnpm --filter=portal build` fails at the type-check step. Fix `apps/portal/app/page.tsx:23` first. Vercel may report "No Next.js detected" when the build fails before producing output.
+
+**Stray file**: `apps/vercel.json` is a duplicate of root `vercel.json` placed outside any app directory. It has no effect but should be deleted to avoid confusion.
 
 ## TypeScript Configuration
 
@@ -210,6 +235,8 @@ Key differences between root and portal configs:
 - **No database**: Supabase is planned but not wired up; all data is mocked
 - **No auth**: No authentication or role-based access control implemented
 - **No error handling**: No `error.tsx`, `loading.tsx`, or `not-found.tsx` in App Router tree
+- **No payment integration**: Stripe planned but not implemented
+- **No workflow automation**: n8n planned but not integrated
 
 ## Adding New Features
 
@@ -247,6 +274,83 @@ export async function GET() {
 
 ---
 
+## Operational Issues & Integration Audit
+
+Audit date: 2026-02-06. Assessment of all known operational issues and planned integrations.
+
+### 1. Vercel Build Fails — "No Next.js detected"
+
+**Status**: BLOCKING PRODUCTION
+
+**Root causes (multiple, compounding):**
+
+| # | Cause | Severity | Fix |
+|---|-------|----------|-----|
+| 1 | TypeScript error in `page.tsx:23` — `tab.active` property missing on union members | CRITICAL | Add `active?: boolean` to all TABS entries or remove `as const` |
+| 2 | No `next.config.js` at repo root — Vercel auto-detection fails in monorepo | HIGH | Ensure Vercel project settings explicitly set framework to Next.js with custom build/install/output commands |
+| 3 | Stray `apps/vercel.json` may confuse Vercel's config resolution | LOW | Delete `apps/vercel.json` |
+
+**Exact TypeScript error:**
+```
+./app/page.tsx:23:28
+Type error: Property 'active' does not exist on type
+  '{ readonly id: "investor"; ... readonly active: true; } |
+   { readonly id: "patternlens"; ... }'
+  Property 'active' does not exist on type
+  '{ readonly id: "patternlens"; readonly label: "PatternLens"; readonly href: "#"; }'
+```
+
+**Fix for `page.tsx:23`** — change `tab.active` to `"active" in tab && tab.active`, or add `active: false` to all non-active tab entries, or remove `as const` and type the array explicitly.
+
+### 2. Supabase RLS Blocks All Queries
+
+**Status**: NOT YET RELEVANT — Supabase is not wired up in code
+
+**Current state in codebase:**
+- `.env.example` lists `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` but both are empty
+- No Supabase client library installed (`@supabase/supabase-js` not in any `package.json`)
+- No Supabase client initialization code anywhere
+- No database queries, no auth calls, no RLS policy references
+
+**When wiring up Supabase, watch for:**
+- RLS policies must allow `auth.uid()` to match the `user_id` column in every table — a blanket `USING (auth.uid() = user_id)` policy is the most common pattern
+- The anon key only works for operations allowed by RLS policies — if all policies require `auth.uid()` and the user isn't authenticated, all queries return empty results
+- For server-side API routes, use the service role key (never expose it to the client) to bypass RLS when needed
+- Add `SUPABASE_SERVICE_ROLE_KEY` to `.env.example` when implementing server-side data access
+
+### 3. n8n Workflows Not Triggering
+
+**Status**: NOT YET RELEVANT — no n8n integration in codebase
+
+**Current state**: Zero references to n8n anywhere in the code. No webhook endpoints designed for n8n consumption. No env vars for n8n.
+
+**When integrating n8n:**
+- Ensure webhook URLs are in env vars, not hardcoded
+- Cron expressions in n8n use the server's timezone — verify it matches expectations (UTC vs local)
+- Credential validity: n8n stores credentials encrypted; if they expire (e.g., OAuth tokens), workflows silently fail
+- Add health-check/ping endpoint that n8n can call to verify connectivity
+- Add `N8N_WEBHOOK_URL` and `N8N_API_KEY` to `.env.example`
+
+### 4. Stripe Webhook Returns 400
+
+**Status**: NOT YET RELEVANT — no Stripe integration in codebase
+
+**Current state**: No Stripe library installed, no webhook handler, no payment-related code.
+
+**When integrating Stripe:**
+- Install `stripe` package and add `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` to env
+- Create webhook handler at `apps/portal/app/api/stripe/webhook/route.ts`
+- Webhook secret must match exactly between Stripe Dashboard and env — a mismatch causes signature verification failure (HTTP 400)
+- Use `stripe.webhooks.constructEvent(body, signature, secret)` to verify — pass the raw body, not parsed JSON
+- In Next.js App Router, disable body parsing for the webhook route:
+  ```typescript
+  export const runtime = 'nodejs';
+  // Read raw body with request.text() not request.json()
+  ```
+- Register only the event types you handle (`checkout.session.completed`, `invoice.paid`, etc.) — unhandled events should return 200 to avoid retries
+
+---
+
 ## Audit vs DIPLO BIBLE v3
 
 Audit date: 2026-02-06. Comparison of planned architecture (DIPLO BIBLE v3) against actual repository state.
@@ -267,7 +371,7 @@ Audit date: 2026-02-06. Comparison of planned architecture (DIPLO BIBLE v3) agai
 
 #### CRITICAL
 
-1. **Build is broken** — `pnpm build` fails with TypeScript error in `apps/portal/app/page.tsx:23`. The `TABS` array uses `as const` with heterogeneous object shapes; only the first element has `active: true`. Accessing `tab.active` fails because the property doesn't exist on all union members. This blocks production deploys.
+1. **Build is broken** — `pnpm build` fails with TypeScript error in `apps/portal/app/page.tsx:23`. The `TABS` array uses `as const` with heterogeneous object shapes; only the first element has `active: true`. Accessing `tab.active` fails because the property doesn't exist on all union members. This blocks Vercel production deploys and may cause the misleading "No Next.js detected" error.
 
 2. **`@repo/ui` is 100% dead code** — All 11 components/layouts in `packages/ui` are exported but never imported anywhere. Portal pages duplicate equivalent markup inline. Either refactor pages to use the components or delete the package.
 
@@ -275,39 +379,44 @@ Audit date: 2026-02-06. Comparison of planned architecture (DIPLO BIBLE v3) agai
 
 4. **No CI/CD, no safety net** — Zero automated checks. No lint-on-push, no build verification, no type checking in CI. Any push to main goes live on Vercel unchecked.
 
-5. **Hardcoded mock data with no abstraction layer** — KPI values (104,000 PLN, 8,667 PLN, etc.) are duplicated across `page.tsx`, `investor/dashboard/page.tsx`, and `/api/kpi/route.ts`. No shared data source, no types, no API consumption. When real data arrives, every file needs rewriting.
+5. **Hardcoded mock data with no abstraction layer** — KPI values (104,000 PLN, 8,667 PLN, etc.) are duplicated across 3 files. No shared data source, no types, no API consumption. When real data arrives, every file needs rewriting.
 
 #### HIGH
 
-6. **ESLint not configured** — No `.eslintrc.*` file exists. Running `pnpm lint` (`next lint`) triggers an interactive setup prompt. Must create an ESLint config before lint can run non-interactively.
+6. **ESLint not configured** — No `.eslintrc.*` file exists. Running `pnpm lint` triggers an interactive setup prompt. Must create `.eslintrc.json` with `next/core-web-vitals` before lint can run non-interactively.
 
-7. **No Turborepo** — `turbo.json` is specified in the plan but missing. With only 1 app and 1 package this is tolerable. With the planned 15+ packages and 12 agents, raw pnpm filter commands will not scale.
+7. **No Turborepo** — `turbo.json` is missing. Tolerable with 1 app + 1 package. Won't scale to the planned 15+ packages and 12 agents.
 
-8. **No shared TypeScript config** — Plan calls for `tooling/ts-config/`. Currently root and portal have independent tsconfigs with duplicated and conflicting options (ES2022 vs ES2017). Adding packages will multiply the duplication.
+8. **No shared TypeScript config** — Root and portal have independent tsconfigs with conflicting targets (ES2022 vs ES2017). Adding packages multiplies the duplication.
 
-9. **No `"use client"` boundaries** — All components are server components. The investor dashboard renders dynamic bar chart heights via inline styles. Any interactivity (filters, date ranges, real-time data) will require client component refactoring.
+9. **No `"use client"` boundaries** — All components are server components. The investor dashboard renders bar chart heights via inline styles. Any interactivity will require client component refactoring.
 
-10. **LinkedIn API route exposes hardcoded org_id** — `apps/portal/app/api/linkedin/route.ts` returns `org_id: "82569452"`. Even as a stub, real identifiers should not be in source code.
+10. **LinkedIn API route exposes hardcoded org_id** — `apps/portal/app/api/linkedin/route.ts` returns `org_id: "82569452"`. Real identifiers should not be in source code; use env vars.
+
+11. **No external integrations wired up** — Supabase, Stripe, n8n, and LinkedIn OAuth are all planned but have zero implementation. The `.env.example` only covers Supabase and Anthropic; Stripe and n8n env vars are not documented.
 
 #### MEDIUM
 
-11. **Stray `apps/vercel.json`** — Duplicate Vercel config at `apps/vercel.json` (outside any app directory). Should be removed; the root `vercel.json` is the correct one.
+12. **Stray `apps/vercel.json`** — Duplicate Vercel config outside any app directory. Should be deleted.
 
-12. **`git-fix-clean.sh` committed to repo** — Local tooling script with Termux-specific shebang (`#!/data/data/com.termux/files/usr/bin/bash`). Should be gitignored, not tracked.
+13. **`git-fix-clean.sh` committed to repo** — Termux-specific shebang (`#!/data/data/com.termux/files/usr/bin/bash`). Should be gitignored.
 
-13. **No error boundaries or loading states** — No `error.tsx`, `loading.tsx`, or `not-found.tsx` files in the App Router tree. Any runtime error shows the default Next.js error page.
+14. **No error boundaries or loading states** — No `error.tsx`, `loading.tsx`, or `not-found.tsx` in the App Router tree.
 
-14. **No `@silence/contracts` types package** — The plan designates this as "TYPES SOURCE OF TRUTH" but it doesn't exist. KPI data shapes are defined ad-hoc as inline TypeScript objects with no shared interfaces.
+15. **No `@silence/contracts` types package** — The plan designates this as "TYPES SOURCE OF TRUTH" but it doesn't exist. KPI data shapes are ad-hoc inline objects.
 
 ### Recommendations (Priority Order)
 
-1. **Fix the build** — Resolve the TypeScript error in `page.tsx:23` so `pnpm build` succeeds. Nothing else matters until the build works.
-2. **Configure ESLint** — Add `.eslintrc.json` with `next/core-web-vitals` so `pnpm lint` runs non-interactively.
-3. **Adopt `@repo/ui` components in portal pages** — or delete the package. Dead code is tech debt from day zero.
-4. **Add basic CI** — Even a single GitHub Action running `pnpm build && pnpm lint` would prevent broken deploys.
-5. **Create `packages/contracts`** — Define shared TypeScript interfaces for KPI data, API responses, and configuration before adding more packages.
-6. **Decide on `@repo/*` vs `@silence/*` scope** — Pick one and rename before the monorepo grows.
-7. **Add `turbo.json`** — Even minimal config enables caching and parallel builds.
-8. **Extract mock data into a single source** — One `mock-data.ts` file imported by both pages and API routes, typed with shared interfaces.
-9. **Add `error.tsx` and `loading.tsx`** — Basic error boundaries for production resilience.
-10. **Remove stray files** — Delete `apps/vercel.json`, remove `git-fix-clean.sh` from tracking, add to `.gitignore`.
+1. **Fix the build** — Resolve the TypeScript error in `page.tsx:23` so `pnpm build` succeeds. Nothing else matters until the build works. This will also fix the Vercel "No Next.js detected" issue if it's caused by build failure.
+2. **Verify Vercel project settings** — Ensure Root Directory is `.`, Framework is Next.js, and build/install/output commands match `vercel.json`. Delete `apps/vercel.json`.
+3. **Configure ESLint** — Add `.eslintrc.json` with `next/core-web-vitals` so `pnpm lint` runs non-interactively.
+4. **Adopt `@repo/ui` components in portal pages** — or delete the package. Dead code is tech debt from day zero.
+5. **Add basic CI** — A GitHub Action running `pnpm install && pnpm build && pnpm lint` prevents broken deploys.
+6. **Create `packages/contracts`** — Define shared TypeScript interfaces for KPI data, API responses, and configuration.
+7. **Update `.env.example`** — Add placeholders for `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `N8N_WEBHOOK_URL`, `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, and `SUPABASE_SERVICE_ROLE_KEY`.
+8. **Decide on `@repo/*` vs `@silence/*` scope** — Pick one and rename before the monorepo grows.
+9. **Add `turbo.json`** — Even minimal config enables caching and parallel builds.
+10. **Extract mock data** — One `mock-data.ts` file imported by all pages and API routes, typed with shared interfaces.
+11. **Add `error.tsx` and `loading.tsx`** — Basic error boundaries for production resilience.
+12. **Move `org_id` to env** — Remove hardcoded LinkedIn org ID from source code.
+13. **Remove stray files** — Delete `apps/vercel.json`, add `git-fix-clean.sh` to `.gitignore`.
