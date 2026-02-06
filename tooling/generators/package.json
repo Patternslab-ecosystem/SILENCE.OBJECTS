@@ -1,0 +1,6 @@
+{
+  "name": "@silence/generators",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Code generation templates for SILENCE.OBJECTS monorepo"
+}

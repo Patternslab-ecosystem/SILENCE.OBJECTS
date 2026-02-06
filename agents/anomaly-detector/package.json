@@ -1,0 +1,15 @@
+{
+  "name": "@silence/agent-anomaly-detector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Platform safety monitor",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@silence/contracts": "workspace:*",
+    "@silence/events": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

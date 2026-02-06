@@ -1,12 +1,6 @@
 import Link from "next/link";
-
-const TABS = [
-  { id: "investor", label: "Investor", href: "/investor/dashboard", active: true },
-  { id: "patternlens", label: "PatternLens", href: "#" },
-  { id: "patternslab", label: "PatternsLab", href: "#" },
-  { id: "opensource", label: "Open Source", href: "#" },
-  { id: "admin", label: "Admin", href: "#" },
-] as const;
+import { Card } from "@silence/ui";
+import { PORTAL_TABS, DASHBOARD_CARDS } from "@/lib/mock-data";
 
 export default function DashboardPage() {
   return (
@@ -16,7 +10,7 @@ export default function DashboardPage() {
         <p className="text-zinc-400 mt-1">SILENCE.OBJECTS — Management Dashboard</p>
       </header>
       <nav className="flex flex-wrap gap-2 mb-8">
-        {TABS.map((tab) => (
+        {PORTAL_TABS.map((tab) => (
           <Link
             key={tab.id}
             href={tab.href}
@@ -30,22 +24,14 @@ export default function DashboardPage() {
         ))}
       </nav>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">ARR</p>
-          <p className="text-2xl font-bold text-zinc-100 mt-1">104,000 PLN</p>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">MRR</p>
-          <p className="text-2xl font-bold text-zinc-100 mt-1">8,667 PLN</p>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">Churn</p>
-          <p className="text-2xl font-bold text-emerald-400 mt-1">2.1%</p>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">Runway</p>
-          <p className="text-2xl font-bold text-zinc-100 mt-1">18 months</p>
-        </div>
+        {DASHBOARD_CARDS.map((card) => (
+          <Card key={card.label}>
+            <p className="text-xs text-zinc-500 uppercase tracking-wide">{card.label}</p>
+            <p className={`text-2xl font-bold mt-1 ${card.label === "Churn" ? "text-emerald-400" : "text-zinc-100"}`}>
+              {card.value}
+            </p>
+          </Card>
+        ))}
       </div>
     </main>
   );

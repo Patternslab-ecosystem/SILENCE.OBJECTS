@@ -12,3 +12,4 @@ out/
 .env*.local
 
 package-lock.json
+git-fix-clean.sh

@@ -1,79 +1,134 @@
-# CLAUDE.md — SILENCE.OBJECTS Portal
+# CLAUDE.md — SILENCE.OBJECTS Ecosystem
 
 ## Project Overview
 
 SILENCE.OBJECTS is a B2B SaaS Dashboard & Investor Portal for PatternLabs. It provides financial metrics tracking (ARR, MRR, DAU, Churn, LTV/CAC, Runway, NRR) with role-based views for investors, admins, and B2B consumers. Dark-themed professional UI deployed on Vercel.
 
-**Current state**: Early-stage scaffold. Only `apps/portal` and `packages/ui` exist. The DIPLO BIBLE v3 plans 15 packages, 3 apps, 12 agents, CI/CD, and shared tooling — almost none of which has been implemented yet. See [Audit](#audit-vs-diplo-bible-v3) below for full gap analysis.
+**Current state**: Foundation phase. Portal app is live with shared UI components, typed contracts, event bus, 12 agent scaffolds, CI/CD pipelines, and shared tooling. Build and lint pass. The DIPLO BIBLE v3 plans 15 packages and 3 apps — core infrastructure is in place, domain packages and additional apps are next.
 
-**Build status**: BROKEN — TypeScript error in `apps/portal/app/page.tsx:23`. The `TABS` array uses `as const` and only one element has `active: true`, so `tab.active` fails type narrowing. Must be fixed before deploy.
+**Build status**: PASSING — `pnpm build` and `pnpm lint` both succeed.
 
 ## Tech Stack
 
 - **Framework**: Next.js 14.2.18 (App Router) + React 18.3.1
-- **Language**: TypeScript 5.9.3 (strict mode)
+- **Language**: TypeScript 5 (strict mode)
 - **Styling**: Tailwind CSS 3.4.1, dark theme (Zinc palette, `bg-zinc-950`/`text-zinc-100`)
-- **Monorepo**: pnpm 10.x workspaces (`apps/*`, `packages/*`)
-- **Build orchestration**: None (no Turborepo — planned but missing)
+- **Monorepo**: pnpm 10.x workspaces (`apps/*`, `packages/*`, `tooling/*`, `agents/*`)
+- **Build orchestration**: Turborepo (`turbo.json`)
 - **Deployment**: Vercel (nextjs framework preset)
+- **CI/CD**: GitHub Actions (ci, deploy, security, publish)
 - **Planned integrations**: Supabase (auth/db), Anthropic API — neither wired up
 
-## Repository Structure (Actual)
+## Repository Structure
 
 ```
 SILENCE.OBJECTS/
 ├── apps/
-│   ├── portal/                     # Next.js 14 dashboard — ONLY app that exists
-│   │   ├── app/
-│   │   │   ├── layout.tsx          # Root layout (dark theme, metadata)
-│   │   │   ├── page.tsx            # Home/dashboard page (hardcoded metrics, HAS TYPE ERROR)
-│   │   │   ├── globals.css         # Tailwind base imports (@tailwind base/components/utilities)
-│   │   │   ├── api/
-│   │   │   │   ├── kpi/route.ts    # KPI metrics endpoint (GET, mock JSON)
-│   │   │   │   └── linkedin/route.ts  # LinkedIn OAuth stub (hardcoded org_id)
-│   │   │   └── investor/
-│   │   │       └── dashboard/page.tsx # Investor KPI dashboard (8 metrics + bar chart + table)
-│   │   ├── .gitignore              # .next, node_modules, .env.local
-│   │   ├── next.config.js          # transpilePackages: ["@repo/ui"]
-│   │   ├── tailwind.config.js      # Content: ./app + ../../packages/ui/src
-│   │   ├── postcss.config.js       # tailwindcss + autoprefixer
-│   │   ├── tsconfig.json           # ES2017, Next.js plugin, @/* -> ./app/*
-│   │   └── package.json            # next 14.2.18, react ^18.3.1, @repo/ui workspace:*
-│   └── vercel.json                 # STRAY FILE — duplicate of root vercel.json, should be removed
+│   └── portal/                     # Next.js 14 dashboard — primary app
+│       ├── app/
+│       │   ├── layout.tsx          # Root layout (dark theme, metadata)
+│       │   ├── page.tsx            # Dashboard home (uses @silence/ui Card)
+│       │   ├── error.tsx           # Error boundary (client component)
+│       │   ├── loading.tsx         # Loading state
+│       │   ├── not-found.tsx       # 404 page
+│       │   ├── globals.css         # Tailwind base imports
+│       │   ├── lib/
+│       │   │   └── mock-data.ts    # Single source of truth for mock KPI data
+│       │   ├── api/
+│       │   │   ├── kpi/route.ts    # KPI metrics endpoint (uses mock-data)
+│       │   │   └── linkedin/route.ts  # LinkedIn OAuth stub
+│       │   └── investor/
+│       │       └── dashboard/page.tsx # Investor KPI dashboard (uses @silence/ui)
+│       ├── .eslintrc.json          # ESLint: next/core-web-vitals
+│       ├── next.config.js          # transpilePackages: @silence/ui, @silence/contracts
+│       ├── tailwind.config.js      # Content: ./app + ../../packages/ui/src
+│       ├── postcss.config.js       # tailwindcss + autoprefixer
+│       ├── tsconfig.json           # ES2017, Next.js plugin, @/* -> ./app/*
+│       └── package.json            # next 14.2.18, @silence/ui, @silence/contracts
 │
 ├── packages/
-│   └── ui/                         # Shared design system (@repo/ui) — ONLY package that exists
-│       ├── package.json            # Peer dep: react ^18.3.1, NO own tsconfig
-│       └── src/
-│           ├── index.ts            # Barrel: re-exports ./layouts + ./components
-│           ├── components/
-│           │   ├── index.ts        # Exports: Card, Badge, MetricCard, KpiGrid, Section, DataTable
-│           │   ├── Card.tsx        # Generic card wrapper with optional title
-│           │   ├── Badge.tsx       # Status badge (default/success/warning/danger variants)
-│           │   ├── MetricCard.tsx   # KPI metric display (label, value, trend, target)
-│           │   ├── KpiGrid.tsx     # Responsive grid container (2/3/4 column modes)
-│           │   ├── Section.tsx     # Section wrapper with optional title
-│           │   └── DataTable.tsx   # Generic table (columns + rows config)
-│           └── layouts/
-│               ├── index.ts        # Exports: PageLayout, DashboardLayout, InvestorLayout, ConsumerLayout, B2BLayout
-│               ├── PageLayout.tsx   # Base page: header slot + main content
-│               ├── DashboardLayout.tsx  # Sidebar + toolbar + main (desktop sidebar, mobile bottom nav)
-│               ├── InvestorLayout.tsx   # Fixed header "PatternLabs — Investor Portal" + main
-│               ├── ConsumerLayout.tsx   # Centered max-w-2xl content
-│               └── B2BLayout.tsx        # Header slot + main content
+│   ├── contracts/                  # @silence/contracts — TYPES SOURCE OF TRUTH
+│   │   ├── src/
+│   │   │   ├── index.ts           # Barrel: kpi, api, portal exports
+│   │   │   ├── kpi.ts             # KpiMetrics, KpiCard, MrrTrendPoint, MetricsTableRow
+│   │   │   ├── api.ts             # ApiResponse<T>, PaginatedResponse<T>, ApiError
+│   │   │   └── portal.ts          # PortalTab, UserRole, PortalConfig
+│   │   ├── tsconfig.json          # Extends tooling/ts-config/library.json
+│   │   └── package.json
+│   │
+│   ├── events/                     # @silence/events — typed event bus
+│   │   ├── src/
+│   │   │   ├── index.ts           # Exports: EventBus, event types
+│   │   │   ├── types.ts           # SilenceEvent, EventHandler, EventMap
+│   │   │   └── bus.ts             # EventBus class (typed pub/sub)
+│   │   ├── tsconfig.json          # Extends tooling/ts-config/library.json
+│   │   └── package.json           # Depends on @silence/contracts
+│   │
+│   └── ui/                         # @silence/ui — shared design system
+│       ├── src/
+│       │   ├── index.ts            # Barrel: layouts + components
+│       │   ├── components/         # Card, Badge, MetricCard, KpiGrid, Section, DataTable
+│       │   └── layouts/            # PageLayout, DashboardLayout, InvestorLayout, ConsumerLayout, B2BLayout
+│       └── package.json            # Peer dep: react ^18.3.1
 │
-├── package.json                    # Root workspace: dev/build/lint/clean scripts via pnpm --filter=portal
-├── pnpm-workspace.yaml            # apps/* + packages/*
-├── pnpm-lock.yaml                 # Lockfile
-├── tsconfig.json                   # Root: ES2022, strict, bundler resolution, noEmit
-├── vercel.json                     # Vercel: pnpm --filter=portal build, outputDirectory: apps/portal/.next
-├── .env.example                    # SUPABASE_URL, SUPABASE_ANON_KEY, ANTHROPIC_API_KEY, APP_URL
-├── .gitignore                      # node_modules, .next, .vercel, .env*, package-lock.json
-├── README.md                       # Brief project overview
-└── git-fix-clean.sh                # Git remote fix script (should be gitignored)
+├── agents/                          # Agent army (12 agents)
+│   ├── orchestrator/               # @silence/agent-orchestrator — meta-agent (IMPLEMENTED)
+│   │   └── src/
+│   │       ├── orchestrator.ts     # Agent lifecycle management
+│   │       └── types.ts            # AgentConfig, AgentStatus
+│   ├── sentinel/                   # @silence/agent-sentinel — CI/CD guard (IMPLEMENTED)
+│   │   └── src/sentinel.ts         # Build, type, lint checking
+│   ├── content-guard/              # Compliance firewall (stub)
+│   ├── anomaly-detector/           # Platform safety monitor (stub)
+│   ├── sales-autopilot/            # Lead → Deal pipeline (stub)
+│   ├── customer-success/           # Retention + upsell (stub)
+│   ├── analytics-reporter/         # KPI + investor reports (stub)
+│   ├── linkedin-dominator/         # LinkedIn automation (stub)
+│   ├── content-machine/            # SEO + blog + newsletter (stub)
+│   ├── social-swarm/               # Twitter, Reddit, Quora, HN (stub)
+│   ├── growth-hacker/              # Viral loops, ASO (stub)
+│   └── community-builder/          # Discord bot (stub)
+│
+├── tooling/
+│   ├── ts-config/                  # @silence/ts-config — shared TypeScript configs
+│   │   ├── base.json              # ES2022, strict, bundler resolution
+│   │   ├── nextjs.json            # Extends base, ES2017, Next.js plugin
+│   │   └── library.json           # Extends base, declaration + sourcemap
+│   ├── eslint-config/             # @silence/eslint-config — shared ESLint
+│   │   ├── index.js               # next/core-web-vitals + TypeScript rules
+│   │   └── library.js             # @typescript-eslint/recommended
+│   └── generators/                 # Code generation templates (placeholder)
+│
+├── docs/                            # Project documentation (14 files)
+│   ├── README.md                   # Documentation index
+│   ├── DIPLO_BIBLE_v3.md          # Architecture bible reference
+│   ├── ARCHITECTURE.md            # Monorepo structure overview
+│   ├── MODULES.md                 # @silence/* package registry
+│   ├── ARCHETYPES.md              # Archetype system
+│   ├── API.md                     # REST API reference
+│   ├── EVENTS.md                  # Event catalog
+│   ├── AGENTS.md                  # Agent army documentation
+│   ├── COMPLIANCE.md              # Compliance framework
+│   ├── SAFETY.md                  # Safety monitoring
+│   ├── INVESTOR.md                # Investor portal docs
+│   ├── DEPLOYMENT.md              # Deployment & CI/CD
+│   ├── CONTRIBUTING.md            # Contributing guidelines
+│   └── CHANGELOG.md               # Version history
+│
+├── .github/workflows/
+│   ├── ci.yml                      # Lint, type check, build on PR
+│   ├── deploy.yml                  # Vercel deploy on main push
+│   ├── security.yml                # Dependency audit (weekly + on PR)
+│   └── publish.yml                 # npm publish on release
+│
+├── turbo.json                      # Turborepo: build, lint, dev, clean pipelines
+├── package.json                    # Root workspace scripts
+├── pnpm-workspace.yaml            # apps/*, packages/*, tooling/*, agents/*
+├── tsconfig.json                   # Root TS config
+├── vercel.json                     # Vercel deployment config
+├── .env.example                    # Environment variable template
+└── .gitignore                      # Standard ignores + git-fix-clean.sh
 ```
-
-**Missing from plan**: `agents/`, `docs/`, `tooling/`, `.github/workflows/`, `turbo.json`, and 14 of 15 planned packages.
 
 ## Commands
 
@@ -82,23 +137,27 @@ All commands run from the repository root:
 ```bash
 pnpm install              # Install all workspace dependencies
 pnpm dev                  # Start dev server (port 3000)
-pnpm build                # Build Next.js production bundle (CURRENTLY BROKEN — see Build Status)
-pnpm lint                 # Run Next.js linter (CURRENTLY UNCONFIGURED — needs .eslintrc)
+pnpm build                # Build Next.js production bundle
+pnpm lint                 # Run ESLint (next/core-web-vitals)
 pnpm clean                # Remove .next, all node_modules
 ```
-
-**Known issues with commands:**
-- `pnpm build` fails with TypeScript error in `page.tsx:23` — `tab.active` property doesn't exist on all members of the `TABS` union type
-- `pnpm lint` triggers interactive ESLint setup prompt — no `.eslintrc.*` file exists, so `next lint` asks for configuration on first run
 
 ## Architecture & Conventions
 
 ### Monorepo
 
 - **pnpm workspaces** with `workspace:*` protocol for internal deps
-- The portal app declares `@repo/ui` as dependency — Next.js transpiles it via `transpilePackages`
-- Tailwind content paths span both `apps/portal/app` and `packages/ui/src`
-- **No Turborepo** — turbo.json is planned but does not exist; scripts use `pnpm --filter=portal`
+- **Turborepo** for build orchestration, caching, and dependency graph
+- Workspace globs: `apps/*`, `packages/*`, `tooling/*`, `agents/*`
+- Package namespace: `@silence/*` (e.g., `@silence/ui`, `@silence/contracts`)
+- Agent namespace: `@silence/agent-*` (e.g., `@silence/agent-orchestrator`)
+
+### Package Architecture
+
+- **@silence/contracts** — Types source of truth. All shared interfaces live here. Import types from contracts, never define ad-hoc inline types for shared data.
+- **@silence/events** — Typed event bus. Cross-module communication via `EventBus`. All events defined in `EventMap`.
+- **@silence/ui** — Shared design system. Components used by portal pages. Never duplicate markup that exists as a component.
+- **Agents** — Each agent is a workspace package with access to contracts and events.
 
 ### Component Patterns
 
@@ -135,26 +194,34 @@ export function Card({ children, title }: CardProps) {
 - Muted text: `zinc-400` for descriptions, `zinc-500` for labels/secondary
 - Responsive breakpoints use `md:` prefix pattern (mobile-first)
 - Card pattern: `rounded-xl border border-zinc-800 bg-zinc-900 p-4 md:p-6`
-- No custom Tailwind theme extensions currently defined
 
 ### Routing
 
 - Next.js 14 App Router with file-based routing
 - API routes in `app/api/` directory (GET endpoints returning `NextResponse.json()`)
-- Server components by default (no `"use client"` directives anywhere)
+- Server components by default; `"use client"` only for `error.tsx`
+- Error boundary (`error.tsx`), loading state (`loading.tsx`), and 404 (`not-found.tsx`) at app root
 - Current routes:
   - `/` — Dashboard home (tab navigation, 4 KPI cards)
   - `/investor/dashboard` — Investor KPI view (8 metrics, MRR chart, metrics table)
-  - `/api/kpi` — GET: returns mock KPI JSON
+  - `/api/kpi` — GET: returns mock KPI JSON (typed via `@silence/contracts`)
   - `/api/linkedin` — GET: returns LinkedIn integration stub
 
 ### Data Flow
 
-- **All data is hardcoded** — mock values duplicated in `page.tsx`, `investor/dashboard/page.tsx`, and `/api/kpi/route.ts`
-- No client-side state management (no Redux, Zustand, Context)
-- No data fetching layer (no SWR, React Query)
-- API routes exist but are never consumed by any page
+- **All data is centralized in `app/lib/mock-data.ts`** — single source of truth for mock KPI values
+- Mock data is typed via `@silence/contracts` interfaces (`KpiMetrics`, `KpiCard`, `MrrTrendPoint`, etc.)
+- Both pages and API routes import from `@/lib/mock-data`
+- No client-side state management yet (no Redux, Zustand, Context)
+- No data fetching layer yet (no SWR, React Query)
 - Supabase integration planned but not implemented
+
+### Event System
+
+- `@silence/events` provides a typed `EventBus` for cross-module communication
+- All events defined in `EventMap` interface (kpi.updated, agent.started, agent.stopped, etc.)
+- Agents communicate via events, orchestrated by the `Orchestrator` meta-agent
+- Type-safe: `bus.emit("kpi.updated", payload)` is checked against `EventMap`
 
 ## Environment Variables
 
@@ -186,30 +253,29 @@ Configured in `vercel.json` (root):
 
 Domains: `patternslab.app` (portal), `patternslab.work` (investor portal)
 
-**Note**: There is a duplicate `apps/vercel.json` with identical content — this is a stray file and should be removed.
+### CI/CD Pipelines
+
+- **ci.yml** — Runs on PRs and pushes to main: lint, type check (`tsc --noEmit`), build
+- **deploy.yml** — Runs on push to main: builds and deploys to Vercel production
+- **security.yml** — Weekly + on PR: `pnpm audit --audit-level=high`
+- **publish.yml** — On release: publishes public packages to npm
 
 ## TypeScript Configuration
 
-- **Root** (`tsconfig.json`): ES2022 target, bundler module resolution, strict mode, noEmit
-- **Portal** (`apps/portal/tsconfig.json`): ES2017 target, Next.js plugin, `@/*` path alias to `./app/*`
-- **UI** (`packages/ui/`): No own tsconfig — relies on root config; peer dependency on React 18
-- **No shared tsconfig base** — planned under `tooling/ts-config/` but does not exist
-
-Key differences between root and portal configs:
-- Root: `ES2022` target, `ESNext` module
-- Portal: `ES2017` target, `esnext` module, Next.js plugin, path aliases
+- **Shared base** (`tooling/ts-config/base.json`): ES2022, strict, bundler resolution
+- **Next.js preset** (`tooling/ts-config/nextjs.json`): ES2017, Next.js plugin
+- **Library preset** (`tooling/ts-config/library.json`): declaration + sourcemap output
+- **Portal** (`apps/portal/tsconfig.json`): ES2017, Next.js plugin, `@/*` path alias
+- **Packages** (`packages/*/tsconfig.json`): Extend `library.json`
 
 ## Key Constraints
 
 - **Package manager**: pnpm only (no npm/yarn — `package-lock.json` is gitignored)
 - **No testing framework**: No Jest, Vitest, or testing library configured
-- **No CI/CD**: No GitHub Actions or pipeline configuration
 - **No pre-commit hooks**: No Husky or lint-staged configured
-- **No ESLint config**: No `.eslintrc.*` file — `next lint` prompts for interactive setup
 - **No Prettier**: No code formatter configured
 - **No database**: Supabase is planned but not wired up; all data is mocked
 - **No auth**: No authentication or role-based access control implemented
-- **No error handling**: No `error.tsx`, `loading.tsx`, or `not-found.tsx` in App Router tree
 
 ## Adding New Features
 
@@ -219,24 +285,39 @@ Create a directory under `apps/portal/app/` following Next.js App Router convent
 ```
 apps/portal/app/my-feature/page.tsx
 ```
-Use `export default function` for the page component. Server component by default.
+Use `export default function` for the page component. Import UI components from `@silence/ui`.
 
 ### New shared component
 
 1. Create `packages/ui/src/components/MyComponent.tsx` (named export, TypeScript interface for props)
 2. Export from `packages/ui/src/components/index.ts`
-3. Import in portal via `import { MyComponent } from "@repo/ui"`
-
-**Important**: Currently no portal page actually imports from `@repo/ui`. When adding components, verify they are actually consumed.
+3. Import in portal via `import { MyComponent } from "@silence/ui"`
 
 ### New layout
 
 1. Create `packages/ui/src/layouts/MyLayout.tsx`
 2. Export from `packages/ui/src/layouts/index.ts`
 
+### New shared type
+
+1. Add to appropriate file in `packages/contracts/src/` (kpi.ts, api.ts, portal.ts, or create new)
+2. Export from `packages/contracts/src/index.ts`
+3. Import via `import type { MyType } from "@silence/contracts"`
+
+### New event
+
+1. Add to `EventMap` in `packages/events/src/types.ts`
+2. Emit via `bus.emit("my.event", payload, "source")`
+
+### New agent
+
+1. Create `agents/my-agent/` with `package.json`, `src/index.ts`, `tsconfig.json`
+2. Name: `@silence/agent-my-agent`, depend on `@silence/contracts` + `@silence/events`
+3. Register with orchestrator via `orchestrator.register({ id, name, enabled })`
+
 ### New API route
 
-Create `apps/portal/app/api/my-endpoint/route.ts` exporting named HTTP method handlers:
+Create `apps/portal/app/api/my-endpoint/route.ts`:
 ```typescript
 import { NextResponse } from "next/server";
 
@@ -255,59 +336,38 @@ Audit date: 2026-02-06. Comparison of planned architecture (DIPLO BIBLE v3) agai
 
 | Category | Planned | Exists | Coverage |
 |---|---|---|---|
-| **packages/** | 15 (`contracts`, `events`, `core`, `archetypes`, `symbolic`, `language`, `validator`, `ui`, `voice`, `ai`, `predictive`, `safety`, `medical`, `legal`, `linkedin-agent`) | 1 (`ui`) | **7%** |
+| **packages/** | 15 | 3 (`contracts`, `events`, `ui`) | **20%** |
 | **apps/** | 3 (`portal`, `patternlens`, `patternslab`) | 1 (`portal`) | **33%** |
-| **agents/** | 12 (orchestrator, sentinel, content-guard, anomaly-detector, sales-autopilot, customer-success, analytics-reporter, linkedin-dominator, content-machine, social-swarm, growth-hacker, community-builder) | 0 | **0%** |
-| **docs/** | 15 files | 0 (root README only) | **0%** |
-| **tooling/** | 3 dirs (eslint-config, ts-config, generators) | 0 | **0%** |
-| **.github/workflows/** | 4 (ci, deploy, security, publish) | 0 | **0%** |
-| **turbo.json** | Yes | No | **0%** |
+| **agents/** | 12 | 12 (2 implemented, 10 stubs) | **100% scaffolded** |
+| **docs/** | 15 files | 14 files | **93%** |
+| **tooling/** | 3 dirs | 3 dirs (`ts-config`, `eslint-config`, `generators`) | **100%** |
+| **.github/workflows/** | 4 | 4 (`ci`, `deploy`, `security`, `publish`) | **100%** |
+| **turbo.json** | Yes | Yes | **100%** |
 
-### Red Flags
+### Remaining Gaps
 
-#### CRITICAL
+#### Packages (12 not yet created)
+- `core`, `archetypes`, `symbolic`, `language`, `validator` — open modules
+- `voice`, `ai`, `predictive`, `safety`, `medical`, `legal`, `linkedin-agent` — closed modules
 
-1. **Build is broken** — `pnpm build` fails with TypeScript error in `apps/portal/app/page.tsx:23`. The `TABS` array uses `as const` with heterogeneous object shapes; only the first element has `active: true`. Accessing `tab.active` fails because the property doesn't exist on all union members. This blocks production deploys.
+#### Apps (2 not yet created)
+- `patternlens` — Consumer PWA
+- `patternslab` — B2B institutional
 
-2. **`@repo/ui` is 100% dead code** — All 11 components/layouts in `packages/ui` are exported but never imported anywhere. Portal pages duplicate equivalent markup inline. Either refactor pages to use the components or delete the package.
+#### Infrastructure
+- **No database** — Supabase planned but not wired
+- **No auth** — No authentication/RBAC
+- **No testing** — No test framework configured
+- **No pre-commit hooks** — No Husky/lint-staged
+- **Agent implementations** — 10 of 12 agents are stubs with TODO markers
+- **No `"use client"` boundaries** — Only `error.tsx` is a client component; interactivity will require more
 
-3. **Package scope mismatch: `@repo/ui` vs `@silence/*`** — The plan uses `@silence/*` namespace for all packages. The existing package uses `@repo/ui`. This needs to be resolved before adding more packages.
+### Next Steps (Priority Order)
 
-4. **No CI/CD, no safety net** — Zero automated checks. No lint-on-push, no build verification, no type checking in CI. Any push to main goes live on Vercel unchecked.
-
-5. **Hardcoded mock data with no abstraction layer** — KPI values (104,000 PLN, 8,667 PLN, etc.) are duplicated across `page.tsx`, `investor/dashboard/page.tsx`, and `/api/kpi/route.ts`. No shared data source, no types, no API consumption. When real data arrives, every file needs rewriting.
-
-#### HIGH
-
-6. **ESLint not configured** — No `.eslintrc.*` file exists. Running `pnpm lint` (`next lint`) triggers an interactive setup prompt. Must create an ESLint config before lint can run non-interactively.
-
-7. **No Turborepo** — `turbo.json` is specified in the plan but missing. With only 1 app and 1 package this is tolerable. With the planned 15+ packages and 12 agents, raw pnpm filter commands will not scale.
-
-8. **No shared TypeScript config** — Plan calls for `tooling/ts-config/`. Currently root and portal have independent tsconfigs with duplicated and conflicting options (ES2022 vs ES2017). Adding packages will multiply the duplication.
-
-9. **No `"use client"` boundaries** — All components are server components. The investor dashboard renders dynamic bar chart heights via inline styles. Any interactivity (filters, date ranges, real-time data) will require client component refactoring.
-
-10. **LinkedIn API route exposes hardcoded org_id** — `apps/portal/app/api/linkedin/route.ts` returns `org_id: "82569452"`. Even as a stub, real identifiers should not be in source code.
-
-#### MEDIUM
-
-11. **Stray `apps/vercel.json`** — Duplicate Vercel config at `apps/vercel.json` (outside any app directory). Should be removed; the root `vercel.json` is the correct one.
-
-12. **`git-fix-clean.sh` committed to repo** — Local tooling script with Termux-specific shebang (`#!/data/data/com.termux/files/usr/bin/bash`). Should be gitignored, not tracked.
-
-13. **No error boundaries or loading states** — No `error.tsx`, `loading.tsx`, or `not-found.tsx` files in the App Router tree. Any runtime error shows the default Next.js error page.
-
-14. **No `@silence/contracts` types package** — The plan designates this as "TYPES SOURCE OF TRUTH" but it doesn't exist. KPI data shapes are defined ad-hoc as inline TypeScript objects with no shared interfaces.
-
-### Recommendations (Priority Order)
-
-1. **Fix the build** — Resolve the TypeScript error in `page.tsx:23` so `pnpm build` succeeds. Nothing else matters until the build works.
-2. **Configure ESLint** — Add `.eslintrc.json` with `next/core-web-vitals` so `pnpm lint` runs non-interactively.
-3. **Adopt `@repo/ui` components in portal pages** — or delete the package. Dead code is tech debt from day zero.
-4. **Add basic CI** — Even a single GitHub Action running `pnpm build && pnpm lint` would prevent broken deploys.
-5. **Create `packages/contracts`** — Define shared TypeScript interfaces for KPI data, API responses, and configuration before adding more packages.
-6. **Decide on `@repo/*` vs `@silence/*` scope** — Pick one and rename before the monorepo grows.
-7. **Add `turbo.json`** — Even minimal config enables caching and parallel builds.
-8. **Extract mock data into a single source** — One `mock-data.ts` file imported by both pages and API routes, typed with shared interfaces.
-9. **Add `error.tsx` and `loading.tsx`** — Basic error boundaries for production resilience.
-10. **Remove stray files** — Delete `apps/vercel.json`, remove `git-fix-clean.sh` from tracking, add to `.gitignore`.
+1. **Wire Supabase** — Connect auth and database to replace mock data
+2. **Add test framework** — Vitest for packages, Playwright for portal E2E
+3. **Implement agent logic** — Start with `analytics-reporter` (closest to existing KPI data)
+4. **Create `@silence/core`** — Core business logic shared across packages
+5. **Build `patternlens` app** — Consumer PWA
+6. **Add pre-commit hooks** — Husky + lint-staged for quality gates
+7. **Implement remaining packages** — Domain-specific modules per DIPLO BIBLE
