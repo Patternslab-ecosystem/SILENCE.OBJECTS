@@ -1,0 +1,174 @@
+name: "SILENCE SENTINEL"
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: sentinel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vocabulary-scan:
+    name: "Forbidden Vocabulary"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for forbidden terms
+        run: |
+          echo "SILENCE SENTINEL Vocabulary Scan"
+
+          FORBIDDEN=(
+            "therapy" "diagnosis" "advice" "treatment" "healing"
+            "wellness" "spiritual" "mystical" "divine" "cosmic"
+            "horoscope" "fortune" "terapia" "diagnoza" "leczenie"
+            "porada" "uzdrawianie" "duchowy" "mistyczny" "boski"
+            "tarot" "oracle" "divination"
+          )
+
+          VIOLATIONS=0
+          REPORT=""
+
+          for term in "${FORBIDDEN[@]}"; do
+            FOUND=$(grep -rin --include="*.ts" --include="*.tsx" --include="*.json" \
+              --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.git \
+              "$term" . 2>/dev/null | \
+              grep -v "FORBIDDEN_TERMS" | \
+              grep -v "forbidden" | \
+              grep -v "COMPLIANCE.md" | \
+              grep -v "SAFETY.md" | \
+              grep -v "sentinel.yml" | \
+              grep -v "SENTINEL.md" | \
+              grep -v "MEGA_BUILD" | \
+              grep -v "getForbiddenTerms" | \
+              grep -v "containsForbidden" | \
+              grep -v "// @silence" | \
+              grep -v "NEVER" | \
+              grep -v "NIE" || true)
+
+            if [ -n "$FOUND" ]; then
+              VIOLATIONS=$((VIOLATIONS + 1))
+              REPORT="$REPORT\nFOUND: '$term'\n$FOUND\n"
+            fi
+          done
+
+          if [ $VIOLATIONS -gt 0 ]; then
+            echo -e "\nSENTINEL BLOCKED $VIOLATIONS forbidden terms found:\n$REPORT"
+            exit 1
+          else
+            echo "Vocabulary scan PASSED zero violations"
+          fi
+
+  build-check:
+    name: "Build Verification"
+    runs-on: ubuntu-latest
+    needs: vocabulary-scan
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Build portal
+        run: pnpm --filter portal build
+      - name: Build patternlens
+        run: |
+          if [ -f "apps/patternlens/package.json" ]; then
+            pnpm --filter patternlens build
+          fi
+      - name: Build patternslab
+        run: |
+          if [ -f "apps/patternslab/package.json" ]; then
+            pnpm --filter patternslab build
+          fi
+
+  contract-check:
+    name: "Contract Validation"
+    runs-on: ubuntu-latest
+    needs: vocabulary-scan
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify module structure
+        run: |
+          echo "Checking module contracts..."
+          REQUIRED_MODULES=("contracts" "events" "core" "archetypes" "safety" "language" "validator" "ui" "voice")
+          MISSING=0
+          for mod in "${REQUIRED_MODULES[@]}"; do
+            if [ ! -f "packages/$mod/src/index.ts" ]; then
+              echo "MISSING: packages/$mod/src/index.ts"
+              MISSING=$((MISSING + 1))
+            else
+              echo "OK: packages/$mod/src/index.ts"
+            fi
+            if [ ! -f "packages/$mod/package.json" ]; then
+              echo "MISSING: packages/$mod/package.json"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+          if [ $MISSING -gt 0 ]; then
+            echo "$MISSING missing module files"
+            exit 1
+          fi
+          echo "All module contracts present"
+      - name: Verify exports
+        run: |
+          if ! grep -q "export" packages/contracts/src/index.ts; then
+            echo "contracts has no exports"
+            exit 1
+          fi
+          echo "contracts has exports"
+
+  closed-module-guard:
+    name: "Closed Module Guard"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check closed module changes
+        run: |
+          CLOSED_MODULES=("voice" "safety")
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} HEAD)
+          VIOLATIONS=""
+          for mod in "${CLOSED_MODULES[@]}"; do
+            CHANGES=$(echo "$CHANGED_FILES" | grep "^packages/$mod/" || true)
+            if [ -n "$CHANGES" ]; then
+              VIOLATIONS="$VIOLATIONS\nCLOSED MODULE MODIFIED: packages/$mod/\n$CHANGES\n"
+            fi
+          done
+          if [ -n "$VIOLATIONS" ]; then
+            echo -e "CLOSED MODULE CHANGES DETECTED:\n$VIOLATIONS"
+            echo "These modules require OWNER review before merge"
+          fi
+
+  sentinel-report:
+    name: "Sentinel Report"
+    runs-on: ubuntu-latest
+    needs: [vocabulary-scan, build-check, contract-check]
+    if: always()
+    steps:
+      - name: Generate report
+        run: |
+          echo "======================================"
+          echo "SILENCE SENTINEL REPORT"
+          echo "======================================"
+          echo "Vocabulary: ${{ needs.vocabulary-scan.result }}"
+          echo "Build:      ${{ needs.build-check.result }}"
+          echo "Contracts:  ${{ needs.contract-check.result }}"
+          echo "======================================"
+          if [ "${{ needs.vocabulary-scan.result }}" = "failure" ] || \
+             [ "${{ needs.build-check.result }}" = "failure" ] || \
+             [ "${{ needs.contract-check.result }}" = "failure" ]; then
+            echo "SENTINEL BLOCKED DEPLOY"
+            exit 1
+          else
+            echo "ALL CHECKS PASSED — DEPLOY AUTHORIZED"
+          fi

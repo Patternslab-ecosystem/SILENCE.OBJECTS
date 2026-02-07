@@ -70,3 +70,12 @@ export {
   IASP_LINK,
   HELPLINES_DB,
 } from './helplines';
+
+// === FROM SENTINEL-MIDDLEWARE.TS ===
+export type { SentinelResult, SentinelAction } from './sentinel-middleware';
+export {
+  sentinel,
+  withSentinel,
+  CRISIS_KEYWORDS_PL,
+  CRISIS_KEYWORDS_EN,
+} from './sentinel-middleware';

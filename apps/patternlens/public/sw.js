@@ -3,11 +3,11 @@
 // PatternLens v4.0 - Service Worker
 // ============================================
 
-const CACHE_NAME = 'patternlens-v4.0.0';
-const OFFLINE_URL = '/offline.html';
+const CACHE_NAME = 'patternlens-v5.0.0';
+const OFFLINE_URL = '/dashboard';
 
 const STATIC_ASSETS = [
-  '/',
+  '/dashboard',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png'

@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "pnpm --filter portal dev",
     "dev:lens": "pnpm --filter patternlens dev",
+    "dev:lab": "pnpm --filter patternslab dev",
     "build": "pnpm --filter portal build",
     "build:lens": "pnpm --filter patternlens build",
+    "build:lab": "pnpm --filter patternslab build",
     "build:all": "pnpm -r build",
     "lint": "pnpm --filter portal lint"
   }
