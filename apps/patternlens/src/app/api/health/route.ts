@@ -7,19 +7,53 @@ export async function GET(): Promise<NextResponse> {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-  // Test Supabase connectivity
-  let supabaseStatus = 'unknown';
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  // Test Supabase connectivity via REST API
+  let supabaseRest = 'unknown';
   try {
     if (supabaseUrl && supabaseKey) {
       const res = await fetch(`${supabaseUrl}/rest/v1/`, {
         headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
       });
-      supabaseStatus = res.ok ? 'connected' : `error-${res.status}`;
+      supabaseRest = res.ok ? 'connected' : `error-${res.status}`;
     } else {
-      supabaseStatus = 'missing-env-vars';
+      supabaseRest = 'missing-env-vars';
     }
   } catch (e) {
-    supabaseStatus = `error: ${e instanceof Error ? e.message : String(e)}`;
+    supabaseRest = `fetch-error: ${e instanceof Error ? e.message : String(e)}`;
+  }
+
+  // Test Supabase via service role key (JWT)
+  let supabaseService = 'unknown';
+  try {
+    if (supabaseUrl && serviceKey) {
+      const res = await fetch(`${supabaseUrl}/rest/v1/`, {
+        headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+      });
+      supabaseService = res.ok ? 'connected' : `error-${res.status}`;
+    } else {
+      supabaseService = 'missing-service-key';
+    }
+  } catch (e) {
+    supabaseService = `fetch-error: ${e instanceof Error ? e.message : String(e)}`;
+  }
+
+  // Test GoTrue auth health
+  let authHealth = 'unknown';
+  try {
+    if (supabaseUrl) {
+      const res = await fetch(`${supabaseUrl}/auth/v1/settings`, {
+        headers: supabaseKey ? { apikey: supabaseKey } : {},
+      });
+      const data = await res.json().catch(() => null);
+      authHealth = res.ok ? 'ok' : `error-${res.status}`;
+      if (data && data.external) {
+        authHealth += ` (providers: ${Object.keys(data.external).filter(k => data.external[k]).join(',')})`;
+      }
+    }
+  } catch (e) {
+    authHealth = `fetch-error: ${e instanceof Error ? e.message : String(e)}`;
   }
 
   return NextResponse.json({
@@ -28,8 +62,12 @@ export async function GET(): Promise<NextResponse> {
     version: process.env.NEXT_PUBLIC_VERSION || '5.0.0',
     environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'production',
     safetyTests: '31/31 passing',
-    supabase: supabaseStatus,
+    supabaseRest,
+    supabaseService,
+    authHealth,
     supabaseUrl: supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'NOT SET',
+    anonKeyFormat: supabaseKey ? supabaseKey.substring(0, 15) + '...' : 'NOT SET',
+    serviceKeyFormat: serviceKey ? serviceKey.substring(0, 15) + '...' : 'NOT SET',
     anthropicKey: anthropicKey ? 'SET (' + anthropicKey.substring(0, 10) + '...)' : 'NOT SET',
     appUrl: process.env.NEXT_PUBLIC_APP_URL || 'NOT SET',
   }, {
