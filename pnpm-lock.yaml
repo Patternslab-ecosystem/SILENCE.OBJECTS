@@ -134,6 +134,13 @@ importers:
         version: 5.9.3
 
   packages/ui:
+    dependencies:
+      react:
+        specifier: ^18 || ^19
+        version: 19.2.4
+      react-dom:
+        specifier: ^18 || ^19
+        version: 19.2.4(react@19.2.4)
     devDependencies:
       typescript:
         specifier: ^5
@@ -146,6 +153,10 @@ importers:
         version: 5.9.3
 
   packages/voice:
+    dependencies:
+      react:
+        specifier: ^18 || ^19
+        version: 19.2.4
     devDependencies:
       typescript:
         specifier: ^5
