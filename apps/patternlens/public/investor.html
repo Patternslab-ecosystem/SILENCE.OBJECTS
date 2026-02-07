@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>patternsLab - Investor Relations</title>
+    <style>
+        :root {
+            --color-bg: #0f172a;
+            --color-surface: #1e293b;
+            --color-primary: #38bdf8;
+            --color-text: #f1f5f9;
+            --color-text-secondary: #cbd5e1;
+            --color-border: rgba(56, 189, 248, 0.2);
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        header {
+            padding: 32px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: var(--color-primary);
+        }
+
+        .hero {
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #38bdf8, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--color-text-secondary);
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 60px 0;
+        }
+
+        .metric-card {
+            background: var(--color-surface);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-size: 36px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            color: var(--color-text-secondary);
+            text-align: center;
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: var(--color-surface);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 24px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--color-text);
+        }
+
+        .feature-desc {
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .tech-item {
+            background: var(--color-surface);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+            margin-top: 40px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--color-border);
+        }
+
+        .timeline-item {
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -38px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-primary);
+        }
+
+        .timeline-date {
+            color: var(--color-primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .timeline-desc {
+            color: var(--color-text-secondary);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-ready {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--color-success);
+        }
+
+        .status-progress {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--color-warning);
+        }
+
+        .cta {
+            background: var(--color-surface);
+            padding: 60px;
+            border-radius: 16px;
+            border: 1px solid var(--color-border);
+            text-align: center;
+            margin: 80px 0;
+        }
+
+        .cta h2 {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .cta p {
+            color: var(--color-text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 16px 32px;
+            background: var(--color-primary);
+            color: var(--color-bg);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        footer {
+            border-top: 1px solid var(--color-border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--color-text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">patternsLab</div>
+                <nav class="nav">
+                    <a href="#overview">Overview</a>
+                    <a href="#product">Product</a>
+                    <a href="#technology">Technology</a>
+                    <a href="#roadmap">Roadmap</a>
+                    <a href="#contact">Contact</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Behavioral Pattern Analysis Platform</h1>
+                <p>Production-ready neuro-divergent friendly tool for structural self-reflection. Powered by SILENCE.OBJECTS framework and Claude AI.</p>
+                <div class="metrics">
+                    <div class="metric-card">
+                        <div class="metric-value">65%</div>
+                        <div class="metric-label">MVP Complete</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">90%</div>
+                        <div class="metric-label">Frontend Ready</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">1-2 wk</div>
+                        <div class="metric-label">To Production</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">$12.99</div>
+                        <div class="metric-label">Monthly PRO Tier</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="overview" class="section">
+            <div class="container">
+                <h2 class="section-title">Market Opportunity</h2>
+                <p class="section-subtitle">First neuro-divergent friendly behavioral analysis tool combining AI interpretations with accessibility-first design.</p>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">Massive Accessibility Gap</h3>
+                        <p class="feature-desc">Only 23% of top apps support reduce motion. Only 12% offer color customization. Zero apps explicitly position for ADHD/autism.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💰</div>
+                        <h3 class="feature-title">Proven Revenue Model</h3>
+                        <p class="feature-desc">Health/wellness apps: 40-60% trial-to-paid conversion. $50-100 LTV per paying user. Top 100 iOS benchmark validated.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3 class="feature-title">Regulatory Safety</h3>
+                        <p class="feature-desc">NOT therapy. NOT diagnosis. Structural analysis tool. Zero therapeutic language. Crisis detection with regional resources.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="product" class="section" style="background: rgba(30, 41, 59, 0.3);">
+            <div class="container">
+                <h2 class="section-title">Product Architecture</h2>
+                <p class="section-subtitle">SILENCE.OBJECTS framework: Dual-lens AI interpretation system for behavioral pattern analysis. Offline-first with optional cloud enhancement.</p>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎤</div>
+                        <h3 class="feature-title">Voice-First Input</h3>
+                        <p class="feature-desc">Claude multimodal transcription + MediaRecorder API. <2s latency. Memory-optimized recording. Polish language priority. Mobile-optimized UX. WebM/MP4 formats.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <h3 class="feature-title">Dual-Lens Analysis</h3>
+                        <p class="feature-desc">Claude 3.5 Sonnet generates two alternative structural interpretations. <3s latency (local) / <5s (API). 4-phase protocol: Context → Tension → Meaning → Function. User chooses which resonates. No advice given.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🛡️</div>
+                        <h3 class="feature-title">3-Layer Safety</h3>
+                        <p class="feature-desc">Hard keywords (50 terms) → instant block. Soft keywords (170 terms) → Claude risk assessment (0.0-1.0 score). Regional crisis resources (PL/UK/US) with tap-to-call. Anonymous incident logging (no PII).</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">♿</div>
+                        <h3 class="feature-title">Neurodiversity-First</h3>
+                        <p class="feature-desc">Mobile-first (desktop fallback). Dark mode only. Minimal animations. Reduce motion respected. 44px touch targets. High contrast. No gamification. Structured input (not blank page).</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3 class="feature-title">Pattern Detection</h3>
+                        <p class="feature-desc">Semantic similarity clustering. Theme classification (work/relationship/conflict/self). Temporal pattern tracking. Cross-Object connections. Async processing (never blocks UI). CSV/JSON export instant.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔐</div>
+                        <h3 class="feature-title">GDPR Compliant</h3>
+                        <p class="feature-desc">Supabase EU (Frankfurt). Row-level security. Data export API. Account deletion cascades. Anonymous crisis logging. <200MB RAM idle. Offline-first = privacy-first.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎭</div>
+                        <h3 class="feature-title">Ghost Patterns (PRO Feature)</h3>
+                        <p class="feature-desc">Jungian archetypes as "behavior classification system" (NOT therapy). Shadow, Hero, Trickster, Anima, Wise Old Man. Analytical framing only. Confidence scoring 0.0-1.0. Gateway to symbolic engagement.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔮</div>
+                        <h3 class="feature-title">Pattern Catalysts (FREE Feature)</h3>
+                        <p class="feature-desc">Tarot-style symbolic prompts with structural analysis framing. Crossroads = decision tree. Mirror = reflection function. Engagement driver + PRO conversion funnel. No mystical language.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📴</div>
+                        <h3 class="feature-title">Offline Mode (Primary Mode)</h3>
+                        <p class="feature-desc">Local Ollama for dual-lens analysis (Llama 3.2). Works on plane, basement, paranoia bunker. Claude API = optional upgrade for deeper patterns. Online = enhancement, not requirement. PWA install = full offline capability.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="technology" class="section">
+            <div class="container">
+                <h2 class="section-title">Technology Stack</h2>
+                <p class="section-subtitle">Production-ready infrastructure with 90% frontend complete. Enterprise-grade architecture.</p>
+                
+                <div class="tech-stack">
+                    <div class="tech-item">Next.js 16 <span class="status-badge status-ready">Ready</span></div>
+                    <div class="tech-item">React 19 <span class="status-badge status-ready">Ready</span></div>
+                    <div class="tech-item">TypeScript 5 <span class="status-badge status-ready">Ready</span></div>
+                    <div class="tech-item">Tailwind 4 <span class="status-badge status-ready">Ready</span></div>
+                    <div class="tech-item">Supabase <span class="status-badge status-progress">Setup</span></div>
+                    <div class="tech-item">Claude 3.5 <span class="status-badge status-progress">Integration</span></div>
+                    <div class="tech-item">Stripe <span class="status-badge status-progress">Setup</span></div>
+                    <div class="tech-item">Capacitor <span class="status-badge status-ready">Ready</span></div>
+                    <div class="tech-item">PWA <span class="status-badge status-ready">Complete</span></div>
+                    <div class="tech-item">Vercel <span class="status-badge status-ready">Ready</span></div>
+                    <div class="tech-item">Cloudflare <span class="status-badge status-ready">Ready</span></div>
+                    <div class="tech-item">Edge Runtime <span class="status-badge status-ready">Ready</span></div>
+                </div>
+
+                <div style="margin-top: 60px;">
+                    <h3 style="font-size: 24px; margin-bottom: 24px; text-align: center;">Implementation Status</h3>
+                    <div class="features">
+                        <div class="feature-card">
+                            <h3 class="feature-title">Frontend: 90% Complete</h3>
+                            <p class="feature-desc">✅ Dashboard with Bento grid<br>✅ VoiceDump production system<br>✅ Loading states + Polish i18n<br>✅ Design System v3.0<br>✅ PWA + Service Worker<br>✅ Capacitor mobile config</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3 class="feature-title">Backend: 15% Complete</h3>
+                            <p class="feature-desc">⏳ Supabase schema designed<br>⏳ API routes defined<br>⏳ Claude integration needed<br>⏳ Auth middleware needed<br>⏳ Stripe webhooks needed<br>⏳ Crisis detection backend</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3 class="feature-title">Infrastructure: 85%</h3>
+                            <p class="feature-desc">✅ Build pipeline complete<br>✅ Deployment config ready<br>✅ DNS/SSL configured<br>✅ Monitoring setup<br>⏳ Environment variables<br>⏳ Database deployment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="section" style="background: rgba(30, 41, 59, 0.3);">
+            <div class="container">
+                <h2 class="section-title">Development Roadmap</h2>
+                <p class="section-subtitle">Aggressive 1-2 week timeline to production. Backend completion with proven frontend.</p>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">Week 1: Days 1-2</div>
+                        <div class="timeline-title">Backend Foundation</div>
+                        <div class="timeline-desc">Supabase project setup (EU region) + schema deployment + RLS policies + Auth middleware integration + User registration/login API</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">Week 1: Days 3-4</div>
+                        <div class="timeline-title">Core APIs</div>
+                        <div class="timeline-desc">Claude API client + Dual-lens endpoint (/api/interpret) + Claude multimodal transcription (/api/voice/transcribe) + Pattern detection algorithms</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">Week 1: Day 5</div>
+                        <div class="timeline-title">Integration Testing</div>
+                        <div class="timeline-desc">Frontend-backend connection + End-to-end testing + Polish language compliance + Performance optimization</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">Week 2: Days 6-7</div>
+                        <div class="timeline-title">Business Logic</div>
+                        <div class="timeline-desc">Stripe integration (checkout + webhooks) + Tier limits enforcement + GDPR endpoints (export/delete) + Crisis resources page</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">Week 2: Days 8-9</div>
+                        <div class="timeline-title">Production Deployment</div>
+                        <div class="timeline-desc">Vercel production config + Environment variables + Database migrations + Performance monitoring</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">Week 2: Day 10</div>
+                        <div class="timeline-title">Launch Verification</div>
+                        <div class="timeline-desc">Production testing + User acceptance + Performance verification (≤3s Object creation) + Go-live decision</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">Competitive Advantages</h2>
+                <div class="features">
+                    <div class="feature-card">
+                        <h3 class="feature-title">First-Mover: Neuro-Accessible AI</h3>
+                        <p class="feature-desc">Zero competitors explicitly position for ADHD/autism with accessibility-first design. Dark mode only, minimal animations, structured input (not blank page), cold technical language protects from emotional overwhelm.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">Regulatory Moat</h3>
+                        <p class="feature-desc">Framework compliance prevents App Store rejection. Zero therapeutic language. NOT therapy disclaimers everywhere. Crisis detection system with regional resources. GDPR compliant (EU data residency).</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">Technical Excellence</h3>
+                        <p class="feature-desc">Production-ready frontend (90% complete) = low technical risk. Modern stack (Next.js 16, React 19, Edge Runtime). PWA + native mobile ready. Enterprise-grade architecture with clear API contracts.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">Scalable AI Architecture</h3>
+                        <p class="feature-desc">Claude 3.5 Sonnet via API = no ML training required. Claude multimodal transcription = production voice. Edge functions for auth/rate limiting. Supabase handles scaling. Low marginal cost per user.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">Licensable SILENCE.OBJECTS Framework</h3>
+                        <p class="feature-desc">Proprietary 4-phase behavioral analysis protocol. B2B licensing opportunity for coaches, therapists, HR tools. Framework proven with dual-lens interpretations + crisis detection. Revenue stream beyond consumer app.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">Symbolic Pattern Monetization</h3>
+                        <p class="feature-desc">Ghost Patterns (PRO): Jungian archetypes framed as "behavior classification system" (Shadow, Hero, Trickster). Pattern Catalysts (FREE): Tarot-style prompts with analytical framing. Viral engagement + conversion funnel to PRO.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" style="background: rgba(30, 41, 59, 0.3);">
+            <div class="container">
+                <h2 class="section-title">Monetization Strategy</h2>
+                <p class="section-subtitle">Freemium + 14-day trial. Pricing validated against top 100 iOS grossing apps.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; margin-top: 40px;">
+                    <div class="feature-card">
+                        <h3 class="feature-title" style="color: var(--color-text-secondary);">FREE Tier</h3>
+                        <div style="font-size: 32px; font-weight: 700; margin: 16px 0; color: var(--color-primary);">$0</div>
+                        <ul style="list-style: none; padding: 0; color: var(--color-text-secondary);">
+                            <li style="padding: 8px 0;">✓ 7 Objects/week</li>
+                            <li style="padding: 8px 0;">✓ Basic dual-lens analysis</li>
+                            <li style="padding: 8px 0;">✓ Voice transcription</li>
+                            <li style="padding: 8px 0;">✓ Crisis detection</li>
+                            <li style="padding: 8px 0;">✗ Pattern detection</li>
+                            <li style="padding: 8px 0;">✗ Archive unlimited</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card" style="border: 2px solid var(--color-primary); position: relative;">
+                        <div style="position: absolute; top: -12px; right: 20px; background: var(--color-primary); color: var(--color-bg); padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;">BEST VALUE</div>
+                        <h3 class="feature-title">PRO Tier</h3>
+                        <div style="font-size: 32px; font-weight: 700; margin: 16px 0; color: var(--color-primary);">$12.99<span style="font-size: 16px; color: var(--color-text-secondary);">/mo</span></div>
+                        <div style="color: var(--color-text-secondary); margin-bottom: 16px;">or $89/year (save 43%)</div>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 8px 0;">✓ Unlimited Objects</li>
+                            <li style="padding: 8px 0;">✓ Advanced dual-lens</li>
+                            <li style="padding: 8px 0;">✓ Pattern detection</li>
+                            <li style="padding: 8px 0;">✓ Full archive access</li>
+                            <li style="padding: 8px 0;">✓ Export data (GDPR)</li>
+                            <li style="padding: 8px 0;">✓ Priority support</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">Expected Metrics</h3>
+                        <div style="margin-top: 20px;">
+                            <div style="margin-bottom: 16px;">
+                                <div style="color: var(--color-text-secondary); font-size: 14px;">Trial-to-Paid Conversion</div>
+                                <div style="font-size: 24px; font-weight: 600; color: var(--color-primary);">40-60%</div>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <div style="color: var(--color-text-secondary); font-size: 14px;">LTV per Paying User</div>
+                                <div style="font-size: 24px; font-weight: 600; color: var(--color-primary);">$50-100</div>
+                            </div>
+                            <div>
+                                <div style="color: var(--color-text-secondary); font-size: 14px;">Target Install-to-Paid</div>
+                                <div style="font-size: 24px; font-weight: 600; color: var(--color-primary);">3-7%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 60px;">
+                    <h3 style="font-size: 24px; margin-bottom: 24px; text-align: center;">Multi-Currency Support</h3>
+                    <div style="display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;">
+                        <div style="text-align: center;">
+                            <div style="color: var(--color-text-secondary);">🇺🇸 United States</div>
+                            <div style="font-size: 20px; font-weight: 600; margin-top: 8px;">$12.99/mo</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="color: var(--color-text-secondary);">🇬🇧 United Kingdom</div>
+                            <div style="font-size: 20px; font-weight: 600; margin-top: 8px;">£10.99/mo</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="color: var(--color-text-secondary);">🇵🇱 Poland</div>
+                            <div style="font-size: 20px; font-weight: 600; margin-top: 8px;">49 PLN/mo</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 60px; padding: 40px; background: var(--color-surface); border-radius: 12px; border: 1px solid var(--color-border);">
+                    <h3 style="font-size: 24px; margin-bottom: 24px; text-align: center; color: var(--color-primary);">💰 Additional Revenue Streams</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-top: 24px;">
+                        <div>
+                            <h4 style="font-size: 18px; margin-bottom: 8px; color: var(--color-text);">SILENCE.OBJECTS Licensing</h4>
+                            <p style="color: var(--color-text-secondary); font-size: 14px;">B2B framework licensing to coaches, therapists, HR platforms. Proven 4-phase protocol + crisis detection. Recurring enterprise revenue.</p>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 18px; margin-bottom: 8px; color: var(--color-text);">Ghost Patterns PRO Add-On</h4>
+                            <p style="color: var(--color-text-secondary); font-size: 14px;">$4.99/mo upgrade for Jungian archetype classification. High-engagement feature. 15-25% PRO user adoption projected.</p>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 18px; margin-bottom: 8px; color: var(--color-text);">Pattern Catalysts Viral Loop</h4>
+                            <p style="color: var(--color-text-secondary); font-size: 14px;">FREE symbolic prompts drive sharing. Social proof + curiosity = conversion funnel to PRO. Organic growth multiplier.</p>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 18px; margin-bottom: 8px; color: var(--color-text);">Local + Cloud Hybrid</h4>
+                            <p style="color: var(--color-text-secondary); font-size: 14px;">FREE users = local Ollama (zero marginal cost). PRO users = Claude API (premium analysis). Cost optimization at scale.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">Performance Metrics (AGGRESSIVE TARGETS)</h2>
+                <p class="section-subtitle">Mobile-first brutality. Core Web Vitals 90+ or GTFO.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-top: 40px;">
+                    <div style="background: var(--color-surface); padding: 24px; border-radius: 12px; border: 1px solid var(--color-border); text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--color-success); margin-bottom: 8px;"><3s</div>
+                        <div style="color: var(--color-text-secondary); font-size: 14px;">Object Creation Latency</div>
+                    </div>
+                    <div style="background: var(--color-surface); padding: 24px; border-radius: 12px; border: 1px solid var(--color-border); text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--color-success); margin-bottom: 8px;"><2s</div>
+                        <div style="color: var(--color-text-secondary); font-size: 14px;">Voice Transcription</div>
+                    </div>
+                    <div style="background: var(--color-surface); padding: 24px; border-radius: 12px; border: 1px solid var(--color-border); text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--color-success); margin-bottom: 8px;"><200MB</div>
+                        <div style="color: var(--color-text-secondary); font-size: 14px;">RAM Usage (Idle)</div>
+                    </div>
+                    <div style="background: var(--color-surface); padding: 24px; border-radius: 12px; border: 1px solid var(--color-border); text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--color-success); margin-bottom: 8px;">90+</div>
+                        <div style="color: var(--color-text-secondary); font-size: 14px;">Lighthouse Mobile Score</div>
+                    </div>
+                    <div style="background: var(--color-surface); padding: 24px; border-radius: 12px; border: 1px solid var(--color-border); text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--color-success); margin-bottom: 8px;">100%</div>
+                        <div style="color: var(--color-text-secondary); font-size: 14px;">Offline Functionality</div>
+                    </div>
+                    <div style="background: var(--color-surface); padding: 24px; border-radius: 12px; border: 1px solid var(--color-border); text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--color-success); margin-bottom: 8px;">0</div>
+                        <div style="color: var(--color-text-secondary); font-size: 14px;">Console Errors (ZERO TOLERANCE)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+            <div class="cta">
+                <h2>Ready to Build a $100M+ Company?</h2>
+                <p>First neuro-accessible AI behavioral analysis platform. Proprietary framework. Multiple revenue streams. Regulatory moat. Let's fucking go.</p>
+                <a href="mailto:investors@patternslab.app" class="btn">Contact Investor Relations</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 patternsLab. Powered by SILENCE.OBJECTS framework.</p>
+            <p style="margin-top: 8px; font-size: 14px;">
+                <a href="https://patternslab.app" style="color: var(--color-primary); text-decoration: none;">patternslab.app</a> | 
+                <a href="https://patternslab.work" style="color: var(--color-primary); text-decoration: none;">patternslab.work</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

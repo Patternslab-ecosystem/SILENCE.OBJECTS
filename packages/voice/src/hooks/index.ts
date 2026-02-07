@@ -2,14 +2,17 @@
 // =====================================
 
 export { useMediaRecorder } from './useMediaRecorder';
-export type { MediaRecorderState, UseMediaRecorderReturn } from './useMediaRecorder';
+export type { UseMediaRecorderReturn } from './useMediaRecorder';
+
+export { useTranscription } from './useTranscription';
+export type { UseTranscriptionReturn } from './useTranscription';
 
 export { useAnalysis, EmergencyError } from './useAnalysis';
-export type { 
-  AnalysisState, 
-  AnalysisStatus, 
-  AnalysisResult, 
-  DualLensAnalysis 
+export type {
+  AnalysisState,
+  AnalysisStatus,
+  AnalysisResult,
+  DualLensAnalysis,
 } from './useAnalysis';
 
 export { useOfflineQueue } from './useOfflineQueue';

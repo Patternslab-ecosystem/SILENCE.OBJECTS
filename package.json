@@ -5,14 +5,10 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "pnpm --filter portal dev",
+    "dev:lens": "pnpm --filter patternlens dev",
     "build": "pnpm --filter portal build",
-    "lint": "pnpm --filter portal lint",
-    "build:all": "pnpm -r build"
-  },
-  "pnpm": {
-    "overrides": {
-      "react": "18.3.1",
-      "react-dom": "18.3.1"
-    }
+    "build:lens": "pnpm --filter patternlens build",
+    "build:all": "pnpm -r build",
+    "lint": "pnpm --filter portal lint"
   }
 }

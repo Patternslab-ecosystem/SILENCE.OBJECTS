@@ -1,29 +1,72 @@
-// @silence/safety — 3-Layer Crisis Detection
+// ============================================
+// @silence/safety — PASSIVE Safety Module
+// ============================================
+// Profile: INFORMED_ADULT_TOOL
+// Never blocks, shows resources when relevant.
+// ============================================
 
-export type RiskLevel = 'critical' | 'high' | 'medium' | 'low' | 'none';
+// === TYPES ===
+export type {
+  RiskLevel,
+  CrisisLevel,
+  DetectionLayer,
+  CrisisAction,
+  CrisisRegion,
+  CrisisCategory,
+  LanguageMode,
+  Helpline,
+  CrisisResource,
+  RegionHelpline,
+  RegionHelplines,
+  RegionalCrisisResources,
+  HardKeywordResult,
+  SoftKeywordResult,
+  CrisisDetectionResult,
+  CrisisCheckResult,
+  EmergencyResponse,
+  CrisisDetectionConfig,
+  CrisisIncident,
+  CrisisCheckRequest,
+  CrisisCheckResponse,
+} from './types';
 
-export interface CrisisResource {
-  name: string;
-  phone: string;
-  region: 'PL' | 'US' | 'UK' | 'global';
-}
+// === FROM KEYWORDS.TS ===
+export {
+  HARD_CRISIS_KEYWORDS,
+  SOFT_CRISIS_KEYWORDS,
+  CRISIS_KEYWORDS,
+  HELPLINES,
+  detectCrisisKeywords,
+} from './keywords';
 
-export const CRISIS_RESOURCES: CrisisResource[] = [
-  { name: 'Telefon Zaufania', phone: '116 123', region: 'PL' },
-  { name: 'Centrum Wsparcia', phone: '800 70 2222', region: 'PL' },
-  { name: 'Emergency', phone: '112', region: 'PL' },
-  { name: 'Suicide & Crisis Lifeline', phone: '988', region: 'US' },
-  { name: 'Samaritans', phone: '116 123', region: 'UK' },
-];
+// === FROM DETECTOR.TS (PASSIVE) ===
+export {
+  SafetyDetector,
+  safetyDetector,
+  containsCrisisContent,
+  shouldBlockSubmission,
+} from './detector';
 
-export function detectCrisis(input: string): RiskLevel {
-  // Layer 1: Hard keywords
-  const hardKeywords = ['samobójstwo', 'suicide', 'chcę umrzeć', 'want to die', 'zabić się', 'kill myself'];
-  if (hardKeywords.some((k) => input.toLowerCase().includes(k))) return 'critical';
-  return 'none';
-}
+// === FROM CRISIS-DETECTION.TS (PASSIVE) ===
+export {
+  CrisisDetectionSystem,
+  crisisDetection,
+  getCrisisResourcesByLocale,
+  CRISIS_RESOURCES,
+} from './crisis-detection';
 
-export function getResources(region?: string): CrisisResource[] {
-  if (region) return CRISIS_RESOURCES.filter((r) => r.region === region);
-  return CRISIS_RESOURCES;
-}
+// === FROM EMERGENCY.TS (PASSIVE) ===
+export {
+  detectCrisis,
+  getEmergencyResources,
+  createEmergencyResponse,
+} from './emergency';
+
+// === FROM HELPLINES.TS ===
+export {
+  getRegionalHelplines,
+  getPrimaryHelpline,
+  detectRegion,
+  IASP_LINK,
+  HELPLINES_DB,
+} from './helplines';

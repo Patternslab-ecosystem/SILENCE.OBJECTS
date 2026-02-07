@@ -2,152 +2,93 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-export interface MediaRecorderState {
-  isRecording: boolean;
-  isPaused: boolean;
-  duration: number;
-  error: string | null;
-  hasPermission: boolean | null;
-}
-
-export interface UseMediaRecorderReturn extends MediaRecorderState {
-  startRecording: () => Promise<void>;
-  stopRecording: () => Promise<Blob>;
-  pauseRecording: () => void;
-  resumeRecording: () => void;
-  cancelRecording: () => void;
-  requestPermission: () => Promise<boolean>;
-}
-
 interface UseMediaRecorderOptions {
+  onRecordingComplete: (blob: Blob) => void;
   maxDuration?: number; // seconds
   onMaxDurationReached?: () => void;
   mimeType?: string;
 }
 
-const SUPPORTED_MIME_TYPES = [
-  'audio/webm;codecs=opus',
-  'audio/webm',
-  'audio/mp4',
-  'audio/ogg;codecs=opus',
-  'audio/wav',
-];
-
-function getSupportedMimeType(): string {
-  for (const mimeType of SUPPORTED_MIME_TYPES) {
-    if (MediaRecorder.isTypeSupported(mimeType)) {
-      return mimeType;
-    }
-  }
-  return 'audio/webm'; // fallback
+export interface UseMediaRecorderReturn {
+  isRecording: boolean;
+  isPaused: boolean;
+  duration: number;
+  startRecording: () => Promise<void>;
+  stopRecording: () => void;
+  pauseRecording: () => void;
+  resumeRecording: () => void;
+  error: Error | null;
 }
 
-export function useMediaRecorder(options: UseMediaRecorderOptions = {}): UseMediaRecorderReturn {
-  const {
-    maxDuration = 180, // 3 minutes default
-    onMaxDurationReached,
-    mimeType: preferredMimeType,
-  } = options;
-
-  const [state, setState] = useState<MediaRecorderState>({
-    isRecording: false,
-    isPaused: false,
-    duration: 0,
-    error: null,
-    hasPermission: null,
-  });
+export function useMediaRecorder({
+  onRecordingComplete,
+  maxDuration = 120,
+  onMaxDurationReached,
+  mimeType = 'audio/webm',
+}: UseMediaRecorderOptions): UseMediaRecorderReturn {
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [error, setError] = useState<Error | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const audioUrlRef = useRef<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number>(0);
-  const pausedDurationRef = useRef<number>(0);
-
-  // Cleanup function
-  const cleanup = useCallback(() => {
-    // Stop timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    // Revoke object URLs
-    if (audioUrlRef.current) {
-      URL.revokeObjectURL(audioUrlRef.current);
-      audioUrlRef.current = null;
-    }
-
-    // Stop all tracks
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => {
-        track.stop();
-        track.enabled = false;
-      });
-      streamRef.current = null;
-    }
-
-    // Clear chunks
-    chunksRef.current = [];
-    pausedDurationRef.current = 0;
-  }, []);
+  const maxDurationReachedRef = useRef(false);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      cleanup();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
     };
-  }, [cleanup]);
+  }, []);
 
-  // Request microphone permission
-  const requestPermission = useCallback(async (): Promise<boolean> => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 44100,
-        },
-      });
-      
-      // Stop immediately - just checking permission
-      stream.getTracks().forEach((track) => track.stop());
-      
-      setState((prev) => ({ ...prev, hasPermission: true, error: null }));
-      return true;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Microphone access denied';
-      setState((prev) => ({ ...prev, hasPermission: false, error: message }));
-      return false;
+  const stopRecordingInternal = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsPaused(false);
+
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
   }, []);
 
-  // Start recording
-  const startRecording = useCallback(async (): Promise<void> => {
+  const startRecording = useCallback(async () => {
     try {
-      cleanup();
+      setError(null);
+      chunksRef.current = [];
+      maxDurationReachedRef.current = false;
 
+      // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true,
           sampleRate: 44100,
         },
       });
-
       streamRef.current = stream;
 
-      const mimeType = preferredMimeType || getSupportedMimeType();
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType,
-        audioBitsPerSecond: 128000,
-      });
+      // Determine supported mime type
+      const supportedMimeType = MediaRecorder.isTypeSupported(mimeType)
+        ? mimeType
+        : MediaRecorder.isTypeSupported('audio/mp4')
+        ? 'audio/mp4'
+        : 'audio/webm';
 
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: supportedMimeType,
+      });
       mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -155,140 +96,86 @@ export function useMediaRecorder(options: UseMediaRecorderOptions = {}): UseMedi
         }
       };
 
-      mediaRecorder.onerror = (event) => {
-        const error = event as unknown as { error?: { message?: string } };
-        setState((prev) => ({
-          ...prev,
-          error: error.error?.message || 'Recording error',
-          isRecording: false,
-        }));
-        cleanup();
-      };
-
-      mediaRecorder.start(1000); // Collect data every second
-      startTimeRef.current = Date.now();
-
-      // Duration timer with max duration check
-      timerRef.current = setInterval(() => {
-        if (!state.isPaused) {
-          const elapsed = Math.floor(
-            (Date.now() - startTimeRef.current) / 1000 + pausedDurationRef.current
-          );
-          
-          setState((prev) => ({ ...prev, duration: elapsed }));
-
-          if (elapsed >= maxDuration) {
-            onMaxDurationReached?.();
-          }
-        }
-      }, 1000);
-
-      setState((prev) => ({
-        ...prev,
-        isRecording: true,
-        isPaused: false,
-        duration: 0,
-        error: null,
-        hasPermission: true,
-      }));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to start recording';
-      setState((prev) => ({ ...prev, error: message, hasPermission: false }));
-      cleanup();
-      throw err;
-    }
-  }, [cleanup, maxDuration, onMaxDurationReached, preferredMimeType, state.isPaused]);
-
-  // Stop recording and return blob
-  const stopRecording = useCallback((): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const mediaRecorder = mediaRecorderRef.current;
-
-      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-        reject(new Error('No active recording'));
-        return;
-      }
-
       mediaRecorder.onstop = () => {
-        const mimeType = mediaRecorder.mimeType || 'audio/webm';
-        const blob = new Blob(chunksRef.current, { type: mimeType });
+        const blob = new Blob(chunksRef.current, { type: supportedMimeType });
+        onRecordingComplete(blob);
 
-        // Store URL for potential playback
-        audioUrlRef.current = URL.createObjectURL(blob);
-
-        // Full cleanup except the blob URL
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-
+        // Cleanup
         if (streamRef.current) {
-          streamRef.current.getTracks().forEach((track) => {
-            track.stop();
-            track.enabled = false;
-          });
+          streamRef.current.getTracks().forEach((track) => track.stop());
           streamRef.current = null;
         }
 
-        chunksRef.current = [];
-        pausedDurationRef.current = 0;
-        mediaRecorderRef.current = null;
-
-        setState((prev) => ({
-          ...prev,
-          isRecording: false,
-          isPaused: false,
-        }));
-
-        resolve(blob);
+        // Call max duration callback if needed
+        if (maxDurationReachedRef.current) {
+          onMaxDurationReached?.();
+        }
       };
 
-      mediaRecorder.stop();
-    });
-  }, []);
+      // Start recording
+      mediaRecorder.start(1000); // Collect data every second
+      setIsRecording(true);
+      setIsPaused(false);
+      setDuration(0);
 
-  // Pause recording
+      // Start timer with max duration check
+      let currentDuration = 0;
+      timerRef.current = setInterval(() => {
+        currentDuration += 1;
+        setDuration(currentDuration);
+
+        // Check max duration inside timer callback
+        if (currentDuration >= maxDuration) {
+          maxDurationReachedRef.current = true;
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+            setIsPaused(false);
+          }
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        }
+      }, 1000);
+    } catch (err) {
+      const errorObj = err instanceof Error ? err : new Error('Failed to start recording');
+      setError(errorObj);
+      console.error('Recording error:', errorObj);
+    }
+  }, [mimeType, onRecordingComplete, maxDuration, onMaxDurationReached]);
+
   const pauseRecording = useCallback(() => {
-    const mediaRecorder = mediaRecorderRef.current;
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.pause();
-      pausedDurationRef.current += (Date.now() - startTimeRef.current) / 1000;
-      setState((prev) => ({ ...prev, isPaused: true }));
-    }
-  }, []);
+    if (mediaRecorderRef.current && isRecording && !isPaused) {
+      mediaRecorderRef.current.pause();
+      setIsPaused(true);
 
-  // Resume recording
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  }, [isRecording, isPaused]);
+
   const resumeRecording = useCallback(() => {
-    const mediaRecorder = mediaRecorderRef.current;
-    if (mediaRecorder && mediaRecorder.state === 'paused') {
-      mediaRecorder.resume();
-      startTimeRef.current = Date.now();
-      setState((prev) => ({ ...prev, isPaused: false }));
-    }
-  }, []);
+    if (mediaRecorderRef.current && isRecording && isPaused) {
+      mediaRecorderRef.current.resume();
+      setIsPaused(false);
 
-  // Cancel recording without saving
-  const cancelRecording = useCallback(() => {
-    const mediaRecorder = mediaRecorderRef.current;
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
+      timerRef.current = setInterval(() => {
+        setDuration((prev) => prev + 1);
+      }, 1000);
     }
-    cleanup();
-    setState((prev) => ({
-      ...prev,
-      isRecording: false,
-      isPaused: false,
-      duration: 0,
-    }));
-  }, [cleanup]);
+  }, [isRecording, isPaused]);
 
   return {
-    ...state,
+    isRecording,
+    isPaused,
+    duration,
     startRecording,
-    stopRecording,
+    stopRecording: stopRecordingInternal,
     pauseRecording,
     resumeRecording,
-    cancelRecording,
-    requestPermission,
+    error,
   };
 }

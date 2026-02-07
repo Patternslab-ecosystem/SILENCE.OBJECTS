@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 
 interface AudioVisualizerProps {
   stream: MediaStream | null;
@@ -26,12 +26,20 @@ export function AudioVisualizer({
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
 
-  const [levels, setLevels] = useState<number[]>(new Array(barCount).fill(0));
+  const emptyLevels = useMemo(() => new Array(barCount).fill(0) as number[], [barCount]);
+  const [levels, setLevels] = useState<number[]>(emptyLevels);
+
+  // Reset levels when stream/recording changes (prev-state pattern)
+  const [prevResetKey, setPrevResetKey] = useState({ stream, isRecording });
+  if (prevResetKey.stream !== stream || prevResetKey.isRecording !== isRecording) {
+    setPrevResetKey({ stream, isRecording });
+    if (!stream || !isRecording) {
+      setLevels(emptyLevels);
+    }
+  }
 
   useEffect(() => {
     if (!stream || !isRecording) {
-      // Reset levels when not recording
-      setLevels(new Array(barCount).fill(0));
       return;
     }
 
@@ -57,7 +65,7 @@ export function AudioVisualizer({
       // Sample frequencies for visualization
       const step = Math.floor(dataArrayRef.current.length / barCount);
       const newLevels = [];
-      
+
       for (let i = 0; i < barCount; i++) {
         const index = i * step;
         const value = dataArrayRef.current[index] / 255;
@@ -77,7 +85,7 @@ export function AudioVisualizer({
       source.disconnect();
       audioContext.close();
     };
-  }, [stream, isRecording, isPaused, barCount]);
+  }, [stream, isRecording, isPaused, barCount, emptyLevels]);
 
   // Draw on canvas for waveform/circle variants
   useEffect(() => {

@@ -1,3 +1,9 @@
+// ===========================================
+// @silence/contracts — Audio & Voice Types
+// ===========================================
+// Single Source of Truth for all audio/voice
+// recording, transcription, and upload types.
+
 // ============================================
 // VOICE RECORDING TYPES
 // ============================================
@@ -64,7 +70,7 @@ export interface CreateObjectRequest {
   input_audio_url?: string;
 }
 
-export interface CreateObjectResponse extends AnalysisObject {}
+export type CreateObjectResponse = AnalysisObject;
 
 export interface ListObjectsQuery {
   limit?: number;
@@ -103,19 +109,6 @@ export interface ApiError {
   error: string;
   code: ErrorCode;
   details?: Record<string, unknown>;
-}
-
-export interface EmergencyResponse extends ApiError {
-  code: 'EMERGENCY_DETECTED';
-  resources: CrisisResource[];
-}
-
-export interface CrisisResource {
-  name: string;
-  phone: string;
-  url?: string;
-  available: string;
-  region: 'PL' | 'US' | 'UK' | 'global';
 }
 
 // ============================================
