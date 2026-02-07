@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const KPI = [
   { label: "ARR", value: "104,000 PLN", trend: "+23% QoQ" },
   { label: "MRR", value: "8,667 PLN", trend: "+18% MoM" },
@@ -18,20 +20,33 @@ const MRR_TREND = [
   { month: "Feb", value: 8667 },
 ] as const;
 
+const PIPELINE = [
+  { metric: "ARR", current: "104k PLN", target: "150k PLN" },
+  { metric: "Paying Users", current: "89", target: "150" },
+  { metric: "Free Users", current: "608", target: "1,000" },
+  { metric: "Churn", current: "2.1%", target: "<3%" },
+  { metric: "LTV/CAC", current: "4.2x", target: ">3x" },
+  { metric: "B2B Clients", current: "2", target: "5" },
+] as const;
+
 export default function InvestorDashboard() {
   const max = Math.max(...MRR_TREND.map((m) => m.value));
 
   return (
-    <main className="min-h-screen bg-zinc-950 p-4 md:p-8">
+    <main className="min-h-screen bg-zinc-950 p-4 md:p-8 max-w-7xl mx-auto">
       <header className="mb-8">
-        <a href="/" className="text-zinc-500 text-sm hover:text-zinc-300 mb-2 inline-block">&larr; Back to Portal</a>
-        <h1 className="text-2xl font-bold text-zinc-100">Investor Dashboard</h1>
-        <p className="text-zinc-400 mt-1">PatternLabs — SILENCE.OBJECTS B2B SaaS</p>
+        <Link href="/" className="text-zinc-500 text-sm hover:text-zinc-300 mb-2 inline-block">&larr; Back to Portal</Link>
+        <div className="flex items-center gap-3 mb-1">
+          <h1 className="text-2xl font-bold text-zinc-100">Investor Dashboard</h1>
+          <span className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">LIVE</span>
+        </div>
+        <p className="text-zinc-500 text-sm">SILENCE.OBJECTS — Structural Behavioral Pattern Analysis Framework</p>
       </header>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
+      {/* KPI Grid */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {KPI.map((k) => (
-          <div key={k.label} className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 md:p-6">
+          <div key={k.label} className="rounded-xl border border-zinc-800/60 bg-zinc-900/50 p-4 md:p-5">
             <p className="text-xs text-zinc-500 uppercase tracking-wide">{k.label}</p>
             <p className="text-lg md:text-2xl font-bold text-zinc-100 mt-1">{k.value}</p>
             {"trend" in k && k.trend && <p className="text-xs text-emerald-400 mt-1">{k.trend}</p>}
@@ -39,15 +54,16 @@ export default function InvestorDashboard() {
         ))}
       </section>
 
-      <section className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 md:p-6 mb-8">
-        <h2 className="text-lg font-semibold text-zinc-100 mb-4">MRR Trend (6M)</h2>
-        <div className="flex items-end gap-2 md:gap-4 h-48">
+      {/* MRR Chart */}
+      <section className="rounded-xl border border-zinc-800/60 bg-zinc-900/50 p-5 mb-8">
+        <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide mb-6">MRR Trend (6M)</h2>
+        <div className="flex items-end gap-3 md:gap-6 h-48">
           {MRR_TREND.map((m) => {
             const pct = (m.value / max) * 100;
             return (
               <div key={m.month} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-xs text-zinc-400">{(m.value / 1000).toFixed(1)}k</span>
-                <div className="w-full bg-emerald-500 rounded-t-md transition-all" style={{ height: pct + "%" }} />
+                <span className="text-xs text-zinc-400 font-mono">{(m.value / 1000).toFixed(1)}k</span>
+                <div className="w-full rounded-t transition-all bg-emerald-500/80" style={{ height: pct + "%" }} />
                 <span className="text-xs text-zinc-500">{m.month}</span>
               </div>
             );
@@ -55,27 +71,55 @@ export default function InvestorDashboard() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-zinc-100 mb-4">Key Metrics</h2>
+      {/* Targets Table */}
+      <section className="rounded-xl border border-zinc-800/60 bg-zinc-900/50 p-5 mb-8">
+        <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide mb-4">Q2 2026 Targets</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-800">
                 <th className="text-left text-xs text-zinc-500 uppercase py-3 px-4">Metric</th>
                 <th className="text-left text-xs text-zinc-500 uppercase py-3 px-4">Current</th>
-                <th className="text-left text-xs text-zinc-500 uppercase py-3 px-4">Target Q2</th>
+                <th className="text-left text-xs text-zinc-500 uppercase py-3 px-4">Target</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-zinc-800/50"><td className="py-3 px-4 text-zinc-300">ARR</td><td className="py-3 px-4 text-zinc-100">104k PLN</td><td className="py-3 px-4 text-zinc-500">150k PLN</td></tr>
-              <tr className="border-b border-zinc-800/50"><td className="py-3 px-4 text-zinc-300">Paying Users</td><td className="py-3 px-4 text-zinc-100">89</td><td className="py-3 px-4 text-zinc-500">150</td></tr>
-              <tr className="border-b border-zinc-800/50"><td className="py-3 px-4 text-zinc-300">Free Users</td><td className="py-3 px-4 text-zinc-100">608</td><td className="py-3 px-4 text-zinc-500">1,000</td></tr>
-              <tr className="border-b border-zinc-800/50"><td className="py-3 px-4 text-zinc-300">Churn</td><td className="py-3 px-4 text-emerald-400">2.1%</td><td className="py-3 px-4 text-zinc-500">&lt;3%</td></tr>
-              <tr><td className="py-3 px-4 text-zinc-300">LTV/CAC</td><td className="py-3 px-4 text-zinc-100">4.2x</td><td className="py-3 px-4 text-zinc-500">&gt;3x</td></tr>
+              {PIPELINE.map((row) => (
+                <tr key={row.metric} className="border-b border-zinc-800/30">
+                  <td className="py-3 px-4 text-zinc-300">{row.metric}</td>
+                  <td className="py-3 px-4 text-zinc-100 font-mono">{row.current}</td>
+                  <td className="py-3 px-4 text-zinc-500 font-mono">{row.target}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       </section>
+
+      {/* Market */}
+      <section className="rounded-xl border border-zinc-800/60 bg-zinc-900/50 p-5">
+        <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide mb-4">Market Position</h2>
+        <div className="grid md:grid-cols-2 gap-6 text-sm text-zinc-400">
+          <div>
+            <p className="text-zinc-500 text-xs uppercase mb-2">TAM</p>
+            <p className="text-zinc-100 text-lg font-bold">$7.83B by 2030</p>
+            <p className="mt-1">AI mental health market, CAGR 33.86%</p>
+          </div>
+          <div>
+            <p className="text-zinc-500 text-xs uppercase mb-2">Unfair Advantage</p>
+            <ul className="space-y-1 text-zinc-400">
+              <li>Framework (not chatbot) — modular, composable</li>
+              <li>Open Core model — community + enterprise</li>
+              <li>Archetype + Pattern + Prediction combo</li>
+              <li>Dual B2C + B2B revenue streams</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer className="mt-12 pt-6 border-t border-zinc-800/40 text-center">
+        <p className="text-xs text-zinc-600">SILENCE.OBJECTS v5.0 — Confidential Investor Materials</p>
+      </footer>
     </main>
   );
 }

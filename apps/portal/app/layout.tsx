@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PatternLabs Portal",
-  description: "SILENCE.OBJECTS — Dashboard & Investor Portal",
+  title: "SILENCE.OBJECTS | Portal",
+  description: "SILENCE.OBJECTS — Management Dashboard & Investor Portal",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

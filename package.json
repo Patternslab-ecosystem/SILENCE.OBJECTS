@@ -1,17 +1,18 @@
 {
-  "name": "silence-objects-portal",
-  "version": "0.1.0",
+  "name": "silence-objects",
+  "version": "5.0.0",
+  "private": true,
   "packageManager": "pnpm@9.15.4",
-"private": true,
   "scripts": {
-    "dev": "pnpm --filter=portal dev",
-    "build": "pnpm --filter=portal build",
-    "lint": "pnpm --filter=portal lint",
-    "clean": "rm -rf apps/portal/.next node_modules apps/portal/node_modules packages/ui/node_modules"
+    "dev": "pnpm --filter portal dev",
+    "build": "pnpm --filter portal build",
+    "lint": "pnpm --filter portal lint",
+    "build:all": "pnpm -r build"
   },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "typescript": "^5"
+  "pnpm": {
+    "overrides": {
+      "react": "18.3.1",
+      "react-dom": "18.3.1"
+    }
   }
 }
