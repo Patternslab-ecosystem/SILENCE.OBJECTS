@@ -2,8 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SILENCE.OBJECTS | Portal",
-  description: "SILENCE.OBJECTS — Management Dashboard & Investor Portal",
+  title: "SILENCE.OBJECTS — Framework Control Tower",
+  description: "24-widget command center for SILENCE.OBJECTS behavioral pattern analysis framework. 15 modules, 12 archetypes, Agent Army v3.0.",
+  openGraph: {
+    title: "SILENCE.OBJECTS — Control Tower",
+    description: "Modular framework for structural behavioral pattern analysis. Open Core, API-first.",
+    url: "https://patternslab.app",
+    siteName: "SILENCE.OBJECTS",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

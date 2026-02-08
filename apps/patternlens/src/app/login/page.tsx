@@ -116,6 +116,18 @@ export default function LoginPage() {
           }}>
             Structural Pattern Analysis
           </p>
+          <p style={{
+            fontFamily: "'Outfit', system-ui, sans-serif",
+            fontWeight: 300,
+            fontSize: 13,
+            color: '#888893',
+            marginTop: 6,
+            maxWidth: 300,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}>
+            Analyze behavioral patterns as structural systems · Free core analysis
+          </p>
         </div>
 
         {/* Card */}
@@ -423,6 +435,16 @@ export default function LoginPage() {
           )}
         </div>
 
+        {/* Features box */}
+        <div style={{ marginTop: 16, padding: 12, background: '#1a1a1e', borderRadius: 8, border: '1px solid #222228' }}>
+          <p style={{ fontSize: 11, color: '#888893', fontFamily: "'JetBrains Mono', monospace", textAlign: 'center' }}>
+            Unlimited local objects · Core pattern detection · 12 archetypes
+          </p>
+          <p style={{ fontSize: 10, color: '#55555e', fontFamily: "'JetBrains Mono', monospace", textAlign: 'center', marginTop: 4 }}>
+            PRO: Cloud sync + advanced analysis + predictions &rarr; 29 PLN/mo
+          </p>
+        </div>
+
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: 28 }}>
           <p style={{ color: '#55555e', fontSize: 11, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
@@ -434,8 +456,21 @@ export default function LoginPage() {
             <a href="/privacy" style={{ color: '#4a8fe2', textDecoration: 'none' }}>Privacy</a>
           </p>
           <p style={{ color: '#333340', fontSize: 10, fontFamily: "'JetBrains Mono', monospace", marginTop: 12 }}>
-            v5.0 · SILENCE.OBJECTS Framework
+            v5.1 · SILENCE.OBJECTS Framework
           </p>
+        </div>
+
+        {/* Ecosystem links */}
+        <div style={{ marginTop: 16, display: 'flex', gap: 16, justifyContent: 'center' }}>
+          <a href="https://patternslab.app" style={{ fontSize: 10, color: '#55555e', fontFamily: "'JetBrains Mono', monospace", textDecoration: 'none' }}>
+            Dashboard
+          </a>
+          <a href="https://patternslab.app/investor/dashboard" style={{ fontSize: 10, color: '#55555e', fontFamily: "'JetBrains Mono', monospace", textDecoration: 'none' }}>
+            Investors
+          </a>
+          <a href="https://github.com/Patternslab-ecosystem/SILENCE.OBJECTS" style={{ fontSize: 10, color: '#55555e', fontFamily: "'JetBrains Mono', monospace", textDecoration: 'none' }}>
+            GitHub
+          </a>
         </div>
       </div>
     </div>

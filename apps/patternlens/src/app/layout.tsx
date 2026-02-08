@@ -8,9 +8,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "SILENCE.OBJECTS | Structural Interpretation System",
-  description: "Pattern recognition for behavioral analysis. A construction tool for self-observation.",
+  title: "PatternLens — Structural Pattern Analysis",
+  description: "Analyze behavioral patterns as structural systems. 12 archetypes, dual-lens analysis, free core detection. Built on SILENCE.OBJECTS framework.",
   manifest: "/manifest.json",
+  openGraph: {
+    title: "PatternLens — Structural Pattern Analysis",
+    description: "Analyze behavioral patterns as structural systems. Free core, 12 archetypes.",
+    url: "https://patternlens.app",
+    siteName: "PatternLens",
+    type: "website",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

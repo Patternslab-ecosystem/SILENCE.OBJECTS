@@ -117,23 +117,23 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen p-4 md:p-6 max-w-[1440px] mx-auto" style={{ background: "#08080a", color: "#e8e8ec" }}>
-      {/* ══════════ HEADER ══════════ */}
-      <header className="mb-6">
-        <div className="flex items-center gap-3 mb-1">
-          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-            <circle cx="35" cy="40" r="8" fill="none" stroke="#21808d" strokeWidth="2" opacity="0.6" />
-            <circle cx="85" cy="40" r="8" fill="none" stroke="#21808d" strokeWidth="2" opacity="0.6" />
-            <circle cx="60" cy="70" r="8" fill="none" stroke="#21808d" strokeWidth="2" opacity="0.6" />
-            <line x1="35" y1="40" x2="60" y2="70" stroke="#21808d" strokeWidth="1.5" opacity="0.4" strokeDasharray="4 2" />
-            <line x1="85" y1="40" x2="60" y2="70" stroke="#21808d" strokeWidth="1.5" opacity="0.4" strokeDasharray="4 2" />
-            <line x1="35" y1="40" x2="85" y2="40" stroke="#21808d" strokeWidth="1.5" opacity="0.4" strokeDasharray="4 2" />
-            <rect x="55" y="65" width="10" height="10" fill="#21808d" opacity="0.8" />
-          </svg>
-          <h1 className="text-xl font-semibold tracking-tight" style={{ fontFamily: "'JetBrains Mono', monospace" }}>SILENCE.OBJECTS</h1>
-          <span className="text-[10px] px-2 py-0.5 rounded font-mono" style={{ background: "rgba(33,128,141,0.15)", color: "#21808d" }}>v5.1</span>
+      {/* ══════════ GLOBAL NAV ══════════ */}
+      <nav className="mb-6 pb-3" style={{ borderBottom: "1px solid #222228" }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-[#21808d] text-lg">&#9673;</span>
+            <h1 className="text-base font-semibold tracking-tight" style={{ fontFamily: "'JetBrains Mono', monospace" }}>SILENCE.OBJECTS</h1>
+            <span className="text-[10px] px-2 py-0.5 rounded font-mono" style={{ background: "rgba(33,128,141,0.15)", color: "#21808d" }}>v5.1</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="https://patternlens.app" className="text-[12px] font-mono text-[#888893] hover:text-[#e8e8ec] transition-colors">PatternLens</a>
+            <span className="text-[12px] font-mono text-[#21808d]" style={{ borderBottom: "2px solid #21808d", paddingBottom: 2 }}>Portal</span>
+            <Link href="/investor/dashboard" className="text-[12px] font-mono text-[#888893] hover:text-[#e8e8ec] transition-colors">Investor</Link>
+            <a href="https://patternlens.app/login" className="text-[11px] font-mono px-3 py-1 rounded-lg border border-[#222228] text-[#888893] hover:border-[#333340] hover:text-[#e8e8ec] transition-colors">Log in</a>
+          </div>
         </div>
-        <p className="text-sm" style={{ color: "#888893", fontFamily: "'Outfit', sans-serif" }}>Control Tower &mdash; 24-Widget Command Center</p>
-      </header>
+        <p className="text-[11px] mt-1" style={{ color: "#55555e", fontFamily: "'Outfit', sans-serif" }}>Control Tower &mdash; 24-Widget Command Center</p>
+      </nav>
 
       {/* ══════════ GLOBAL FILTERS ══════════ */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -261,18 +261,26 @@ export default function DashboardPage() {
               *  Docs: README.md §Apps | Contract: PortalAppStatus */}
             <Widget title="App Status" question="Czy kluczowe aplikacje sa dostepne?">
               <div className="space-y-2">
-                {APP_STATUS.map((app) => (
-                  <div key={app.name} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "rgba(119,124,124,0.06)" }}>
-                    <StatusDot color={app.status === "operational" ? "#3d9970" : app.status === "degraded" ? "#d4a843" : "#cc4444"} pulse={app.status === "operational"} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-mono font-bold text-[#e8e8ec] truncate">{app.name}</p>
-                      <p className="text-[10px] text-[#55555e]">{app.domain}</p>
+                {APP_STATUS.map((app) => {
+                  const liveUrl = app.name === "PatternLens" ? "https://patternlens.app" : app.name === "Portal" ? "https://patternslab.app" : null;
+                  return (
+                    <div key={app.name} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "rgba(119,124,124,0.06)" }}>
+                      <StatusDot color={app.status === "operational" ? "#3d9970" : app.status === "degraded" ? "#d4a843" : "#cc4444"} pulse={app.status === "operational"} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-mono font-bold text-[#e8e8ec] truncate">{app.name}</p>
+                        <p className="text-[10px] text-[#55555e]">{app.domain}</p>
+                      </div>
+                      <div className="text-right flex items-center gap-2">
+                        <p className="font-mono text-xs font-bold text-[#e8e8ec]">{app.dau} <span className="text-[#55555e] font-normal">DAU</span></p>
+                        {liveUrl ? (
+                          <a href={liveUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono text-[#21808d] hover:text-[#e8e8ec] transition-colors">&rarr;</a>
+                        ) : (
+                          <span className="text-[9px] text-[#55555e]">Q2</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-mono text-xs font-bold text-[#e8e8ec]">{app.dau} <span className="text-[#55555e] font-normal">DAU</span></p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Widget>
 
@@ -788,11 +796,30 @@ export default function DashboardPage() {
       </section>
 
       {/* ══════════ FOOTER ══════════ */}
-      <footer className="mt-12 pt-6 text-center" style={{ borderTop: "1px solid #222228" }}>
+      <footer className="mt-12 pt-6 pb-20 text-center" style={{ borderTop: "1px solid #222228" }}>
         <p className="text-[10px] font-mono text-[#55555e]">
           SILENCE.OBJECTS v5.1 &middot; 24 Widgets &middot; 15 Modules &middot; Agent Army v3.0 &middot; Open Core Framework
         </p>
       </footer>
+
+      {/* ══════════ STICKY CTA BAR ══════════ */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between" style={{ background: "#111113", borderTop: "1px solid #222228" }}>
+        <span className="text-[12px] text-[#888893] font-mono hidden md:inline">
+          SILENCE.OBJECTS Framework v5.1 &middot; Open Core &middot; 15 modules
+        </span>
+        <div className="flex gap-3 ml-auto">
+          <a href="https://patternlens.app"
+            className="px-4 py-2 rounded-lg text-sm font-mono font-semibold transition-all"
+            style={{ background: "#21808d", color: "#fff" }}>
+            Try Pattern Analysis &rarr;
+          </a>
+          <a href="https://github.com/Patternslab-ecosystem/SILENCE.OBJECTS"
+            target="_blank" rel="noopener noreferrer"
+            className="px-4 py-2 rounded-lg text-sm font-mono border border-[#222228] text-[#888893] hover:border-[#333340] hover:text-[#e8e8ec] transition-all">
+            GitHub
+          </a>
+        </div>
+      </div>
     </main>
   );
 }
