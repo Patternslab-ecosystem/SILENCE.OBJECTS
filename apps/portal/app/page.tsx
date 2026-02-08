@@ -84,6 +84,20 @@ export default function DashboardPage() {
         </p>
       </header>
 
+      {/* ══════════ PRE-LAUNCH BANNER ══════════ */}
+      <div
+        className="mb-4 px-4 py-2 rounded-lg text-center"
+        style={{
+          background: "rgba(245,158,11,0.08)",
+          border: "1px solid rgba(245,158,11,0.25)",
+          fontFamily: "monospace",
+          fontSize: "13px",
+          color: "#f59e0b",
+        }}
+      >
+        Pre-launch command center &middot; Metrics = targets &middot; Live data: Phase 1
+      </div>
+
       {/* ══════════ TABS ══════════ */}
       <nav className="flex flex-wrap gap-2 mb-8 pb-4" style={{ borderBottom: "1px solid var(--color-border)" }}>
         {TABS.map((tab) => {
@@ -569,7 +583,7 @@ export default function DashboardPage() {
               className="text-xs uppercase tracking-widest mb-4"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Recent Events
+              Event Schema Preview
             </p>
 
             <div className="space-y-3 max-h-64 overflow-y-auto">

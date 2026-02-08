@@ -213,6 +213,11 @@ export default function LoginPage() {
         </div>
 
         <p className="footer-text text-tertiary">⚠️ Narzędzie analizy strukturalnej, nie terapia.</p>
+        <p className="footer-text text-tertiary" style={{ marginTop: '8px', fontSize: '12px' }}>
+          <a href="/terms" style={{ color: 'var(--color-text-tertiary)', textDecoration: 'underline' }}>Regulamin</a>
+          {' · '}
+          <a href="/privacy" style={{ color: 'var(--color-text-tertiary)', textDecoration: 'underline' }}>Polityka prywatności</a>
+        </p>
       </div>
 
       <style jsx>{`

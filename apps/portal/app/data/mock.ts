@@ -17,7 +17,7 @@ export const SYSTEM_FLOW = {
   successful_flows_pct: 99.2,
   active_modules: 9,
   total_modules: 15,
-  last_deploy: "12 min ago",
+  last_deploy: "configured",
 };
 
 export const MONETIZATION = {
@@ -102,10 +102,10 @@ export const PHASE_PROGRESS = [
 ];
 
 export const CI_CD_STATUS = {
-  sentinel_vocabulary: { status: "pass" as const, last_run: "12 min ago" },
-  sentinel_build: { status: "pass" as const, last_run: "12 min ago" },
-  sentinel_contracts: { status: "pass" as const, last_run: "12 min ago" },
-  last_deploy: { env: "production" as const, status: "success" as const, at: "12 min ago" },
+  sentinel_vocabulary: { status: "pass" as const, last_run: "configured" },
+  sentinel_build: { status: "pass" as const, last_run: "configured" },
+  sentinel_contracts: { status: "pass" as const, last_run: "configured" },
+  last_deploy: { env: "production" as const, status: "success" as const, at: "configured" },
 };
 
 export const RECENT_EVENTS = [

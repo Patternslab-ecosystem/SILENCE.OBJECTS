@@ -177,7 +177,7 @@ export default function InvestorDashboard() {
                   color: TEAL,
                 }}
               >
-                LIVE
+                PRE-LAUNCH
               </span>
               <span
                 className="text-xs px-2.5 py-0.5 rounded-full font-medium"
@@ -195,6 +195,16 @@ export default function InvestorDashboard() {
         <p className="text-sm" style={{ color: "rgba(119,124,124,0.7)" }}>
           SILENCE.OBJECTS &mdash; Structural Behavioral Pattern Analysis
           Framework
+        </p>
+        <p
+          className="mt-2"
+          style={{
+            fontSize: "13px",
+            color: "#f59e0b",
+            fontFamily: "monospace",
+          }}
+        >
+          Infrastructure deployed. Metrics show targets for seed round.
         </p>
       </header>
 
@@ -452,6 +462,12 @@ export default function InvestorDashboard() {
         >
           Q2 2026 Targets
         </h2>
+        <p
+          className="text-xs font-mono mb-3"
+          style={{ color: "#f59e0b" }}
+        >
+          Current: Pre-revenue
+        </p>
         <div className="space-y-4">
           {PIPELINE.map((row) => (
             <div key={row.metric}>
