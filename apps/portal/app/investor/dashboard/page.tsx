@@ -173,8 +173,8 @@ export default function InvestorDashboard() {
               <span
                 className="text-xs px-2.5 py-0.5 rounded-full font-mono font-medium"
                 style={{
-                  backgroundColor: "rgba(50,184,198,0.15)",
-                  color: TEAL,
+                  backgroundColor: "rgba(245,158,11,0.15)",
+                  color: "#f59e0b",
                 }}
               >
                 PRE-LAUNCH

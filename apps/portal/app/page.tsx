@@ -291,7 +291,7 @@ export default function DashboardPage() {
 
             <div className="mb-3">
               <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                ARR
+                ARR <span style={{ color: "var(--color-warning)", fontSize: "9px" }}>(target)</span>
               </p>
               <p className="font-mono text-2xl font-bold" style={{ color: "var(--color-primary)" }}>
                 {formatCurrency(MONETIZATION.arr)} PLN
@@ -300,7 +300,7 @@ export default function DashboardPage() {
 
             <div className="mb-3">
               <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                MRR
+                MRR <span style={{ color: "var(--color-warning)", fontSize: "9px" }}>(target)</span>
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="font-mono text-2xl font-bold" style={{ color: "var(--color-text)" }}>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Paying
+                  Paying <span style={{ color: "var(--color-warning)", fontSize: "9px" }}>(target)</span>
                 </p>
                 <p className="font-mono text-lg font-bold" style={{ color: "var(--color-text)" }}>
                   {MONETIZATION.paying_users}
@@ -323,7 +323,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Conversion
+                  Conversion <span style={{ color: "var(--color-warning)", fontSize: "9px" }}>(target)</span>
                 </p>
                 <p className="font-mono text-lg font-bold" style={{ color: "var(--color-text)" }}>
                   {MONETIZATION.conversion_rate}%
