@@ -6,8 +6,10 @@ export default function NewObject() {
   const [text, setText] = useState('')
   const [result, setResult] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(false)
+  const [crisisLock, setCrisisLock] = useState(false)
 
   async function analyze() {
+    if (loading || crisisLock) return // MUTEX: prevent concurrent requests
     setLoading(true)
     try {
       const res = await fetch('/api/analyze', {
@@ -16,6 +18,9 @@ export default function NewObject() {
         body: JSON.stringify({ text })
       })
       const data = await res.json()
+      if (data.crisis) {
+        setCrisisLock(true) // LOCK: no more requests after crisis
+      }
       setResult(data)
     } catch (e) {
       setResult({ error: 'Analysis failed', details: String(e) })
@@ -67,6 +72,7 @@ export default function NewObject() {
         <textarea
           value={text}
           onChange={e => setText(e.target.value)}
+          disabled={crisisLock || loading}
           placeholder="Describe a situation, interaction, or observed pattern..."
           style={{
             width: '100%', minHeight: 240, padding: 20,
@@ -74,6 +80,7 @@ export default function NewObject() {
             borderRadius: 12, color: '#e8e8ec', fontSize: 14,
             fontFamily: "'Outfit', sans-serif", resize: 'vertical',
             lineHeight: 1.6, outline: 'none', transition: 'border-color 200ms',
+            opacity: crisisLock ? 0.4 : 1,
           }}
           onFocus={(e) => { e.target.style.borderColor = '#21808d'; }}
           onBlur={(e) => { e.target.style.borderColor = '#222228'; }}
@@ -88,7 +95,7 @@ export default function NewObject() {
 
         <button
           onClick={analyze}
-          disabled={loading || text.length < 20}
+          disabled={loading || crisisLock || text.length < 20}
           style={{
             padding: '14px 32px',
             background: loading ? 'rgba(33,128,141,0.5)' : (text.length < 20 ? 'rgba(33,128,141,0.3)' : '#21808d'),
@@ -140,6 +147,13 @@ export default function NewObject() {
                     <p style={{ fontSize: 10, color: '#55555e' }}>{String(r.available)}</p>
                   </a>
                 ))}
+              </div>
+            )}
+
+            {/* Crisis lock message */}
+            {crisisLock && (
+              <div style={{ textAlign: 'center', color: '#cc4444', fontSize: 13, marginTop: 16, fontFamily: "'JetBrains Mono', monospace" }}>
+                Analysis paused. Please review the resources above.
               </div>
             )}
           </div>
