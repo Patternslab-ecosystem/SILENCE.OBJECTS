@@ -1,83 +1,27 @@
-# CONTRIBUTING.md — Contributing to SILENCE.OBJECTS
+# SILENCE.OBJECTS CONTRIBUTING GUIDE
 
-## What's Open for Contribution
+Open core: kontrybucje do otwartych modułów i tooling.
 
-| Module | Contributions Welcome |
-|--------|-----------------------|
-| @silence/contracts | ✅ Type definitions, schema proposals |
-| @silence/events | ✅ Event types, handlers |
-| @silence/core | ✅ Pattern detection algorithms |
-| @silence/archetypes | ✅ Archetype definitions, scoring |
-| @silence/symbolic | ✅ Community symbols, catalysts |
-| @silence/language | ✅ Vocabulary rules, locale support |
-| @silence/validator | ✅ Validation rules, CI tools |
-| @silence/ui | ✅ Components, layouts, themes |
-| @silence/safety | ❌ CLOSED — owner review only |
-| @silence/ai | ❌ CLOSED |
-| @silence/predictive | ❌ CLOSED |
-| @silence/voice | ❌ CLOSED |
-| @silence/medical | ❌ CLOSED |
-| @silence/legal | ❌ CLOSED |
+## Dozwolone
 
-## Setup
+packages/contracts, events, core, archetypes, symbolic, language, validator, ui. Apps. Tooling. Docs.
 
-```bash
-git clone https://github.com/Patternslab-ecosystem/SILENCE.OBJECTS.git
-cd SILENCE.OBJECTS
-pnpm install
-pnpm dev
-```
+## Ograniczone (OWNER review)
 
-## Code Contract
+voice, ai, predictive, safety, medical, legal, linkedin-agent.
 
-1. TypeScript strict — zero `any` / `unknown` / implicit any
-2. Explicit types on all props and return values
-3. No `!` (non-null assertion) unless absolutely necessary
-4. Zero new packages without maintainer approval
-5. Imports: relative paths, aliases only from tsconfig paths
-6. Mobile-first, dark mode default
-7. Tailwind only — zero inline styles
-8. Modules implement interfaces from @silence/contracts
-9. Emit typed events from @silence/events
-10. Edge-compatible: @silence/language and @silence/validator must have no Node-only APIs
+## Zasady
 
-## Language Compliance
+- TypeScript strict, zero any.
+- Brak nowych deps bez zgody.
+- Implementuj @silence/contracts, emituj @silence/events.
+- Mobile-first, dark mode, Tailwind-only.
 
-**Your PR will be automatically rejected if it contains forbidden vocabulary.**
+## PR process
 
-Run before committing:
+Przed: pnpm lint, pnpm test, pnpm typecheck, pnpm compliance.
+W PR: opis zmian, update docs. P0 zmiany = senior review + testy.
 
-```bash
-./scripts/check-language.sh
-```
+## CHANGELOG (CONTRIBUTING.md)
 
-See [COMPLIANCE.md](COMPLIANCE.md) for the full forbidden/allowed vocabulary list.
-
-## PR Process
-
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Make changes following the code contract
-4. Run language check: `./scripts/check-language.sh`
-5. Run type check: `pnpm type-check` (when available)
-6. Commit with conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`
-7. Push and create PR against `main`
-8. Wait for CI + maintainer review
-
-## Conventional Commits
-
-```
-feat: add new archetype scoring algorithm
-fix: correct CrisisModal keyboard handling
-docs: update ARCHETYPES.md with Orphan growth edge
-refactor: extract event handler into separate module
-test: add unit tests for crisis keyword detection
-chore: update dependencies
-```
-
-## Architecture Rules
-
-- **Apps are thin shells.** Business logic goes in `packages/*`, not `apps/*`.
-- **Contracts first.** If you're adding a new type, add it to @silence/contracts.
-- **Events for state changes.** If something important happens, emit an event.
-- **Safety wraps everything.** AI/medical/legal calls go through @silence/safety.
+- 2026-02-08 — Zasady kontrybucji pod DIPLO_BIBLE v3.

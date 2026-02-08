@@ -1,236 +1,69 @@
-# MODULES.md — SILENCE.OBJECTS Module Reference
+# SILENCE.OBJECTS MODULES CATALOG v3.0
 
-> 16 modules. 8 open source (MIT). 8 closed (proprietary).
+Jedyne źródło prawdy dla modułów w `packages/*`, zgodne z DIPLO_BIBLE v3.0.
 
-## Module Map
+## Tabela modułów
 
-| Module | Type | Edge-safe | Events | Status |
-|--------|------|-----------|--------|--------|
-| @silence/contracts | Open | ✅ | — | ✅ v1.0 |
-| @silence/events | Open | ✅ | — | ✅ v1.0 |
-| @silence/core | Open | ❌ | PatternCreated, ObjectAnalyzed | 🔧 |
-| @silence/archetypes | Open | ❌ | ArchetypeUpdated | 🔧 |
-| @silence/symbolic | Open | ✅ | — | 📋 |
-| @silence/language | Open | ✅ | — | 🔧 |
-| @silence/validator | Open | ✅ | — | 🔧 |
-| @silence/ui | Open | ✅ | — | ✅ v0.1 |
-| @silence/safety | Closed | ❌ | RiskFlagRaised, CrisisDetected | ✅ v1.0 |
-| @silence/ai | Closed | ❌ | — | 📋 |
-| @silence/predictive | Closed | ❌ | PredictionGenerated | 📋 |
-| @silence/voice | Closed | ❌ | — | 📋 |
-| @silence/medical | Closed | ❌ | — | 📋 |
-| @silence/legal | Closed | ❌ | — | 📋 |
-| @silence/linkedin-agent | Closed | ❌ | AgentRunCompleted | 📋 |
-
----
-
-## OPEN SOURCE MODULES
+| Package | Type | Events (emit) | Pricing |
+|---|---|---|---|
+| @silence/contracts | open | Brak (pure types) | MIT |
+| @silence/events | open | Wszystkie domain events | MIT |
+| @silence/core | open | PatternCreated, ObjectAnalyzed | MIT |
+| @silence/archetypes | open | ArchetypeUpdated | MIT |
+| @silence/symbolic | open | — | MIT |
+| @silence/language | open | — | MIT |
+| @silence/validator | open | ValidationFailed, ComplianceBreach | MIT |
+| @silence/ui | open | — | MIT |
+| @silence/voice | closed | ObjectTranscribed | per-usage |
+| @silence/ai | closed | AgentRunCompleted, RiskFlagRaised | per-usage |
+| @silence/predictive | closed | PredictionGenerated | per-prediction |
+| @silence/safety | closed | CrisisDetected, RiskFlagRaised | platform fee |
+| @silence/medical | closed | ComplianceLog | enterprise |
+| @silence/legal | closed | ComplianceLog | enterprise |
+| @silence/linkedin-agent | closed | AgentRunCompleted | per-tenant |
 
 ### @silence/contracts
-
-**Purpose:** Single source of truth for all TypeScript types.
-
-**Exports:**
-- `SilenceObject`, `Pattern`, `AnalysisPhase`
-- `DualLensResult`, `LensInterpretation`
-- `ArchetypeName`, `ArchetypeScore`, `ArchetypeBlend`
-- `TenantContext`, `ActorContext`
-- `AgentTask`, `AgentResult`
-- `CoreModule`, `AIProvider`, `VoiceProvider`, `AgentModule` (interfaces)
-
-**Rule:** Change to contract = breaking change = semver major.
-
----
+Centralne źródło typów: User, Object, Pattern, Archetype, Tension, AgentTask, AgentResult, TenantContext, ActorContext. Zmiana kontraktu = breaking change = semver major.
 
 ### @silence/events
-
-**Purpose:** Typed event bus for all inter-module communication.
-
-**Exports:**
-- `SilenceEventType` (union of all event names)
-- `SilenceEvent<T>` (event envelope)
-- `eventBus` (singleton)
-- `SilenceEventBus` (class for custom instances)
-
-**Event Types:** object.created, object.analyzed, pattern.detected, archetype.updated, prediction.generated, crisis.detected, risk.flagged, agent.run.completed, agent.run.failed, tenant.provisioned, subscription.changed, content.published, content.blocked, anomaly.detected
-
-**Usage:**
-```typescript
-import { eventBus } from '@silence/events';
-
-// Subscribe
-const unsub = eventBus.on('pattern.detected', (event) => {
-  console.log(event.payload);
-});
-
-// Emit
-await eventBus.emit('pattern.detected', { patternId: '...' }, '@silence/core');
-```
-
-**Migration path:** In-process EventEmitter (v1) → Upstash Redis Streams (v2)
-
----
+Typed event bus. EventEmitter in-process → migration path Upstash Redis Streams. EventEnvelope<P> = { id, type, occurredAt, payload, tenantId?, actorId? }. emit(), subscribe().
 
 ### @silence/core
-
-**Purpose:** Pattern detection engine. 4-phase protocol. Dual-lens system.
-
-**Implements:** `CoreModule` from @silence/contracts
-
-**Exports:**
-- `analyzeObject(object, actor)` → `DualLensResult`
-- `extractPatterns(object)` → `Pattern[]`
-- `dualLens(object)` → `{ lensA, lensB }`
-
-**Protocol:**
-```
-Phase 1: CONTEXT  → What is the object? What surrounds it?
-Phase 2: TENSION  → What conflict or pressure exists?
-Phase 3: MEANING  → What structural significance?
-Phase 4: FUNCTION → What role does this pattern serve?
-```
-
-**Emits:** `object.analyzed`, `pattern.detected`
-
-**Pricing:** FREE — unlimited, never gated.
-
----
+Silnik pattern detection. 4-phase: Context → Tension → Meaning → Function. Dual-lens. API: analyzeObject(), extractPatterns(), dualLens().
 
 ### @silence/archetypes
-
-**Purpose:** 12 Jungian archetypes mapped to behavioral pattern classification.
-
-**Exports:**
-- `mapArchetype(patterns)` → `ArchetypeScore`
-- `scoreBlend(history)` → `ArchetypeBlend`
-- `trackShift(blendHistory)` → shift analysis
-
-**Archetypes:** Creator, Ruler, Caregiver, Explorer, Sage, Hero, Rebel, Magician, Lover, Jester, Innocent, Orphan
-
-**Framing rule:** "Your patterns currently align with..." NEVER "You are..."
-
-**Emits:** `archetype.updated`
-
-**Pricing:** Basic = FREE. Detailed reports = PRO.
-
----
+12 archetypów Jungowskich. API: mapArchetype(), scoreBlend(), trackShift(). Framing: "Your patterns currently align with..." NIGDY "You are..."
 
 ### @silence/symbolic
-
-**Purpose:** Pattern Catalysts — symbolic prompts for analytical framing.
-
-**Framing:** "Pattern catalyst" NEVER "tarot/oracle/divination"
-
-**Pricing:** Basic = FREE. Advanced catalysts = PRO.
-
----
+Pattern Catalysts. Symboliczne prompty zero mystycyzm. API: getCatalystDeck(), drawCatalyst().
 
 ### @silence/language
-
-**Purpose:** Forbidden vocabulary enforcement. Output middleware.
-
-**Exports:**
-- `sanitize(text)` → cleaned text
-- `validate(text)` → validation result
-- `getForbiddenTerms()` → string[]
-
-**Requirement:** MUST work in Edge Runtime (no Node-only APIs).
-
----
+Guardrails językowe, edge-compatible. API: sanitize(), validate(), getForbiddenTerms().
 
 ### @silence/validator
-
-**Purpose:** Contract validation. CI/CD language audit. Safety gates.
-
-**Requirement:** MUST work in Edge Runtime. Build fails if forbidden vocabulary detected.
-
----
+Contract validator + compliance audit CI/CD. API: validateContracts(), scanForbiddenVocabulary().
 
 ### @silence/ui
+Design system. Tailwind 4, shadcn-style, dark mode default, mobile-first. Layouts: PageLayout, DashboardLayout, InvestorLayout, ConsumerLayout, B2BLayout. Widgets: MetricCard, KpiGrid, Card, Section, Badge, DataTable, ArchetypeCard, PatternTimeline, CrisisModal, EventFeed.
 
-**Purpose:** Shared design system across all apps.
+### @silence/voice (closed)
+Voice input → Whisper transkrypcja → tekst. ZERO detekcji emocji. API: transcribe().
 
-**Components:** MetricCard, KpiGrid, Card, Section, Badge, DataTable, ArchetypeCard, PatternTimeline, CrisisModal, EventFeed
+### @silence/ai (closed)
+Claude Sonnet 4 (primary) + GPT-4o (fallback). Dual-lens structural analysis. API: runAnalysis(), runBatch(). Każde wywołanie przez @silence/safety.
 
-**Layouts:** PageLayout, DashboardLayout, InvestorLayout, ConsumerLayout, B2BLayout
+### @silence/predictive (closed)
+Cykl detection, trajectory modeling, early warning, pattern collision. API: predictTrajectory(), detectCycles().
 
-**Style:** Tailwind 4, shadcn-style, dark mode default, mobile-first.
+### @silence/safety (closed)
+3-layer crisis detection, middleware P0. API: checkText(), wrapProvider(). Musi mieć testy przed każdym deployem.
 
----
+### @silence/medical / @silence/legal (closed)
+Disclaimery, polityki, compliance health data. Enterprise only.
 
-## CLOSED MODULES
+### @silence/linkedin-agent (closed)
+LinkedIn AI agent. Content + auto-reply. API: runLinkedInCampaign().
 
-### @silence/safety
+## CHANGELOG (MODULES.md)
 
-**Purpose:** Crisis detection 3-layer system. P0 compliance.
-
-**Implements:** Middleware layer — all AI/medical/legal calls pass through safety.
-
-**3 Layers:**
-1. Hard keywords (PL/EN) → immediate block + CrisisModal
-2. Soft keywords → Claude risk assessment
-3. Risk score (high/medium/low) → block/banner/proceed
-
-**Emits:** `risk.flagged`, `crisis.detected`
-
-**Pricing:** Included in framework. Not separately licensed.
-
----
-
-### @silence/ai
-
-**Purpose:** Claude API integration. Dual-lens structural analysis.
-
-**Implements:** `AIProvider` from @silence/contracts
-
-**Abstraction:** `AgentRuntime` — swap providers (Claude, GPT fallback) without touching apps.
-
-**Pricing:** Pay-per-use (per analysis call).
-
----
-
-### @silence/predictive
-
-**Purpose:** AI pattern forecasting.
-
-**Capabilities:** Cycle detection, trajectory modeling, early warning, pattern collision prediction.
-
-**Emits:** `prediction.generated`
-
-**Pricing:** Pay-per-prediction.
-
----
-
-### @silence/voice
-
-**Purpose:** Voice input → Whisper transcription → text for @silence/core.
-
-**Implements:** `VoiceProvider` from @silence/contracts
-
-**Rule:** Voice = INPUT METHOD. NOT emotion/mood detection.
-
----
-
-### @silence/medical
-
-**Purpose:** Medical disclaimers. Institutional compliance. GDPR health data.
-
-**Access:** Institutional license only.
-
----
-
-### @silence/legal
-
-**Purpose:** Legal disclaimers. Terms of service. Privacy compliance.
-
-**Access:** Institutional license only.
-
----
-
-### @silence/linkedin-agent
-
-**Purpose:** LinkedIn AI agent for B2B communication.
-
-**Implements:** `AgentModule` from @silence/contracts
-
-**Emits:** `agent.run.completed`
+- 2026-02-08 — Pełny katalog 16 modułów pod DIPLO_BIBLE v3.
