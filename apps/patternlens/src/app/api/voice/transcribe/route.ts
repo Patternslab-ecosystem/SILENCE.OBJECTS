@@ -1,3 +1,4 @@
+// TODO M3E: Add normalizeInput, scanOutput, checkRateLimit from '@/lib/safety/shared-safety'
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { CLAUDE_MODEL } from '@/constants/app';

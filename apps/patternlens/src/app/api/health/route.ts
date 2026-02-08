@@ -59,7 +59,9 @@ export async function GET(): Promise<NextResponse> {
   return NextResponse.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    version: process.env.NEXT_PUBLIC_VERSION || '5.0.0',
+    appVersion: '5.0.0',
+    safetyCoreVersion: 'v3',
+    docsVersion: 'v3.0',
     environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'production',
     safetyModule: 'configured',
     crisisDetection: '3-layer',

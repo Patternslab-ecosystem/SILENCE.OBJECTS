@@ -3,6 +3,7 @@
 // ===========================================
 // POST /api/interpret - Generate dual-lens structural interpretation
 // This is the PREVIEW endpoint (doesn't save to database)
+// TODO M3E: Add normalizeInput, scanOutput, checkRateLimit from '@/lib/safety/shared-safety'
 // Use POST /api/objects for full Object creation
 //
 // Safety profile: PASSIVE (INFORMED_ADULT_TOOL)

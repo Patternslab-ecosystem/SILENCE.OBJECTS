@@ -4,6 +4,9 @@ export const dynamic = 'force-dynamic'
 
 // ═══════════════════════════════════════════════════════════
 // 3D: RATE LIMITING — 20 req/min per IP (in-memory)
+// SAFETY_RATE_DEV_ONLY: In-memory Map — works within single serverless instance only.
+// TODO: Replace with Upstash Redis for production-grade cross-instance rate limiting.
+// See also: apps/patternlens/src/lib/safety/shared-safety.ts (shared module)
 // ═══════════════════════════════════════════════════════════
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 
