@@ -173,7 +173,7 @@ PASEK F: Ops & Deployment ─────── deployment_status + orchestrator
 - **Question:** "Jak intensywnie system generuje eventy?"
 - **Source:** events table (Supabase)
 - **Metrics:** events/min, breakdown by domain (Pattern/Archetype/Safety/Agent/Platform), % error events
-- **14 event types:** object.created, object.analyzed, pattern.detected, archetype.updated, prediction.generated, crisis.detected, risk.flagged, agent.run.completed, agent.run.failed, content.published, content.blocked, anomaly.detected, tenant.provisioned, subscription.changed
+- **14 event types:** object.created, object.analyzed, pattern.created, archetype.updated, prediction.generated, crisis.detected, risk.flag.raised, agent.run.completed, agent.run.failed, content.published, content.blocked, anomaly.detected, tenant.provisioned, subscription.changed
 - **Interactions:** Filter by domain, drill-down → W11
 
 #### W11: events_timeline

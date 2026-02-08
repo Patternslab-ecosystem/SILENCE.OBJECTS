@@ -120,9 +120,9 @@ export const EVENTS_RATE = {
   events_per_min: 4.2,
   domain: {
     "object.created": 8, "object.analyzed": 30,
-    "pattern.detected": 22, "archetype.updated": 12,
+    "pattern.created": 22, "archetype.updated": 12,
     "prediction.generated": 4, "crisis.detected": 2,
-    "risk.flagged": 3, "agent.run.completed": 8,
+    "risk.flag.raised": 3, "agent.run.completed": 8,
     "agent.run.failed": 0, "content.published": 2,
     "content.blocked": 1, "anomaly.detected": 1,
     "tenant.provisioned": 0, "subscription.changed": 1,
@@ -132,7 +132,7 @@ export const EVENTS_RATE = {
 };
 
 export const RECENT_EVENTS = [
-  { time: "2 min ago", event: "pattern.detected", detail: "New object analyzed — Creator archetype", type: "info" as const, module: "core", correlationId: "c-9f2a" },
+  { time: "2 min ago", event: "pattern.created", detail: "New object analyzed — Creator archetype", type: "info" as const, module: "core", correlationId: "c-9f2a" },
   { time: "15 min ago", event: "archetype.updated", detail: "User #342: Explorer to Sage transition", type: "info" as const, module: "archetypes", correlationId: "c-8e1b" },
   { time: "1h ago", event: "crisis.detected", detail: "Safety layer triggered — resources provided", type: "warn" as const, module: "safety", correlationId: "c-7d0c" },
   { time: "3h ago", event: "agent.run.completed", detail: "Sentinel vocabulary scan — PASS", type: "success" as const, module: "safety", correlationId: "c-6c3d" },
@@ -196,15 +196,15 @@ export const ARCHITECTURE_LAYERS = [
 export const MODULE_DETAIL = [
   { name: "contracts", level: "foundation", version: "1.0.0", events: ["object.created"], deps: [] },
   { name: "events", level: "foundation", version: "1.0.0", events: ["*"], deps: ["contracts"] },
-  { name: "core", level: "foundation", version: "1.0.0", events: ["object.analyzed", "pattern.detected"], deps: ["contracts", "events"] },
+  { name: "core", level: "foundation", version: "1.0.0", events: ["object.analyzed", "pattern.created"], deps: ["contracts", "events"] },
   { name: "archetypes", level: "domain", version: "0.8.0", events: ["archetype.updated"], deps: ["contracts", "core"] },
-  { name: "symbolic", level: "domain", version: "0.6.0", events: ["pattern.detected"], deps: ["contracts", "core"] },
+  { name: "symbolic", level: "domain", version: "0.6.0", events: ["pattern.created"], deps: ["contracts", "core"] },
   { name: "language", level: "foundation", version: "1.0.0", events: ["content.blocked"], deps: ["contracts"] },
   { name: "validator", level: "foundation", version: "1.0.0", events: [], deps: ["contracts"] },
   { name: "ui", level: "domain", version: "0.5.0", events: [], deps: ["contracts"] },
   { name: "voice", level: "closed", version: "0.3.0", events: ["object.analyzed"], deps: ["contracts", "core", "ai"] },
   { name: "ai", level: "closed", version: "0.5.0", events: ["prediction.generated"], deps: ["contracts", "core"] },
-  { name: "safety", level: "closed", version: "1.0.0", events: ["crisis.detected", "risk.flagged"], deps: ["contracts", "language"] },
+  { name: "safety", level: "closed", version: "1.0.0", events: ["crisis.detected", "risk.flag.raised"], deps: ["contracts", "language"] },
 ];
 
 export const DATA_LAYER = {
