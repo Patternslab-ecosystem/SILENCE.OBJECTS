@@ -1,4 +1,4 @@
-# SILENCE.OBJECTS AGENT ARMY v2.0
+# SILENCE.OBJECTS AGENT ARMY v3.0
 
 Zasada: BEZPIECZEŃSTWO > REVENUE > GROWTH.
 
@@ -33,4 +33,4 @@ $198–338/mies vs $22–34k human equivalent. 2h/tydzień nadzoru.
 
 ## CHANGELOG (AGENTS.md)
 
-- 2026-02-08 — Agent Army v2.0 pod DIPLO_BIBLE v3.
+- 2026-02-08 — Agent Army v3.0 pod DIPLO_BIBLE v3.

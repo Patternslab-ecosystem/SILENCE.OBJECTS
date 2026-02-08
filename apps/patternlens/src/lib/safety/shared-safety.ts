@@ -1,5 +1,6 @@
 /**
  * Shared safety utilities for all API routes.
+ * TODO: migrate to packages/safety/ as @silence/safety module
  * Used by /api/analyze, should be adopted by /api/voice/*, /api/interpret, etc.
  */
 
@@ -109,4 +110,16 @@ export function checkRateLimit(ip: string, limit: number = 20, windowMs: number 
   entry.count++
   if (entry.count > limit) return false
   return true
+}
+
+// ═══════════════════════════════════════════════════════════
+// CIRCUIT BREAKER — AbortController with configurable timeout
+// ═══════════════════════════════════════════════════════════
+export function createCircuitBreaker(timeoutMs: number = 15000) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  return {
+    signal: controller.signal,
+    clear: () => clearTimeout(timeout),
+  }
 }

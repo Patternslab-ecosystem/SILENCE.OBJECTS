@@ -3,7 +3,7 @@
 ## v3.0.0 — DIPLO BIBLE rollout
 
 - Re-architecture: contracts/events-first, monorepo packages/apps/agents/docs/tooling.
-- Agent Army v2.0 (3 warstwy, n8n, Supabase schema).
+- Agent Army v3.0 (3 warstwy, n8n, Supabase schema).
 - Safety + compliance (P0/P1/P2, forbidden vocabulary).
 - Full docs: ARCHITECTURE, MODULES, ARCHETYPES, EVENTS, AGENTS, API, INVESTOR, DEPLOYMENT, CONTRIBUTING.
 

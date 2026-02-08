@@ -4,19 +4,19 @@ Typed event system oparty o @silence/contracts i @silence/events.
 
 ## Event envelope
 
-type EventEnvelope<P> = { id: string; type: string; occurredAt: string; payload: P; tenantId?: string; actorId?: string }
+type EventEnvelope<P> = { id: string; type: string; occurredAt: string; payload: P; tenantId?: string; actorId?: string; correlationId?: string }
 
 ## Domeny eventów
 
-- Domain: ObjectAnalyzed, PatternCreated, ArchetypeUpdated, PredictionGenerated
-- Safety: CrisisDetected, RiskFlagRaised
-- Agent: AgentRunCompleted, AnomalyDetected
-- Platform: TenantProvisioned, SubscriptionChanged
+- Domain: object.analyzed, pattern.created, archetype.updated, prediction.generated
+- Safety: crisis.detected, risk.flag.raised
+- Agent: agent.run.completed, anomaly.detected
+- Platform: tenant.provisioned, subscription.changed
 
 ## Subscription patterns
 
 - Portal: SSE/WebSocket → EventFeed, KpiGrid, CrisisModal
-- Agent Army (n8n): triggery na kpi_daily, RiskFlagRaised, CrisisDetected
+- Agent Army (n8n): triggery na kpi_daily, risk.flag.raised, crisis.detected
 - Supabase: każdy event → tabela events z indeksami
 
 ## Versioning

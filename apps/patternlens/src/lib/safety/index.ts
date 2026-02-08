@@ -47,3 +47,14 @@ export {
   HELPLINES,
   type Helpline,
 } from "./keywords";
+
+// === FROM SHARED-SAFETY.TS (MIDDLEWARE) ===
+export {
+  normalizeInput,
+  scanOutput,
+  sanitizeOutput,
+  detectLocalPatterns,
+  checkRateLimit,
+  createCircuitBreaker,
+  FORBIDDEN_OUTPUT,
+} from "./shared-safety";

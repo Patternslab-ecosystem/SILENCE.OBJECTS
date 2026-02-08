@@ -57,7 +57,7 @@ export async function GET(): Promise<NextResponse> {
   }
 
   return NextResponse.json({
-    status: 'ok',
+    status: 'operational',
     timestamp: new Date().toISOString(),
     appVersion: '5.0.0',
     safetyCoreVersion: 'v3',
@@ -65,6 +65,10 @@ export async function GET(): Promise<NextResponse> {
     environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'production',
     safetyModule: 'configured',
     crisisDetection: '3-layer',
+    outputScan: 'active',
+    rateLimit: 'active-dev',  // TODO: 'active-redis' after Upstash
+    deterministicCore: 'active',
+    circuitBreaker: '15s',
     supabaseRest,
     supabaseService,
     authHealth,

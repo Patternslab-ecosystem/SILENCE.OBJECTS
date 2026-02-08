@@ -4,7 +4,7 @@ Moduł P0 — crisis detection, blocking, resources.
 
 ## 3-layer crisis detection
 
-- Layer 1: Hard keywords (PL/EN) → immediate block + CrisisModal + CrisisDetected event.
+- Layer 1: Hard keywords (PL/EN) → immediate block + CrisisModal + crisis.detected event.
 - Layer 2: Soft keywords → Claude risk assessment.
 - Layer 3: Risk engine (high/medium/low) → block/banner/proceed.
 

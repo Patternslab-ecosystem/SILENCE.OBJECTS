@@ -1,4 +1,6 @@
-// TODO M3E: Add normalizeInput, scanOutput, checkRateLimit from '@/lib/safety/shared-safety'
+// TODO M3: Import safety middleware from @/lib/safety
+// Apply: normalizeInput, checkRateLimit, scanOutput to ALL AI/voice/medical/legal endpoints
+// See: DIPLO_BIBLE_v3 section IV.B @silence/safety
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { CLAUDE_MODEL } from '@/constants/app';

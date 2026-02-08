@@ -19,7 +19,7 @@ Repozytorium jest pnpm/turbo monorepo z modularnym podziałem:
 - `apps/portal` — control tower: Module Explorer, KPI, financials, open source, LinkedIn, Agent Army.
 - `apps/patternlens` — consumer PWA, PatternLens.
 - `apps/patternslab` — B2B institutional PatternsLab.
-- `agents/*` — Agent Army v2.0 (Guardian, Revenue, Growth) na n8n.
+- `agents/*` — Agent Army v3.0 (Guardian, Revenue, Growth) na n8n.
 - `docs/*` — dokumentacja produktowa i techniczna.
 
 ## Quickstart

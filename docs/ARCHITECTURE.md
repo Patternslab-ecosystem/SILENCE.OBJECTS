@@ -25,11 +25,11 @@ Architektura opiera się na edge runtime, cienkich handlerach serverless oraz mo
 
 Każdy moduł implementuje interfejs z `@silence/contracts`, nie zna UI, komunikacja przez eventy i jawne API.
 
-Przykład: client → edge (auth, context, language scan) → handler `/api/objects/analyze` → `@silence/core.analyzeObject()` → zapis Supabase → emit `ObjectAnalyzed`, `PatternCreated` → dashboard/agents reagują.
+Przykład: client → edge (auth, context, language scan) → handler `/api/objects/analyze` → `@silence/core.analyzeObject()` → zapis Supabase → emit `object.analyzed`, `pattern.created` → dashboard/agents reagują.
 
 ## Agent system integration
 
-Agent Army v2.0 na n8n (Hetzner), subskrybuje eventy z `events` tabeli lub `@silence/events` (Webhook/SSE). Guardian layer (P0) może zatrzymać Layer 1+2.
+Agent Army v3.0 na n8n (Hetzner), subskrybuje eventy z `events` tabeli lub `@silence/events` (Webhook/SSE). Guardian layer (P0) może zatrzymać Layer 1+2.
 
 ## Runtime modes
 

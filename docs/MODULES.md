@@ -8,25 +8,25 @@ Jedyne źródło prawdy dla modułów w `packages/*`, zgodne z DIPLO_BIBLE v3.0.
 |---|---|---|---|
 | @silence/contracts | open | Brak (pure types) | MIT |
 | @silence/events | open | Wszystkie domain events | MIT |
-| @silence/core | open | PatternCreated, ObjectAnalyzed | MIT |
-| @silence/archetypes | open | ArchetypeUpdated | MIT |
+| @silence/core | open | pattern.created, object.analyzed | MIT |
+| @silence/archetypes | open | archetype.updated | MIT |
 | @silence/symbolic | open | — | MIT |
 | @silence/language | open | — | MIT |
-| @silence/validator | open | ValidationFailed, ComplianceBreach | MIT |
+| @silence/validator | open | validation.failed, compliance.breach | MIT |
 | @silence/ui | open | — | MIT |
-| @silence/voice | closed | ObjectTranscribed | per-usage |
-| @silence/ai | closed | AgentRunCompleted, RiskFlagRaised | per-usage |
-| @silence/predictive | closed | PredictionGenerated | per-prediction |
-| @silence/safety | closed | CrisisDetected, RiskFlagRaised | platform fee |
-| @silence/medical | closed | ComplianceLog | enterprise |
-| @silence/legal | closed | ComplianceLog | enterprise |
-| @silence/linkedin-agent | closed | AgentRunCompleted | per-tenant |
+| @silence/voice | closed | object.transcribed | per-usage |
+| @silence/ai | closed | agent.run.completed, risk.flag.raised | per-usage |
+| @silence/predictive | closed | prediction.generated | per-prediction |
+| @silence/safety | closed | crisis.detected, risk.flag.raised | platform fee |
+| @silence/medical | closed | content.compliance.log | enterprise |
+| @silence/legal | closed | content.compliance.log | enterprise |
+| @silence/linkedin-agent | closed | agent.run.completed | per-tenant |
 
 ### @silence/contracts
 Centralne źródło typów: User, Object, Pattern, Archetype, Tension, AgentTask, AgentResult, TenantContext, ActorContext. Zmiana kontraktu = breaking change = semver major.
 
 ### @silence/events
-Typed event bus. EventEmitter in-process → migration path Upstash Redis Streams. EventEnvelope<P> = { id, type, occurredAt, payload, tenantId?, actorId? }. emit(), subscribe().
+Typed event bus. EventEmitter in-process → migration path Upstash Redis Streams. EventEnvelope<P> = { id, type, occurredAt, payload, tenantId?, actorId?, correlationId? }. emit(), subscribe().
 
 ### @silence/core
 Silnik pattern detection. 4-phase: Context → Tension → Meaning → Function. Dual-lens. API: analyzeObject(), extractPatterns(), dualLens().
@@ -66,4 +66,4 @@ LinkedIn AI agent. Content + auto-reply. API: runLinkedInCampaign().
 
 ## CHANGELOG (MODULES.md)
 
-- 2026-02-08 — Pełny katalog 16 modułów pod DIPLO_BIBLE v3.
+- 2026-02-08 — Pełny katalog 15 modułów (8 open + 7 closed) pod DIPLO_BIBLE v3.

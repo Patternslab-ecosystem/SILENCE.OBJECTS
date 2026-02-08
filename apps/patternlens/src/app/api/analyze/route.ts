@@ -1,140 +1,14 @@
 import { NextResponse } from 'next/server'
+import {
+  normalizeInput,
+  scanOutput,
+  sanitizeOutput,
+  checkRateLimit,
+  detectLocalPatterns,
+  createCircuitBreaker
+} from '@/lib/safety'
 
 export const dynamic = 'force-dynamic'
-
-// ═══════════════════════════════════════════════════════════
-// 3D: RATE LIMITING — 20 req/min per IP (in-memory)
-// SAFETY_RATE_DEV_ONLY: In-memory Map — works within single serverless instance only.
-// TODO: Replace with Upstash Redis for production-grade cross-instance rate limiting.
-// See also: apps/patternlens/src/lib/safety/shared-safety.ts (shared module)
-// ═══════════════════════════════════════════════════════════
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-
-function checkRateLimit(ip: string, limit: number = 20, windowMs: number = 60000): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + windowMs })
-    return true
-  }
-  entry.count++
-  if (entry.count > limit) return false
-  return true
-}
-
-// ═══════════════════════════════════════════════════════════
-// 3B: ZERO-WIDTH CHARACTER STRIPPING — Input normalization
-// ═══════════════════════════════════════════════════════════
-function normalizeInput(text: string): string {
-  // Strip zero-width characters (TOLO bypass: "\u200B" between letters)
-  let normalized = text.replace(/[\u200B\u200C\u200D\uFEFF\u00AD\u034F\u2028\u2029]/g, '')
-  // Normalize whitespace
-  normalized = normalized.replace(/\s+/g, ' ').trim()
-  // Strip control characters except newlines
-  normalized = normalized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-  return normalized
-}
-
-// ═══════════════════════════════════════════════════════════
-// 3A: OUTPUT SCAN — Forbidden vocabulary check on Claude response
-// ═══════════════════════════════════════════════════════════
-const FORBIDDEN_OUTPUT = [
-  'therapy', 'therapist', 'therapeutic', 'diagnosis', 'diagnose', 'diagnostic',
-  'treatment', 'treat', 'medication', 'prescribe', 'prescription',
-  'mental health', 'mental illness', 'mental disorder', 'psychiatric',
-  'clinical', 'pathology', 'pathological', 'psychotherapy',
-  'healing', 'wellness', 'spiritual', 'mystical', 'divine', 'cosmic',
-  'horoscope', 'fortune', 'divination', 'oracle',
-  'terapia', 'terapeuta', 'terapeutyczny', 'diagnoza', 'diagnozować',
-  'leczenie', 'leczyć', 'lek', 'recepta', 'psychiatryczny',
-  'zaburzenie', 'choroba psychiczna', 'zdrowie psychiczne',
-  'uzdrawianie', 'duchowy', 'mistyczny', 'boski', 'kosmiczny',
-  'horoskop', 'wróżba', 'wyrocznia'
-]
-
-function scanOutput(text: string): { clean: boolean; violations: string[] } {
-  const lower = text.toLowerCase()
-  const normalized = lower.replace(/[\u200B\u200C\u200D\uFEFF\u00AD]/g, '')
-  const violations = FORBIDDEN_OUTPUT.filter(term => normalized.includes(term))
-  return { clean: violations.length === 0, violations }
-}
-
-function sanitizeOutput(text: string): string {
-  let result = text
-  result = result.replace(/[\u200B\u200C\u200D\uFEFF\u00AD]/g, '')
-  const replacements: Record<string, string> = {
-    'therapy': 'structural analysis', 'therapist': 'analyst',
-    'diagnosis': 'pattern classification', 'treatment': 'approach',
-    'mental health': 'behavioral patterns', 'mental illness': 'pattern disruption',
-    'healing': 'pattern reconstruction', 'wellness': 'structural balance',
-    'terapia': 'analiza strukturalna', 'diagnoza': 'klasyfikacja wzorców',
-    'leczenie': 'podejście', 'zdrowie psychiczne': 'wzorce behawioralne',
-  }
-  for (const [from, to] of Object.entries(replacements)) {
-    result = result.replace(new RegExp(from, 'gi'), to)
-  }
-  return result
-}
-
-// ═══════════════════════════════════════════════════════════
-// 3F: DETERMINISTIC CORE — Local pattern detection BEFORE Claude
-// ═══════════════════════════════════════════════════════════
-function detectLocalPatterns(text: string): {
-  wordCount: number
-  sentenceCount: number
-  questionRatio: number
-  negationRatio: number
-  temporalMarkers: string[]
-  emotionalIntensity: 'low' | 'medium' | 'high'
-  repetitionScore: number
-  dominantTense: 'past' | 'present' | 'future' | 'mixed'
-} {
-  const words = text.split(/\s+/)
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim())
-  const questions = text.match(/\?/g) || []
-
-  // Negation patterns (PL + EN)
-  const negations = text.match(/\b(nie|never|not|no|don't|won't|can't|nigdy|żaden|brak)\b/gi) || []
-
-  // Temporal markers
-  const pastMarkers = text.match(/\b(yesterday|ago|was|were|had|used to|wczoraj|kiedyś|dawniej|byłem|byłam|miałem)\b/gi) || []
-  const futureMarkers = text.match(/\b(will|going to|plan|tomorrow|soon|jutro|zamierzam|planuję|będę)\b/gi) || []
-  const presentMarkers = text.match(/\b(now|today|currently|right now|teraz|aktualnie|dzisiaj|jestem|mam)\b/gi) || []
-
-  // Emotional intensity
-  const exclamations = (text.match(/!/g) || []).length
-  const capsWords = words.filter(w => w === w.toUpperCase() && w.length > 2).length
-  const intensifiers = text.match(/\b(very|extremely|absolutely|always|never|bardzo|zawsze|nigdy|strasznie|mega)\b/gi) || []
-  const intensityScore = exclamations + capsWords * 2 + intensifiers.length
-
-  // Repetition detection
-  const wordFreq = new Map<string, number>()
-  words.forEach(w => {
-    const lower = w.toLowerCase().replace(/[^a-ząćęłńóśźż]/g, '')
-    if (lower.length > 3) wordFreq.set(lower, (wordFreq.get(lower) || 0) + 1)
-  })
-  const repetitions = [...wordFreq.values()].filter(v => v > 2).length
-
-  // Dominant tense
-  let dominantTense: 'past' | 'present' | 'future' | 'mixed' = 'mixed'
-  const max = Math.max(pastMarkers.length, presentMarkers.length, futureMarkers.length)
-  if (max > 0) {
-    if (pastMarkers.length === max) dominantTense = 'past'
-    else if (presentMarkers.length === max) dominantTense = 'present'
-    else if (futureMarkers.length === max) dominantTense = 'future'
-  }
-
-  return {
-    wordCount: words.length,
-    sentenceCount: sentences.length,
-    questionRatio: questions.length / Math.max(sentences.length, 1),
-    negationRatio: negations.length / Math.max(words.length, 1),
-    temporalMarkers: [...pastMarkers, ...presentMarkers, ...futureMarkers],
-    emotionalIntensity: intensityScore > 5 ? 'high' : intensityScore > 2 ? 'medium' : 'low',
-    repetitionScore: repetitions,
-    dominantTense
-  }
-}
 
 // ═══════════════════════════════════════════════════════════
 // CRISIS DETECTION — 3-layer system
@@ -155,7 +29,7 @@ const ALL_CRISIS = [...CRISIS_KEYWORDS_PL, ...CRISIS_KEYWORDS_EN]
 // ═══════════════════════════════════════════════════════════
 export async function POST(request: Request) {
   try {
-    // 3D: Rate limiting
+    // 1. Rate limit check
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
@@ -171,14 +45,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Text too short. Minimum 10 characters.' }, { status: 400 })
     }
 
-    // 3B: Zero-width character stripping + input normalization
+    // 2. Input normalization (zero-width stripping)
     const text = normalizeInput(rawText)
 
     if (text !== rawText.replace(/\s+/g, ' ').trim()) {
       console.warn('[SAFETY] Input normalization stripped suspicious characters')
     }
 
-    // Crisis detection (runs on normalized text)
+    // 3. Crisis detection (hard keywords on normalized text)
     const lowerText = text.toLowerCase()
     const crisisMatch = ALL_CRISIS.find(kw => lowerText.includes(kw))
     if (crisisMatch) {
@@ -194,7 +68,7 @@ export async function POST(request: Request) {
       }, { status: 200 })
     }
 
-    // 3F: Deterministic core — local pattern detection BEFORE Claude
+    // 4. Deterministic core — local pattern detection BEFORE Claude
     const localPatterns = detectLocalPatterns(text)
 
     // Enriched prompt with deterministic pre-analysis
@@ -217,9 +91,8 @@ ${text}`
       return NextResponse.json(mockAnalysis(text))
     }
 
-    // 3C: Circuit breaker — AbortController with 15s timeout
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
+    // 5. Circuit breaker with 15s timeout
+    const breaker = createCircuitBreaker(15000)
 
     try {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -243,9 +116,9 @@ Respond in the same language as the input text.
 Format as JSON with fields: context, tension, meaning, function, lensA, lensB, archetype, confidence.`,
           messages: [{ role: 'user', content: enrichedPrompt }]
         }),
-        signal: controller.signal
+        signal: breaker.signal
       })
-      clearTimeout(timeout)
+      breaker.clear()
 
       if (!response.ok) {
         return NextResponse.json(mockAnalysis(text))
@@ -254,11 +127,11 @@ Format as JSON with fields: context, tension, meaning, function, lensA, lensB, a
       const data = await response.json()
       let content = data.content?.[0]?.text || ''
 
-      // 3A: Output scan — check for forbidden vocabulary BEFORE returning
-      const outputScan = scanOutput(content)
-      if (!outputScan.clean) {
+      // 6. Output scan — check for forbidden vocabulary BEFORE returning
+      const outputScanResult = scanOutput(content)
+      if (!outputScanResult.clean) {
         content = sanitizeOutput(content)
-        console.warn('[SAFETY] Output violations sanitized:', outputScan.violations)
+        console.warn('[SAFETY] Output violations sanitized:', outputScanResult.violations)
       }
 
       // Parse JSON from Claude response
@@ -297,7 +170,7 @@ Format as JSON with fields: context, tension, meaning, function, lensA, lensB, a
       })
 
     } catch (e: unknown) {
-      clearTimeout(timeout)
+      breaker.clear()
       if (e instanceof Error && e.name === 'AbortError') {
         console.warn('[SAFETY] Claude API timeout — circuit breaker triggered')
         return NextResponse.json({
@@ -319,7 +192,6 @@ Format as JSON with fields: context, tension, meaning, function, lensA, lensB, a
 function mockAnalysis(text: string) {
   const lp = detectLocalPatterns(text)
 
-  // Deterministic archetype mapping based on local patterns
   let archetype = 'Explorer'
   if (lp.negationRatio > 0.05 && lp.dominantTense === 'past') archetype = 'Orphan'
   else if (lp.questionRatio > 0.3) archetype = 'Sage'

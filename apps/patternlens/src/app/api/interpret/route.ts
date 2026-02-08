@@ -3,7 +3,9 @@
 // ===========================================
 // POST /api/interpret - Generate dual-lens structural interpretation
 // This is the PREVIEW endpoint (doesn't save to database)
-// TODO M3E: Add normalizeInput, scanOutput, checkRateLimit from '@/lib/safety/shared-safety'
+// TODO M3: Import safety middleware from @/lib/safety
+// Apply: normalizeInput, checkRateLimit, scanOutput to ALL AI/voice/medical/legal endpoints
+// See: DIPLO_BIBLE_v3 section IV.B @silence/safety
 // Use POST /api/objects for full Object creation
 //
 // Safety profile: PASSIVE (INFORMED_ADULT_TOOL)
