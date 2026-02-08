@@ -3,8 +3,15 @@ import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 // Crisis keywords — Layer 1 (hard block)
-const CRISIS_KEYWORDS_PL = ['samobójstwo', 'zabić się', 'chcę umrzeć', 'nie chcę żyć', 'samookaleczenie']
-const CRISIS_KEYWORDS_EN = ['suicide', 'kill myself', 'want to die', 'self-harm', 'end my life']
+const CRISIS_KEYWORDS_PL = [
+  'samobójstwo', 'samobojstwo', 'zabić się', 'zabic sie',
+  'chcę umrzeć', 'chce umrzec', 'nie chcę żyć', 'nie chce zyc',
+  'samookaleczenie', 'skrzywdzić się', 'skrzywdzic sie'
+]
+const CRISIS_KEYWORDS_EN = [
+  'suicide', 'kill myself', 'want to die', 'self-harm',
+  'end my life', 'hurt myself'
+]
 const ALL_CRISIS = [...CRISIS_KEYWORDS_PL, ...CRISIS_KEYWORDS_EN]
 
 export async function POST(request: Request) {
