@@ -1,0 +1,123 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for secrets (truffleHog)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm audit --audit-level moderate || true
+
+  closed-module-guard:
+    name: Closed Module Guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check no closed source in public repo
+        run: |
+          FAIL=0
+          for module in safety ai predictive voice medical legal linkedin-agent; do
+            count=$(find "packages/$module" -name "*.ts" -o -name "*.tsx" -o -name "*.js" 2>/dev/null | wc -l)
+            if [ "$count" -gt 0 ]; then
+              echo "SECURITY VIOLATION: packages/$module contains $count source files!"
+              FAIL=1
+            fi
+          done
+
+          agent_count=$(find "agents" -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.py" 2>/dev/null | wc -l)
+          if [ "$agent_count" -gt 0 ]; then
+            echo "SECURITY VIOLATION: agents/ contains $agent_count source files!"
+            FAIL=1
+          fi
+
+          plab_count=$(find "apps/patternslab" -name "*.ts" -o -name "*.tsx" -o -name "*.js" 2>/dev/null | wc -l)
+          if [ "$plab_count" -gt 0 ]; then
+            echo "SECURITY VIOLATION: apps/patternslab contains $plab_count source files!"
+            FAIL=1
+          fi
+
+          if [ "$FAIL" -eq 1 ]; then
+            echo "CLOSED SOURCE CODE DETECTED IN PUBLIC REPO!"
+            exit 1
+          fi
+
+          echo "No closed source code in public repo"
+
+  env-file-guard:
+    name: Environment File Guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check no .env files committed
+        run: |
+          ENV_FILES=$(find . -name ".env" -o -name ".env.local" -o -name ".env.production" \
+            -o -name ".env.development" -o -name ".env.staging" \
+            | grep -v node_modules | grep -v .env.example)
+
+          if [ -n "$ENV_FILES" ]; then
+            echo "SECURITY VIOLATION: .env files found in repo!"
+            echo "$ENV_FILES"
+            exit 1
+          fi
+
+          echo "No .env files in repo"
+
+  forbidden-vocab-scan:
+    name: Compliance — Forbidden Vocabulary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for forbidden terminology
+        run: |
+          VIOLATIONS=$(grep -rn "therapy\|diagnosis\|mental health\|healing\|wellness\|spiritual\|mystical\|divine\|cosmic\|horoscope\|fortune" \
+            --include="*.ts" --include="*.tsx" --include="*.md" \
+            apps/ packages/ docs/ \
+            | grep -v "node_modules\|.next\|FORBIDDEN\|forbidden\|sanitize\|scan\|replace\|test\|__tests__\|REPLACEMENTS\|NEVER\|NIGDY\|COMPLIANCE\|security\|Security\|SECURITY" \
+            | head -20)
+
+          if [ -n "$VIOLATIONS" ]; then
+            echo "COMPLIANCE VIOLATION: Forbidden vocabulary detected!"
+            echo "$VIOLATIONS"
+            exit 1
+          fi
+
+          echo "No forbidden vocabulary"

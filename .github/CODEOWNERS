@@ -1,0 +1,38 @@
+# ═══════════════════════════════════════════
+# SILENCE.OBJECTS — Code Owners
+# These owners are REQUIRED reviewers for PRs
+# ═══════════════════════════════════════════
+
+# Global — owner reviews everything
+* @Pattern
+
+# ══ CLOSED MODULES — OWNER ONLY (extra protection) ══
+packages/safety/        @Pattern
+packages/ai/            @Pattern
+packages/predictive/    @Pattern
+packages/voice/         @Pattern
+packages/medical/       @Pattern
+packages/legal/         @Pattern
+packages/linkedin-agent/ @Pattern
+agents/                 @Pattern
+apps/patternslab/       @Pattern
+
+# ══ SECURITY-CRITICAL FILES ══
+SECURITY.md             @Pattern
+.github/CODEOWNERS      @Pattern
+.github/workflows/      @Pattern
+.gitignore              @Pattern
+.env.example            @Pattern
+
+# ══ OPEN MODULES — community can contribute ══
+packages/contracts/     @Pattern
+packages/events/        @Pattern
+packages/core/          @Pattern
+packages/archetypes/    @Pattern
+packages/symbolic/      @Pattern
+packages/language/      @Pattern
+packages/validator/     @Pattern
+packages/ui/            @Pattern
+
+# ══ DOCS ══
+docs/                   @Pattern

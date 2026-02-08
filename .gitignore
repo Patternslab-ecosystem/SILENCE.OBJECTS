@@ -1,13 +1,103 @@
-node_modules
-.next
-dist
-.env
-.env.local
-.env.*.local
-.vercel
-*.tsbuildinfo
-.turbo
-.claude/
-SILENCE_OBJECTS_MONOREPO/
+# ═══════════════════════════════════════════
+# SILENCE.OBJECTS — .gitignore
+# SECURITY: blocks ALL sensitive files
+# ═══════════════════════════════════════════
 
-.vercel
+# ══ ENVIRONMENT & SECRETS (P0 — NEVER COMMIT) ══
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.staging
+*.env
+!.env.example
+.secret*
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+
+# ══ CLOSED MODULES (PROPRIETARY — NEVER IN PUBLIC REPO) ══
+packages/safety/src/
+packages/safety/package.json
+packages/safety/tsconfig.json
+packages/ai/src/
+packages/ai/package.json
+packages/ai/tsconfig.json
+packages/predictive/
+packages/voice/src/
+packages/voice/package.json
+packages/voice/tsconfig.json
+packages/medical/
+packages/legal/
+packages/linkedin-agent/
+
+# ══ CLOSED APPS (B2B — NEVER IN PUBLIC REPO) ══
+apps/patternslab/src/
+apps/patternslab/package.json
+apps/patternslab/next.config.js
+apps/patternslab/postcss.config.mjs
+apps/patternslab/tailwind.config.ts
+apps/patternslab/tsconfig.json
+apps/patternslab/next-env.d.ts
+
+# ══ AGENT ARMY (COMPETITIVE MOAT — NEVER IN PUBLIC REPO) ══
+agents/sentinel/src/
+agents/sentinel/package.json
+agents/sentinel/config.json
+agents/sentinel/tsconfig.json
+agents/sentinel/system-prompt.md
+
+# ══ SUPABASE SECRETS ══
+supabase/.env
+supabase/.temp/
+supabase/seed.sql
+
+# ══ NODE / BUILD ══
+node_modules/
+.next/
+.turbo/
+dist/
+build/
+out/
+*.tsbuildinfo
+.vercel/
+
+# ══ IDE ══
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ══ CLAUDE ══
+.claude/
+
+# ══ PACKAGE MANAGERS ══
+pnpm-lock.yaml
+
+# ══ TESTING ══
+coverage/
+.nyc_output/
+*.lcov
+
+# ══ LOGS ══
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# ══ OS ══
+Desktop.ini
+ehthumbs.db
+
+# ══ TEMP / EXPORTS ══
+SILENCE_OBJECTS_MONOREPO/
+do wyslania/
+*.tar.gz
+*.zip
+*.doc
+nul
