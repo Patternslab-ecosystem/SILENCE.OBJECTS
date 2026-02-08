@@ -1,62 +1,94 @@
 import Link from "next/link";
 import {
-  SAFETY_STATUS,
-  SYSTEM_FLOW,
-  MONETIZATION,
-  SAFETY_LAYERS,
-  CRISIS_DATA,
-  AGENT_CHAIN,
-  REPORTS_CONFIDENCE,
-  MODULE_STATUS,
-  PAYWALL_FUNNEL,
-  REVENUE_PROJECTION,
-  PHASE_PROGRESS,
-  CI_CD_STATUS,
-  RECENT_EVENTS,
+  HERO_KPI, SYSTEM_STATUS, SAFETY_COMPLIANCE,
+  MODULE_STATUS, AGENT_LAYERS, EVENTS_RATE, RECENT_EVENTS,
+  SAFETY_LAYERS, CRISIS_DATA,
+  REVENUE_PROJECTION, PAYWALL_FUNNEL,
+  PHASE_PROGRESS, CI_CD_STATUS,
 } from "./data/mock";
-
-// ─────────────────────────────────────────────────────────────
-// Tabs
-// ─────────────────────────────────────────────────────────────
-const TABS = [
-  { id: "command-center", label: "Command Center", active: true },
-  { id: "investor", label: "Investor", href: "/investor/dashboard" },
-  { id: "patternlens", label: "PatternLens" },
-  { id: "patternslab", label: "PatternsLab" },
-  { id: "modules", label: "Modules" },
-  { id: "agents", label: "Agents", href: "#agents" },
-  { id: "opensource", label: "Open Source" },
-] as const;
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────
-function StatusDot({ ok }: { ok: boolean }) {
-  return (
-    <span
-      className="w-2 h-2 rounded-full inline-block flex-shrink-0"
-      style={{ background: ok ? "var(--color-success)" : "var(--color-error)" }}
-    />
-  );
-}
 
-function formatCurrency(n: number): string {
+function fmt(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(0)}k`;
   return String(n);
 }
 
+function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div
+      className={`rounded-lg p-4 md:p-5 transition-all duration-300 hover:shadow-lg ${className}`}
+      style={{
+        background: "#111113",
+        border: "1px solid #222228",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] uppercase tracking-[0.15em] mb-3"
+      style={{ color: "#21808d", fontFamily: "'JetBrains Mono', monospace" }}>
+      {children}
+    </p>
+  );
+}
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <h2
+      className="text-sm font-semibold uppercase tracking-wide mb-4"
+      style={{ color: "#888893", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function Placeholder({ name, question, source }: { name: string; question: string; source: string }) {
+  return (
+    <Card>
+      <Label>{name}</Label>
+      <p className="text-xs mb-3" style={{ color: "#888893", fontFamily: "'Outfit', sans-serif" }}>{question}</p>
+      <span className="text-[10px] px-2 py-1 rounded" style={{ background: "rgba(212,168,67,0.1)", color: "#d4a843", border: "1px solid rgba(212,168,67,0.2)" }}>
+        Coming soon
+      </span>
+      <p className="text-[10px] mt-2" style={{ color: "#55555e" }}>Source: {source}</p>
+    </Card>
+  );
+}
+
+function StatusDot({ color }: { color: string }) {
+  return <span className="w-2 h-2 rounded-full inline-block flex-shrink-0" style={{ background: color }} />;
+}
+
+function PriorityBadge({ level, label }: { level: "P0" | "P1" | "P2"; label: string }) {
+  const colors = { P0: "#cc4444", P1: "#d4a843", P2: "#d4a843" };
+  const bg = { P0: "rgba(204,68,68,0.1)", P1: "rgba(212,168,67,0.1)", P2: "rgba(212,168,67,0.08)" };
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: bg[level], border: `1px solid ${colors[level]}33` }}>
+      <StatusDot color={colors[level]} />
+      <span className="text-xs font-mono" style={{ color: "#e8e8ec" }}>{level}</span>
+      <span className="text-xs" style={{ color: "#888893" }}>{label}</span>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────
 // Page
 // ─────────────────────────────────────────────────────────────
+
 export default function DashboardPage() {
   const revMax = Math.max(...REVENUE_PROJECTION.map((r) => r.arr));
 
   return (
-    <main
-      className="min-h-screen p-4 md:p-8 max-w-7xl mx-auto"
-      style={{ background: "var(--color-background)", color: "var(--color-text)" }}
-    >
+    <main className="min-h-screen p-4 md:p-8 max-w-7xl mx-auto" style={{ background: "#08080a", color: "#e8e8ec" }}>
       {/* ══════════ HEADER ══════════ */}
       <header className="mb-6">
         <div className="flex items-center gap-3 mb-1">
@@ -69,1003 +101,370 @@ export default function DashboardPage() {
             <line x1="35" y1="40" x2="85" y2="40" stroke="#21808d" strokeWidth="1.5" opacity="0.4" strokeDasharray="4 2" />
             <rect x="55" y="65" width="10" height="10" fill="#21808d" opacity="0.8" />
           </svg>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--color-text)" }}>
-            SILENCE.OBJECTS
-          </h1>
-          <span
-            className="text-xs px-2 py-0.5 rounded font-mono"
-            style={{ background: "rgba(50,184,198,0.15)", color: "var(--color-primary)" }}
-          >
-            v5.0
-          </span>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'JetBrains Mono', monospace" }}>SILENCE.OBJECTS</h1>
+          <span className="text-xs px-2 py-0.5 rounded font-mono" style={{ background: "rgba(33,128,141,0.15)", color: "#21808d" }}>v5.0</span>
         </div>
-        <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-          Command Center
-        </p>
+        <p className="text-sm" style={{ color: "#888893", fontFamily: "'Outfit', sans-serif" }}>Command Center — 24 Widget Dashboard</p>
       </header>
 
-      {/* ══════════ PRE-LAUNCH BANNER ══════════ */}
-      <div
-        className="mb-4 px-4 py-2 rounded-lg text-center"
-        style={{
-          background: "rgba(245,158,11,0.08)",
-          border: "1px solid rgba(245,158,11,0.25)",
-          fontFamily: "monospace",
-          fontSize: "13px",
-          color: "#f59e0b",
-        }}
-      >
-        Pre-launch command center &middot; Metrics = targets &middot; Live data: Phase 1
+      {/* ══════════ GLOBAL FILTERS ══════════ */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex gap-1 rounded-lg p-1" style={{ background: "#111113", border: "1px solid #222228" }}>
+          {["24h", "7d", "30d", "All"].map((t, i) => (
+            <button key={t} className="px-3 py-1 rounded text-xs font-mono" style={i === 1 ? { background: "#21808d", color: "#08080a" } : { color: "#888893" }}>{t}</button>
+          ))}
+        </div>
+        <div className="flex gap-1 rounded-lg p-1" style={{ background: "#111113", border: "1px solid #222228" }}>
+          {["prod", "stage", "local"].map((e, i) => (
+            <button key={e} className="px-3 py-1 rounded text-xs font-mono" style={i === 0 ? { background: "#21808d", color: "#08080a" } : { color: "#888893" }}>{e}</button>
+          ))}
+        </div>
+        <Link href="/investor/dashboard" className="px-4 py-1.5 rounded-lg text-xs font-mono" style={{ background: "#111113", border: "1px solid #222228", color: "#888893" }}>
+          Investor View
+        </Link>
       </div>
 
-      {/* ══════════ TABS ══════════ */}
-      <nav className="flex flex-wrap gap-2 mb-8 pb-4" style={{ borderBottom: "1px solid var(--color-border)" }}>
-        {TABS.map((tab) => {
-          const isActive = "active" in tab && tab.active;
-          const baseClass = "px-4 py-2 rounded-lg text-sm transition-colors";
-          const cls = isActive
-            ? `${baseClass} font-medium`
-            : `${baseClass} hover:opacity-80`;
-          const style = isActive
-            ? { background: "var(--color-primary)", color: "#0f1010" }
-            : { background: "var(--color-surface)", color: "var(--color-text-secondary)" };
+      {/* ══════════ PRE-LAUNCH BANNER ══════════ */}
+      <div className="mb-6 px-4 py-2 rounded-lg text-center" style={{ background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.25)", fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "#d4a843" }}>
+        Pre-launch command center &middot; All metrics = mock targets &middot; Replace with Supabase queries
+      </div>
 
-          if ("href" in tab && tab.href) {
-            return (
-              <Link key={tab.id} href={tab.href} className={cls} style={style}>
-                {tab.label}
-              </Link>
-            );
-          }
-          return (
-            <a key={tab.id} href={`#${tab.id}`} className={cls} style={style}>
-              {tab.label}
-            </a>
-          );
-        })}
-      </nav>
-
-      {/* ══════════════════════════════════════════════════════════════
-           BAND 1: HERO KPIs
-         ══════════════════════════════════════════════════════════════ */}
-      <section className="mb-6">
-        <h2
-          className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Hero KPIs
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-[40%_35%_25%] gap-4">
-          {/* Card 1: Safety Status */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-3"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Safety Status
-            </p>
-
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center gap-2">
-                <StatusDot ok={SAFETY_STATUS.tier1_safety} />
-                <span className="text-xs" style={{ color: "var(--color-text)" }}>
-                  Tier-1 Safety
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <StatusDot ok={SAFETY_STATUS.crisis_detection} />
-                <span className="text-xs" style={{ color: "var(--color-text)" }}>
-                  Crisis Detection
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <StatusDot ok={SAFETY_STATUS.forbidden_vocab_clean} />
-                <span className="text-xs" style={{ color: "var(--color-text)" }}>
-                  Forbidden Vocab Clean
-                </span>
-              </div>
+      {/* ═══════════════════════════════════════════════════════
+           BAND A: HERO KPIs (W1 + W2 + W3)
+         ═══════════════════════════════════════════════════════ */}
+      <section className="mb-8">
+        <SectionHeader>Hero KPIs</SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* W1: hero_kpi_overview */}
+          <Card>
+            <Label>W1 &middot; KPI Overview</Label>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "ARR", value: `${fmt(HERO_KPI.arr)} PLN`, color: "#21808d" },
+                { label: "MRR", value: `${fmt(HERO_KPI.mrr)}`, color: "#e8e8ec" },
+                { label: "DAU", value: String(HERO_KPI.dau), color: "#e8e8ec" },
+                { label: "Churn", value: `${HERO_KPI.churn}%`, color: HERO_KPI.churn < 5 ? "#3d9970" : "#cc4444" },
+                { label: "LTV/CAC", value: `${HERO_KPI.ltv_cac}x`, color: "#3d9970" },
+                { label: "Runway", value: `${HERO_KPI.runway_months}mo`, color: "#e8e8ec" },
+              ].map(({ label, value, color }) => (
+                <div key={label}>
+                  <p className="text-[10px] uppercase tracking-widest" style={{ color: "#55555e" }}>{label}</p>
+                  <p className="font-mono text-lg font-bold" style={{ color }}>{value}</p>
+                </div>
+              ))}
             </div>
+          </Card>
 
-            {/* Compliance score bar */}
-            <div className="mb-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                  Compliance
-                </span>
-                <span className="font-mono text-2xl font-bold" style={{ color: "var(--color-text)" }}>
-                  {SAFETY_STATUS.compliance_score}%
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full" style={{ background: "rgba(119,124,124,0.2)" }}>
-                <div
-                  className="h-2 rounded-full"
-                  style={{
-                    width: `${SAFETY_STATUS.compliance_score}%`,
-                    background: "var(--color-success)",
-                  }}
-                />
-              </div>
+          {/* W2: hero_system_status */}
+          <Card>
+            <Label>W2 &middot; System Status</Label>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: "#3d9970" }} />
+              <span className="text-xs font-mono font-bold" style={{ color: "#3d9970" }}>{SYSTEM_STATUS.api_status}</span>
             </div>
-
-            <p className="text-xs mt-2" style={{ color: "var(--color-text-secondary)" }}>
-              Last scan: {SAFETY_STATUS.last_scan}
-            </p>
-          </div>
-
-          {/* Card 2: System Flow */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-3"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              System Flow
-            </p>
-
-            <div className="flex items-center gap-2 mb-4">
-              <span
-                className="text-xs px-2 py-0.5 rounded-full font-mono"
-                style={{
-                  background:
-                    SYSTEM_FLOW.api_status === "healthy"
-                      ? "rgba(16,185,129,0.15)"
-                      : SYSTEM_FLOW.api_status === "degraded"
-                        ? "rgba(245,158,11,0.15)"
-                        : "rgba(255,84,89,0.15)",
-                  color:
-                    SYSTEM_FLOW.api_status === "healthy"
-                      ? "var(--color-success)"
-                      : SYSTEM_FLOW.api_status === "degraded"
-                        ? "var(--color-warning)"
-                        : "var(--color-error)",
-                }}
-              >
-                {SYSTEM_FLOW.api_status}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Avg Response
-                </p>
-                <p className="font-mono text-2xl font-bold" style={{ color: "var(--color-text)" }}>
-                  {SYSTEM_FLOW.avg_response_ms}<span className="text-xs font-normal">ms</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Success Rate
-                </p>
-                <p className="font-mono text-2xl font-bold" style={{ color: "var(--color-text)" }}>
-                  {SYSTEM_FLOW.successful_flows_pct}%
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Active Modules
-                </p>
-                <p className="font-mono text-2xl font-bold" style={{ color: "var(--color-primary)" }}>
-                  {SYSTEM_FLOW.active_modules}
-                  <span className="text-xs font-normal" style={{ color: "var(--color-text-secondary)" }}>
-                    /{SYSTEM_FLOW.total_modules}
-                  </span>
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Last Deploy
-                </p>
-                <p className="text-xs font-mono mt-1" style={{ color: "var(--color-text)" }}>
-                  {SYSTEM_FLOW.last_deploy}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Monetization */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-3"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Monetization
-            </p>
-
-            <div className="mb-3">
-              <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                ARR <span style={{ color: "var(--color-warning)", fontSize: "9px" }}>(target)</span>
-              </p>
-              <p className="font-mono text-2xl font-bold" style={{ color: "var(--color-primary)" }}>
-                {formatCurrency(MONETIZATION.arr)} PLN
-              </p>
-            </div>
-
-            <div className="mb-3">
-              <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                MRR <span style={{ color: "var(--color-warning)", fontSize: "9px" }}>(target)</span>
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono text-2xl font-bold" style={{ color: "var(--color-text)" }}>
-                  {formatCurrency(MONETIZATION.mrr)}
-                </span>
-                <span className="text-xs font-mono" style={{ color: "var(--color-success)" }}>
-                  {MONETIZATION.mrr_trend}
-                </span>
-              </div>
-            </div>
-
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Paying <span style={{ color: "var(--color-warning)", fontSize: "9px" }}>(target)</span>
-                </p>
-                <p className="font-mono text-lg font-bold" style={{ color: "var(--color-text)" }}>
-                  {MONETIZATION.paying_users}
-                </p>
+                <p className="text-[10px] uppercase" style={{ color: "#55555e" }}>Response</p>
+                <p className="font-mono text-lg font-bold" style={{ color: "#e8e8ec" }}>{SYSTEM_STATUS.avg_response_ms}<span className="text-[10px] font-normal">ms</span></p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Conversion <span style={{ color: "var(--color-warning)", fontSize: "9px" }}>(target)</span>
-                </p>
-                <p className="font-mono text-lg font-bold" style={{ color: "var(--color-text)" }}>
-                  {MONETIZATION.conversion_rate}%
-                </p>
+                <p className="text-[10px] uppercase" style={{ color: "#55555e" }}>Success</p>
+                <p className="font-mono text-lg font-bold" style={{ color: "#e8e8ec" }}>{SYSTEM_STATUS.success_rate}%</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase" style={{ color: "#55555e" }}>Modules</p>
+                <p className="font-mono text-lg font-bold" style={{ color: "#21808d" }}>{SYSTEM_STATUS.active_modules}/{SYSTEM_STATUS.total_modules}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase" style={{ color: "#55555e" }}>CI</p>
+                <span className="text-xs px-2 py-0.5 rounded font-mono" style={{ background: "rgba(61,153,112,0.15)", color: "#3d9970" }}>{SYSTEM_STATUS.ci_status}</span>
               </div>
             </div>
-          </div>
+          </Card>
+
+          {/* W3: hero_safety_compliance */}
+          <Card>
+            <Label>W3 &middot; Safety Compliance</Label>
+            <div className="space-y-2 mb-3">
+              <PriorityBadge level="P0" label={SAFETY_COMPLIANCE.p0_crisis.label} />
+              <PriorityBadge level="P1" label={SAFETY_COMPLIANCE.p1_vocabulary.label} />
+              <PriorityBadge level="P2" label={SAFETY_COMPLIANCE.p2_framing.label} />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px]" style={{ color: "#55555e" }}>Score</span>
+              <span className="font-mono text-xl font-bold" style={{ color: "#3d9970" }}>{SAFETY_COMPLIANCE.compliance_score}%</span>
+            </div>
+          </Card>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-           BAND 2: HEALTH & RISK
-         ══════════════════════════════════════════════════════════════ */}
-      <section className="mb-6">
-        <h2
-          className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Health &amp; Risk
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Card 1: Safety Layers */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Safety Layers
-            </p>
+      {/* ═══════════════════════════════════════════════════════
+           BAND B: PRODUCT | AGENTS | EVENTS (W4-W12)
+         ═══════════════════════════════════════════════════════ */}
+      <section className="mb-8">
+        <SectionHeader>Product &middot; Agents &middot; Events</SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Column 1: Product */}
+          <div className="space-y-4">
+            <Placeholder name="W4 · Analysis Volume" question="How many analyses per day? Growth trend?" source="Supabase objects table" />
 
-            <div className="flex flex-col gap-3">
-              {SAFETY_LAYERS.map((layer, i) => (
-                <div key={layer.name}>
-                  <div className="flex items-center gap-3">
-                    {/* Status dot */}
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
+            {/* W5: product_module_activation (REAL) */}
+            <Card>
+              <Label>W5 &middot; Module Activation</Label>
+              <div className="space-y-1.5">
+                {MODULE_STATUS.map((mod) => (
+                  <div key={mod.name} className="flex items-center gap-2 px-2 py-1 rounded" style={{ background: "rgba(119,124,124,0.06)" }}>
+                    <StatusDot color={mod.status === "ready" ? "#3d9970" : "rgba(119,124,124,0.4)"} />
+                    <span className="text-[11px] font-mono flex-1 truncate" style={{ color: "#e8e8ec" }}>{mod.name}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
                       style={{
-                        background:
-                          layer.status === "ok"
-                            ? "var(--color-success)"
-                            : layer.status === "warn"
-                              ? "var(--color-warning)"
-                              : "var(--color-error)",
-                      }}
-                    />
-                    {/* Layer info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-mono truncate" style={{ color: "var(--color-text)" }}>
-                        {layer.name}
-                      </p>
-                      <p className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                        {layer.last_test}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Arrow between layers */}
-                  {i < SAFETY_LAYERS.length - 1 && (
-                    <div className="flex justify-center my-1">
-                      <svg width="12" height="16" viewBox="0 0 12 16" style={{ color: "var(--color-primary)" }}>
-                        <path d="M6 0 L6 12 M2 8 L6 12 L10 8" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Card 2: Crisis & Compliance */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Crisis &amp; Compliance
-            </p>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Incidents (24h)
-                </p>
-                <p
-                  className="font-mono text-2xl font-bold"
-                  style={{ color: CRISIS_DATA.incidents_24h === 0 ? "var(--color-success)" : "var(--color-error)" }}
-                >
-                  {CRISIS_DATA.incidents_24h}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Incidents (7d)
-                </p>
-                <p
-                  className="font-mono text-2xl font-bold"
-                  style={{ color: CRISIS_DATA.incidents_7d === 0 ? "var(--color-success)" : "var(--color-warning)" }}
-                >
-                  {CRISIS_DATA.incidents_7d}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Forbidden Violations (24h)
-                </p>
-                <p
-                  className="font-mono text-2xl font-bold"
-                  style={{
-                    color: CRISIS_DATA.forbidden_violations_24h === 0 ? "var(--color-success)" : "var(--color-error)",
-                  }}
-                >
-                  {CRISIS_DATA.forbidden_violations_24h}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-widest" style={{ color: "var(--color-text-secondary)" }}>
-                  Compliance Score
-                </p>
-                <p className="font-mono text-2xl font-bold" style={{ color: "var(--color-success)" }}>
-                  {CRISIS_DATA.copy_compliance_score}%
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════
-           BAND 3: AGENTS & STRUCTURES
-         ══════════════════════════════════════════════════════════════ */}
-      <section className="mb-6">
-        <h2
-          className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Agents &amp; Structures
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-[35%_35%_30%] gap-4">
-          {/* Card 1: Agent Chain */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Agent Chain
-            </p>
-
-            <div className="space-y-2">
-              {AGENT_CHAIN.map((agent, i) => (
-                <div key={agent.step}>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{
-                        background:
-                          agent.status === "ok"
-                            ? "var(--color-success)"
-                            : agent.status === "warn"
-                              ? "var(--color-warning)"
-                              : "var(--color-error)",
-                      }}
-                    />
-                    <span className="text-xs font-mono flex-1 truncate" style={{ color: "var(--color-text)" }}>
-                      {agent.step}
-                    </span>
-                    <span className="text-xs font-mono" style={{ color: "var(--color-text-secondary)" }}>
-                      {agent.latency_ms}ms
+                        color: mod.type === "open" ? "#3d9970" : "#d4a843",
+                        background: mod.type === "open" ? "rgba(61,153,112,0.1)" : "rgba(212,168,67,0.1)",
+                      }}>
+                      {mod.type === "open" ? "O" : "C"}
                     </span>
                   </div>
-                  {i < AGENT_CHAIN.length - 1 && (
-                    <div className="flex justify-center my-0.5">
-                      <span className="text-xs" style={{ color: "var(--color-primary)", opacity: 0.5 }}>
-                        |
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <p className="text-[10px] mt-2" style={{ color: "#55555e" }}>15 modules: 8 open + 7 closed</p>
+            </Card>
+
+            <Placeholder name="W6 · Archetype Distribution" question="Which archetypes are most common?" source="Supabase patterns table" />
           </div>
 
-          {/* Card 2: Reports Confidence */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Reports Confidence
-            </p>
-
-            <div className="space-y-3">
-              {REPORTS_CONFIDENCE.map((phase) => {
-                const barColor =
-                  phase.avg_confidence >= 0.85
-                    ? "#10b981"
-                    : phase.avg_confidence >= 0.7
-                      ? "#32b8c6"
-                      : "#f59e0b";
-                return (
-                  <div key={phase.name}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono" style={{ color: "var(--color-text)" }}>
-                        {phase.name}
-                      </span>
-                      <span className="text-xs font-mono font-bold" style={{ color: barColor }}>
-                        {(phase.avg_confidence * 100).toFixed(0)}%
-                      </span>
+          {/* Column 2: Agents */}
+          <div className="space-y-4">
+            {/* W7: agents_layer_status (REAL) */}
+            <Card>
+              <Label>W7 &middot; Agent Layers</Label>
+              <div className="space-y-3">
+                {AGENT_LAYERS.map((layer) => (
+                  <div key={layer.layer} className="p-3 rounded-lg" style={{ background: "rgba(119,124,124,0.06)" }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      {layer.status === "active" ? (
+                        <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#3d9970" }} />
+                      ) : (
+                        <StatusDot color="rgba(119,124,124,0.4)" />
+                      )}
+                      <span className="text-xs font-mono font-bold" style={{ color: "#e8e8ec" }}>L{layer.layer}: {layer.name}</span>
                     </div>
-                    <div className="w-full h-2 rounded-full" style={{ background: "rgba(119,124,124,0.2)" }}>
-                      <div
-                        className="h-2 rounded-full"
-                        style={{
-                          width: `${phase.avg_confidence * 100}%`,
-                          background: barColor,
-                        }}
-                      />
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {layer.agents.map((a) => (
+                        <span key={a} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "rgba(33,128,141,0.1)", color: "#21808d" }}>{a}</span>
+                      ))}
                     </div>
+                    <p className="text-[10px]" style={{ color: "#55555e" }}>{layer.cost}</p>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            </Card>
+
+            <Placeholder name="W8 · Agent Task Queue" question="How many tasks pending/running/completed?" source="Supabase agent_logs" />
+            <Placeholder name="W9 · Cost Efficiency" question="Agent cost vs human equivalent?" source="AGENTS.md cost model" />
           </div>
 
-          {/* Card 3: Recent Events */}
-          <div
-            className="rounded-lg p-4 md:p-5 overflow-hidden"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Event Schema Preview
-            </p>
-
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {RECENT_EVENTS.map((evt, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0 mt-1"
-                    style={{
-                      background:
-                        evt.type === "success"
-                          ? "var(--color-success)"
-                          : evt.type === "warn"
-                            ? "var(--color-warning)"
-                            : "var(--color-primary)",
-                    }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono" style={{ color: "var(--color-text)" }}>
-                        {evt.event}
-                      </span>
-                      <span className="text-xs" style={{ color: "var(--color-text-secondary)", opacity: 0.6 }}>
-                        {evt.time}
-                      </span>
-                    </div>
-                    <p className="text-xs truncate" style={{ color: "var(--color-text-secondary)" }}>
-                      {evt.detail}
-                    </p>
+          {/* Column 3: Events */}
+          <div className="space-y-4">
+            {/* W10: events_rate_overview (REAL) */}
+            <Card>
+              <Label>W10 &middot; Events Rate</Label>
+              <div className="mb-3">
+                <p className="font-mono text-2xl font-bold" style={{ color: "#21808d" }}>{EVENTS_RATE.events_per_min}<span className="text-[10px] font-normal" style={{ color: "#55555e" }}> evt/min</span></p>
+                <p className="text-[10px]" style={{ color: "#55555e" }}>{fmt(EVENTS_RATE.total_24h)} events in 24h</p>
+              </div>
+              <div className="space-y-1.5">
+                {Object.entries(EVENTS_RATE.domain).map(([event, count]) => (
+                  <div key={event} className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono flex-1 truncate" style={{ color: "#888893" }}>{event}</span>
+                    <span className="text-[10px] font-mono font-bold" style={{ color: "#e8e8ec" }}>{count}%</span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* W11: events_recent_feed */}
+            <Card>
+              <Label>W11 &middot; Recent Events</Label>
+              <div className="space-y-2.5">
+                {RECENT_EVENTS.map((evt, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <StatusDot color={evt.type === "success" ? "#3d9970" : evt.type === "warn" ? "#d4a843" : "#21808d"} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono" style={{ color: "#e8e8ec" }}>{evt.event}</span>
+                        <span className="text-[10px]" style={{ color: "#55555e" }}>{evt.time}</span>
+                      </div>
+                      <p className="text-[10px] truncate" style={{ color: "#888893" }}>{evt.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Placeholder name="W12 · Schema Health" question="Are event schemas valid across all modules?" source="@silence/events validator" />
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-           BAND 4: BUSINESS
-         ══════════════════════════════════════════════════════════════ */}
-      <section className="mb-6">
-        <h2
-          className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Business
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-[60%_40%] gap-4">
-          {/* Card 1: Paywall Funnel */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Paywall Funnel
-            </p>
+      {/* ═══════════════════════════════════════════════════════
+           BAND C: COMPLIANCE & SAFETY (W13-W15)
+         ═══════════════════════════════════════════════════════ */}
+      <section className="mb-8">
+        <SectionHeader>Compliance &amp; Safety</SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Placeholder name="W13 · Forbidden Vocab Scan" question="Any vocabulary violations detected?" source="@silence/language scan" />
 
+          {/* W14: compliance_p0_p1_p2_matrix */}
+          <Card>
+            <Label>W14 &middot; Priority Matrix</Label>
             <div className="space-y-2">
-              {PAYWALL_FUNNEL.map((step) => (
-                <div key={step.step} className="flex items-center gap-3">
-                  <span
-                    className="text-xs w-36 truncate flex-shrink-0"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    {step.step}
-                  </span>
-                  <div className="flex-1 h-5 rounded overflow-hidden" style={{ background: "rgba(119,124,124,0.15)" }}>
-                    <div
-                      className="h-full rounded flex items-center justify-end pr-2"
-                      style={{
-                        width: `${step.pct}%`,
-                        background: "rgba(50,184,198,0.5)",
-                        minWidth: step.pct > 0 ? "2rem" : "0",
-                      }}
-                    >
-                      <span className="text-xs font-mono" style={{ color: "var(--color-text)" }}>
-                        {step.count}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-xs font-mono w-12 text-right" style={{ color: "var(--color-text-secondary)" }}>
-                    {step.pct}%
-                  </span>
+              {SAFETY_LAYERS.map((layer) => (
+                <div key={layer.name} className="flex items-center gap-2">
+                  <StatusDot color={layer.status === "ok" ? "#3d9970" : "#cc4444"} />
+                  <span className="text-[11px] font-mono flex-1" style={{ color: "#e8e8ec" }}>{layer.name}</span>
+                  <span className="text-[10px]" style={{ color: "#55555e" }}>{layer.last_test}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
 
-          {/* Card 2: Revenue Projection */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Revenue Projection (ARR)
-            </p>
+          {/* W15: safety_crisis_incidents */}
+          <Card>
+            <Label>W15 &middot; Crisis Incidents</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[10px] uppercase" style={{ color: "#55555e" }}>24h</p>
+                <p className="font-mono text-2xl font-bold" style={{ color: CRISIS_DATA.incidents_24h === 0 ? "#3d9970" : "#cc4444" }}>{CRISIS_DATA.incidents_24h}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase" style={{ color: "#55555e" }}>7d</p>
+                <p className="font-mono text-2xl font-bold" style={{ color: CRISIS_DATA.incidents_7d === 0 ? "#3d9970" : "#d4a843" }}>{CRISIS_DATA.incidents_7d}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase" style={{ color: "#55555e" }}>Violations</p>
+                <p className="font-mono text-2xl font-bold" style={{ color: "#3d9970" }}>{CRISIS_DATA.forbidden_violations_24h}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase" style={{ color: "#55555e" }}>Compliance</p>
+                <p className="font-mono text-2xl font-bold" style={{ color: "#3d9970" }}>{CRISIS_DATA.copy_compliance_score}%</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
 
-            <div className="flex items-end gap-3 h-40">
+      {/* ═══════════════════════════════════════════════════════
+           BAND D: ARCHITECTURE & MODULES (W16-W18)
+         ═══════════════════════════════════════════════════════ */}
+      <section className="mb-8">
+        <SectionHeader>Architecture &amp; Modules</SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Placeholder name="W16 · Module Dependency Graph" question="How do modules depend on each other?" source="packages/*/package.json" />
+          <Placeholder name="W17 · Request Flow Pipeline" question="What is the runtime request path?" source="ARCHITECTURE.md" />
+          <Placeholder name="W18 · Data Layer Overview" question="Which Supabase tables are active?" source="Supabase schema" />
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+           BAND E: INVESTOR & BUSINESS (W19-W21)
+         ═══════════════════════════════════════════════════════ */}
+      <section className="mb-8">
+        <SectionHeader>Investor &amp; Business</SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* W19: investor_revenue_projection */}
+          <Card>
+            <Label>W19 &middot; Revenue Projection (ARR)</Label>
+            <div className="flex items-end gap-3 h-32">
               {REVENUE_PROJECTION.map((proj) => {
                 const pct = (proj.arr / revMax) * 100;
                 return (
                   <div key={proj.period} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-                    <span className="text-xs font-mono font-bold" style={{ color: "var(--color-primary)" }}>
-                      {formatCurrency(proj.arr)}
-                    </span>
-                    <div
-                      className="w-full rounded-t"
-                      style={{
-                        height: `${pct}%`,
-                        background: "rgba(50,184,198,0.5)",
-                        minHeight: "4px",
-                      }}
-                    />
-                    <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                      {proj.period}
-                    </span>
+                    <span className="text-[10px] font-mono font-bold" style={{ color: "#21808d" }}>{fmt(proj.arr)}</span>
+                    <div className="w-full rounded-t" style={{ height: `${pct}%`, background: "rgba(33,128,141,0.5)", minHeight: "4px" }} />
+                    <span className="text-[10px]" style={{ color: "#55555e" }}>{proj.period}</span>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </Card>
+
+          {/* W20: investor_paywall_funnel */}
+          <Card>
+            <Label>W20 &middot; Paywall Funnel</Label>
+            <div className="space-y-2">
+              {PAYWALL_FUNNEL.map((step) => (
+                <div key={step.step} className="flex items-center gap-2">
+                  <span className="text-[10px] w-28 truncate flex-shrink-0" style={{ color: "#888893" }}>{step.step}</span>
+                  <div className="flex-1 h-4 rounded overflow-hidden" style={{ background: "rgba(119,124,124,0.1)" }}>
+                    <div className="h-full rounded" style={{ width: `${step.pct}%`, background: "rgba(33,128,141,0.5)", minWidth: step.pct > 0 ? "1rem" : "0" }} />
+                  </div>
+                  <span className="text-[10px] font-mono w-10 text-right" style={{ color: "#55555e" }}>{step.pct}%</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Placeholder name="W21 · Market Positioning" question="TAM/SAM/SOM breakdown?" source="INVESTOR.md" />
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-           BAND 5: OPS
-         ══════════════════════════════════════════════════════════════ */}
-      <section className="mb-6">
-        <h2
-          className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Ops
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Card 1: Phase Progress */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Phase Progress
-            </p>
-
+      {/* ═══════════════════════════════════════════════════════
+           BAND F: OPS & DEPLOYMENT (W22-W24)
+         ═══════════════════════════════════════════════════════ */}
+      <section className="mb-8">
+        <SectionHeader>Ops &amp; Deployment</SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* W22: ops_phase_progress */}
+          <Card>
+            <Label>W22 &middot; Phase Progress</Label>
             <div className="space-y-3">
               {PHASE_PROGRESS.map((phase) => (
                 <div key={phase.name}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-mono" style={{ color: "var(--color-text)" }}>
-                      {phase.name}
-                    </span>
-                    <span className="text-xs font-mono font-bold" style={{ color: "var(--color-text)" }}>
-                      {phase.progress}%
-                    </span>
+                    <span className="text-[11px] font-mono" style={{ color: "#e8e8ec" }}>{phase.name}</span>
+                    <span className="text-[10px] font-mono font-bold" style={{ color: "#e8e8ec" }}>{phase.progress}%</span>
                   </div>
-                  <div className="w-full h-2 rounded-full" style={{ background: "rgba(119,124,124,0.2)" }}>
-                    <div
-                      className="h-2 rounded-full"
-                      style={{
-                        width: `${phase.progress}%`,
-                        background:
-                          phase.status === "active"
-                            ? "var(--color-primary)"
-                            : "rgba(119,124,124,0.4)",
-                        minWidth: phase.progress > 0 ? "4px" : "0",
-                      }}
-                    />
+                  <div className="w-full h-1.5 rounded-full" style={{ background: "#1a1a1e" }}>
+                    <div className="h-1.5 rounded-full" style={{ width: `${phase.progress}%`, background: phase.status === "active" ? "#21808d" : "rgba(119,124,124,0.4)", minWidth: phase.progress > 0 ? "4px" : "0" }} />
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
 
-          {/* Card 2: CI/CD Status */}
-          <div
-            className="rounded-lg p-4 md:p-5"
-            style={{
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <p
-              className="text-xs uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              CI/CD Status
-            </p>
-
-            <div className="space-y-2 mb-4">
-              {(
-                [
-                  ["Sentinel Vocabulary", CI_CD_STATUS.sentinel_vocabulary],
-                  ["Sentinel Build", CI_CD_STATUS.sentinel_build],
-                  ["Sentinel Contracts", CI_CD_STATUS.sentinel_contracts],
-                ] as const
-              ).map(([label, check]) => (
+          {/* W23: ops_cicd_status */}
+          <Card>
+            <Label>W23 &middot; CI/CD Status</Label>
+            <div className="space-y-2 mb-3">
+              {([
+                ["Sentinel Vocabulary", CI_CD_STATUS.sentinel_vocabulary],
+                ["Sentinel Build", CI_CD_STATUS.sentinel_build],
+                ["Sentinel Contracts", CI_CD_STATUS.sentinel_contracts],
+              ] as const).map(([label, check]) => (
                 <div key={label} className="flex items-center gap-2">
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{
-                      background: check.status === "pass" ? "var(--color-success)" : "var(--color-error)",
-                    }}
-                  />
-                  <span className="text-xs font-mono flex-1" style={{ color: "var(--color-text)" }}>
-                    {label}
-                  </span>
-                  <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                    {check.last_run}
-                  </span>
+                  <StatusDot color={check.status === "pass" ? "#3d9970" : "#cc4444"} />
+                  <span className="text-[11px] font-mono flex-1" style={{ color: "#e8e8ec" }}>{label}</span>
+                  <span className="text-[10px]" style={{ color: "#55555e" }}>{check.last_run}</span>
                 </div>
               ))}
             </div>
-
-            <div
-              className="rounded-lg p-3 mt-3"
-              style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}
-            >
-              <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--color-text-secondary)" }}>
-                Last Deploy
-              </p>
+            <div className="rounded-lg p-2" style={{ background: "rgba(61,153,112,0.08)", border: "1px solid rgba(61,153,112,0.2)" }}>
               <div className="flex items-center gap-2">
-                <span
-                  className="w-2 h-2 rounded-full"
-                  style={{
-                    background:
-                      CI_CD_STATUS.last_deploy.status === "success"
-                        ? "var(--color-success)"
-                        : "var(--color-error)",
-                  }}
-                />
-                <span className="text-xs font-mono" style={{ color: "var(--color-text)" }}>
-                  {CI_CD_STATUS.last_deploy.env}
-                </span>
-                <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                  {CI_CD_STATUS.last_deploy.at}
-                </span>
+                <StatusDot color={CI_CD_STATUS.last_deploy.status === "success" ? "#3d9970" : "#cc4444"} />
+                <span className="text-[10px] font-mono" style={{ color: "#e8e8ec" }}>{CI_CD_STATUS.last_deploy.env}</span>
+                <span className="text-[10px]" style={{ color: "#55555e" }}>{CI_CD_STATUS.last_deploy.at}</span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </Card>
 
-      {/* ══════════ MODULE GRID ══════════ */}
-      <section className="mb-6">
-        <h2
-          className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Modules ({MODULE_STATUS.length})
-        </h2>
-        <div
-          className="rounded-lg p-4 md:p-5"
-          style={{
-            background: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-          }}
-        >
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-            {MODULE_STATUS.map((mod) => (
-              <div
-                key={mod.name}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg"
-                style={{ background: "rgba(119,124,124,0.08)" }}
-              >
-                <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{
-                    background: mod.status === "ready" ? "var(--color-success)" : "rgba(119,124,124,0.4)",
-                  }}
-                />
-                <span className="text-xs font-mono truncate" style={{ color: "var(--color-text)" }}>
-                  {mod.name}
-                </span>
-                <span
-                  className="text-xs ml-auto flex-shrink-0 px-1.5 py-0.5 rounded"
-                  style={{
-                    color: mod.type === "open" ? "#3d9970" : "#d4a843",
-                    background: mod.type === "open" ? "rgba(61,153,112,0.1)" : "rgba(212,168,67,0.1)",
-                    border: mod.type === "open" ? "1px solid rgba(61,153,112,0.2)" : "1px solid rgba(212,168,67,0.2)",
-                    fontSize: "10px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {mod.type === "open" ? "O" : "C"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════
-           AGENTS
-         ══════════════════════════════════════════════════════════════ */}
-      <section id="agents" className="mb-6">
-        <h2
-          className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)" }}
-        >
-          Agents
-        </h2>
-
-        {/* Layer 0 — Guardian (Sentinel) */}
-        <div className="mb-6">
-          <h3
-            className="text-xs font-semibold uppercase tracking-wide mb-3"
-            style={{ color: "var(--color-primary)" }}
-          >
-            Layer 0 — Guardian (Sentinel)
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {[
-              { name: "Terminology Guard", status: "active" as const },
-              { name: "Contracts Guard", status: "active" as const },
-              { name: "Dependency Guard", status: "active" as const },
-              { name: "Closed Module Guard", status: "active" as const },
-              { name: "Type Safety Guard", status: "planned" as const },
-              { name: "Security Guard", status: "planned" as const },
-              { name: "Build Guard", status: "active" as const, label: "via GitHub Actions" },
-            ].map((guard) => (
-              <div
-                key={guard.name}
-                className="rounded-lg p-4"
-                style={{
-                  background: "var(--color-surface)",
-                  border: "1px solid var(--color-border)",
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{
-                      background:
-                        guard.status === "active"
-                          ? "var(--color-success)"
-                          : "rgba(119,124,124,0.4)",
-                    }}
-                  />
-                  <span className="text-xs font-mono" style={{ color: "var(--color-text)" }}>
-                    {guard.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className="text-xs"
-                    style={{
-                      color:
-                        guard.status === "active"
-                          ? "var(--color-success)"
-                          : "var(--color-text-secondary)",
-                    }}
-                  >
-                    {guard.status === "active" ? "Active" : "Planned"}
-                  </span>
-                  {"label" in guard && guard.label && (
-                    <span
-                      className="text-xs px-1.5 py-0.5 rounded"
-                      style={{
-                        background: "rgba(50,184,198,0.15)",
-                        color: "var(--color-primary)",
-                        fontSize: "10px",
-                      }}
-                    >
-                      {guard.label}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Layer 1 — Revenue Engine (Planned) */}
-        <div className="mb-6">
-          <h3
-            className="text-xs font-semibold uppercase tracking-wide mb-3"
-            style={{ color: "var(--color-text-secondary)" }}
-          >
-            Layer 1 — Revenue Engine (Planned)
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {["Analytics Reporter", "Sales Autopilot", "Customer Success"].map((name) => (
-              <div
-                key={name}
-                className="rounded-lg p-4"
-                style={{
-                  background: "var(--color-surface)",
-                  border: "1px solid var(--color-border)",
-                  opacity: 0.6,
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ background: "rgba(119,124,124,0.4)" }}
-                  />
-                  <span className="text-xs font-mono" style={{ color: "var(--color-text)" }}>
-                    {name}
-                  </span>
-                </div>
-                <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                  Planned
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Layer 2 — Growth Army (Planned) */}
-        <div className="mb-6">
-          <h3
-            className="text-xs font-semibold uppercase tracking-wide mb-3"
-            style={{ color: "var(--color-text-secondary)" }}
-          >
-            Layer 2 — Growth Army (Planned)
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {["LinkedIn Dominator", "Content Machine", "Social Swarm"].map((name) => (
-              <div
-                key={name}
-                className="rounded-lg p-4"
-                style={{
-                  background: "var(--color-surface)",
-                  border: "1px solid var(--color-border)",
-                  opacity: 0.6,
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ background: "rgba(119,124,124,0.4)" }}
-                  />
-                  <span className="text-xs font-mono" style={{ color: "var(--color-text)" }}>
-                    {name}
-                  </span>
-                </div>
-                <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                  Planned
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Operational cost */}
-        <div
-          className="rounded-lg p-3 text-center"
-          style={{
-            background: "rgba(50,184,198,0.08)",
-            border: "1px solid rgba(50,184,198,0.2)",
-          }}
-        >
-          <span className="text-xs font-mono" style={{ color: "var(--color-text-secondary)" }}>
-            Operational cost: ~&#8364;5.80/mo (Sentinel) + $0 (GitHub Actions free tier)
-          </span>
+          <Placeholder name="W24 · Deployment History" question="Recent deploys timeline and rollback options?" source="Vercel API" />
         </div>
       </section>
 
       {/* ══════════ FOOTER ══════════ */}
-      <footer
-        className="mt-12 pt-6 text-center"
-        style={{ borderTop: "1px solid var(--color-border)" }}
-      >
-        <p className="text-xs" style={{ color: "var(--color-text-secondary)", opacity: 0.6 }}>
-          SILENCE.OBJECTS v5.0 — Open Core Framework
+      <footer className="mt-12 pt-6 text-center" style={{ borderTop: "1px solid #222228" }}>
+        <p className="text-[10px] font-mono" style={{ color: "#55555e" }}>
+          SILENCE.OBJECTS v5.0 &middot; 24 Widgets &middot; 15 Modules &middot; Agent Army v3.0 &middot; Open Core Framework
         </p>
       </footer>
     </main>
