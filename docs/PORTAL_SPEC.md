@@ -49,19 +49,126 @@ PASEK F: Ops & Deployment ─────── deployment_status + orchestrator
 5. Architecture & Modules
 6. Investor & Ops
 
-### CSS Grid
+### CSS Grid — Golden Ratio (ϕ ≈ 0.618)
+
+**Rule:** Layout desktopowy stosuje złoty podział. Jedyny dominujący blok w każdym pasie
+zajmuje ~61.8% dostępnej szerokości lub wysokości sekcji, pozostałe widgety dzielą ~38.2%.
 
 ```css
-/* Desktop */
-.portal-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
-.hero-strip { grid-column: 1 / -1; display: grid; grid-template-columns: 5fr 4fr 3fr; gap: 24px; }
-.three-col { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.full-strip { grid-column: 1 / -1; }
+/* ═══════════════════════════════════════════
+   GOLDEN RATIO GRID SYSTEM
+   ϕ = 0.618 | 1−ϕ = 0.382
+   No "widget democracy" — always one dominant
+   ═══════════════════════════════════════════ */
 
-/* Mobile */
-@media (max-width: 768px) {
-  .portal-grid, .hero-strip, .three-col { grid-template-columns: 1fr; gap: 16px; }
+/* Base 12-col grid */
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px;
 }
+
+/* ── PASEK A: HERO ── */
+/* W1 (KPI) = ϕ ≈ 61.8% | W2 (System) ≈ 23.6% | W3 (Safety) ≈ 14.6% */
+.hero-strip {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1.618fr 0.618fr 0.382fr;
+  gap: 24px;
+}
+
+/* ── PASEK B: 3-COLUMN ── */
+/* Product ≈ ϕ ratio wider than Events */
+/* grid-cols: 1.0fr 0.8fr 0.6fr ≈ normalized golden */
+.three-col-golden {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1.0fr 0.8fr 0.6fr;
+  gap: 24px;
+}
+
+/* ── PASEK C-F: FULL WIDTH STRIPS ── */
+/* Inside each strip: dominant widget = ϕ, supporting = 1−ϕ */
+.strip-golden-2 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1.618fr 1fr;
+  gap: 24px;
+}
+.strip-golden-3 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1.618fr 0.618fr 0.382fr;
+  gap: 24px;
+}
+
+/* ── VERTICAL GOLDEN RATIO (first fold) ── */
+/* First 61.8% of viewport: Hero + top of Band B */
+/* Bottom 38.2%: first scroll (Compliance + Architecture) */
+/* Second scroll: Investor + Ops */
+.hero-strip { min-height: calc(38.2vh - 24px); }
+.three-col-golden { min-height: calc(23.6vh); }
+/* Total above fold: ~61.8vh */
+
+/* ── MOBILE: single column ── */
+@media (max-width: 768px) {
+  .portal-grid { gap: 16px; padding: 16px; }
+  .hero-strip,
+  .three-col-golden,
+  .strip-golden-2,
+  .strip-golden-3 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+```
+
+### Golden Ratio Application Per Band
+
+| Band | Dominant Widget (≈ 61.8%) | Supporting (≈ 38.2%) | Grid |
+|------|--------------------------|---------------------|------|
+| **A: Hero** | W1 hero_kpi_overview | W2 system_status + W3 safety | 1.618fr 0.618fr 0.382fr |
+| **B: Product** (col 1) | W5 module_activation | W4 app_status + W6 archetype | vertical stack, W5 = 61.8% height |
+| **B: Agents** (col 2) | W7 agent_layers | W8 performance + W9 alerts | vertical stack, W7 = 61.8% height |
+| **B: Events** (col 3) | W10 event_rate | W11 timeline + W12 crisis | vertical stack, W10 = 61.8% height |
+| **C: Compliance** | W13 compliance_matrix | W14 crisis_feed + W15 language_guard | 1.618fr 0.618fr 0.382fr |
+| **D: Architecture** | W16 layer_overview | W17 module_detail + W18 data_layer | 1.618fr 1fr |
+| **E: Investor** | W19 kpi_timeline | W20 unit_economics + W21 targets | 1.618fr 0.618fr 0.382fr |
+| **F: Ops** | W22 deployment_status | W23 orchestrator + W24 build_order | 1.618fr 1fr |
+
+### Vertical Scroll Zones
+
+```
+┌──────────────────────────────────────────────────┐
+│  VIEWPORT (100vh)                                │
+│                                                  │
+│  ┌──────────────────────────────────────────┐    │
+│  │ 61.8% — FIRST FOLD (no scroll)          │    │
+│  │                                          │    │
+│  │ Pasek A: Hero (W1 golden-wide + W2 + W3)│    │  ← "Co się dzieje?"
+│  │ ≈ 38.2% of fold                         │    │
+│  │                                          │    │
+│  │ Pasek B top: Product / Agents / Events   │    │  ← "Jak działa produkt?"
+│  │ ≈ 23.6% of fold (golden sub-division)   │    │
+│  └──────────────────────────────────────────┘    │
+│                                                  │
+│  ┌──────────────────────────────────────────┐    │
+│  │ 38.2% — FIRST SCROLL                    │    │
+│  │                                          │    │
+│  │ Pasek B bottom + Pasek C: Compliance     │    │  ← "Czy jest bezpiecznie?"
+│  │ Pasek D: Architecture & Modules          │    │  ← "Jak to zbudowane?"
+│  └──────────────────────────────────────────┘    │
+│                                                  │
+│  ┌──────────────────────────────────────────┐    │
+│  │ SECOND SCROLL (utility)                  │    │
+│  │                                          │    │
+│  │ Pasek E: Investor & Business             │    │  ← "Czy biznes rośnie?"
+│  │ Pasek F: Ops & Deployment (compact)      │    │  ← "Czy infra jest OK?"
+│  └──────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────┘
 ```
 
 ## 2. WIDGET CATALOG (24 widgets)
@@ -76,32 +183,41 @@ PASEK F: Ops & Deployment ─────── deployment_status + orchestrator
 - **Type:** KPI grid (numbers)
 - **Question:** "Jaki jest aktualny stan biznesu?"
 - **Source:** kpi_daily, kpi_weekly (Supabase) | Mock: INVESTOR.md
-- **Metrics:** ARR, MRR, DAU, churn %, LTV/CAC, conversion free→paid %, runway (months), NRR %
-- **Mock values:** ARR 104k PLN, MRR 8,667, DAU 342, churn 2.1%, LTV/CAC 4.2x, conversion 12.8%, runway 18mo, NRR 108%
+- **PRIMARY ROW (4 C-level KPIs — scan in 3 seconds):**
+  - ARR: 104,000 PLN
+  - MRR: 8,667 PLN
+  - Runway: 18 months
+  - NRR: 108%
+- **SECONDARY ROW (hover/expand — less critical):**
+  - DAU: 342 | Churn: 2.1% | LTV/CAC: 4.2x | Conversion: 12.8%
 - **Interactions:** Time filter (1mo/1q/1y), drill-down → W19 business_kpi_timeline
-- **Tailwind:** grid grid-cols-4 gap-3, each: bg-[#111113] border border-[#222228] rounded-xl p-4
+- **Tailwind primary:** grid grid-cols-4 gap-3, each: bg-[#111113] border border-[#222228] rounded-xl p-4
+- **Tailwind secondary:** grid grid-cols-4 gap-2, smaller: text-sm text-[#888893], collapsed by default (click "Show more")
 - **Label font:** font-mono text-[10px] uppercase tracking-[0.15em] text-[#888893]
 - **Value font:** font-mono text-2xl font-bold text-[#e8e8ec]
 
 #### W2: hero_system_status
-- **Type:** Status summary (badges + list)
-- **Question:** "Czy framework i kluczowe systemy działają?"
-- **Source:** /api/health endpoint, CI status, Sentry
-- **Metrics:** Edge status, Serverless status, Supabase ping, n8n status, latest deploy commit, CI green/red
-- **Mock values:** All "operational", commit: latest, CI: green
-- **Interactions:** Click → W22 ops_deployment_status
+- **Type:** Compact status (max 3 badges)
+- **Question:** "Czy framework działa?"
+- **Source:** /api/health endpoint
+- **BADGES (max 3):** Edge ● | Serverless ● | Database ●
+- **Subtitle:** Latest deploy: {commit hash} · CI: {green/red}
+- **Link:** "View infra details →" scrolls to W22 ops_deployment_status
+- **Mock:** All operational (green dots)
 - **Badges:** operational=bg-[#3d9970]/10 text-[#3d9970], degraded=bg-[#d4a843]/10 text-[#d4a843], down=bg-[#cc4444]/10 text-[#cc4444]
 
 #### W3: hero_safety_compliance_status
-- **Type:** Status + alert list
-- **Question:** "Czy P0/P1/P2 są spełnione i czy są krytyczne naruszenia?"
+- **Type:** Compact status (max 3 badges)
+- **Question:** "Czy P0/P1/P2 są spełnione?"
+- **BADGES (max 3):** P0 Safety ● | P1 Language ● | P2 Framing ●
+- **Subtitle:** nuclear_events 24h: {count} · violations 24h: {count}
+- **Link:** "View compliance details →" scrolls to W13 in Pasek C
 - **Source:** nuclear_events, language_violations (Supabase)
-- **Metrics:** P0 test pass rate, active P0/P1/P2 alerts, language_violations 24h, nuclear_events 24h, consent_logs 24h
-- **Mock values:** P0: 100% pass, P1: 0 violations, P2: 0 warnings
-- **Interactions:** Filter by P-level, drill-down → W13 + W14
-- **P0 badge:** bg-[#cc4444]/10 text-[#cc4444] border border-[#cc4444]/30
-- **P1 badge:** bg-[#d4a843]/10 text-[#d4a843]
-- **P2 badge:** bg-yellow-500/10 text-yellow-400
+- **Mock:** P0: PASS (green), P1: PASS (green), P2: PASS (green), 0 events, 0 violations
+- **P0 badge:** bg-[#cc4444]/10 text-[#cc4444] border border-[#cc4444]/30 (when FAIL)
+- **P1 badge:** bg-[#d4a843]/10 text-[#d4a843] (when WARN)
+- **P2 badge:** bg-yellow-500/10 text-yellow-400 (when WARN)
+- **All PASS:** bg-[#3d9970]/10 text-[#3d9970]
 
 ---
 
@@ -120,7 +236,7 @@ PASEK F: Ops & Deployment ─────── deployment_status + orchestrator
 - **Type:** Table + status checks
 - **Question:** "Które moduły frameworka są aktywne?"
 - **Source:** Module registry (static from MODULES.md)
-- **Metrics:** module name, type (Open/Closed), edge-safe, status, pricing
+- **Metrics:** module name, type (Open/Closed), edge-safe, status (✅/🔧/📋), pricing
 - **Modules:** 15 total (8 open + 7 closed)
 - **Interactions:** Filter by type (open/closed), drill-down → W17
 - **Open badge:** bg-[#3d9970]/10 text-[#3d9970] font-mono text-[10px] "O"
@@ -199,7 +315,7 @@ PASEK F: Ops & Deployment ─────── deployment_status + orchestrator
 - **Question:** "Czy P0/P1/P2 są zgodne w runtime?"
 - **Source:** language_violations, compliance scan results
 - **Metrics:** status per P-level (OK/WARN/FAIL), violations per 1k outputs, last full scan
-- **Grid:** 15 modules x 3 P-levels (from COMPLIANCE.md matrix)
+- **Grid:** 15 modules × 3 P-levels (from COMPLIANCE.md matrix)
 - **Interactions:** Drill-down → compliance_scan_report (TODO)
 
 #### W14: safety_crisis_feed
@@ -248,7 +364,7 @@ PASEK F: Ops & Deployment ─────── deployment_status + orchestrator
 
 #### W19: business_kpi_timeline
 - **Type:** Line chart (timeline)
-- **Question:** "Jak rosną KPI w czasie vs targety?"
+- **Question:** "Jak rosną kPI w czasie vs targety?"
 - **Source:** kpi_daily, kpi_weekly (Supabase)
 - **Metrics:** ARR, MRR, DAU, paid users, B2B clients, churn, NRR
 - **Target overlay:** Month 3 (20k PLN), Month 6 (120k), Month 12 (600k), Month 18 (2.5M)
@@ -298,10 +414,10 @@ PASEK F: Ops & Deployment ─────── deployment_status + orchestrator
 - **Type:** Progress bar (step list)
 - **Question:** "Na jakim etapie build-order jesteśmy (Phase 0-3)?"
 - **Source:** CHANGELOG.md, manual status
-- **Phase 0 FUNDAMENT:** contracts done, events done, core wip, safety done, Vercel fix wip, Sentinel planned
-- **Phase 1 REVENUE:** archetypes wip, validator/language wip, Analytics Reporter planned, Sales Autopilot planned, CS planned
-- **Phase 2 APPS:** portal wip, PatternLens integration planned, PatternsLab integration planned, LinkedIn P1 planned, Content P1 planned
-- **Phase 3 SCALE:** ai planned, predictive planned, voice planned, full Growth Army planned, npm publish planned, App Store planned
+- **Phase 0 FUNDAMENT:** contracts ✅, events ✅, core 🔧, safety ✅, Vercel fix 🔧, Sentinel 📋
+- **Phase 1 REVENUE:** archetypes 🔧, validator/language 🔧, Analytics Reporter 📋, Sales Autopilot 📋, CS 📋
+- **Phase 2 APPS:** portal 🔧, PatternLens integration 📋, PatternsLab integration 📋, LinkedIn P1 📋, Content P1 📋
+- **Phase 3 SCALE:** ai 📋, predictive 📋, voice 📋, full Growth Army 📋, npm publish 📋, App Store 📋
 - **Interactions:** Filter by phase (0-3)
 
 ---
@@ -338,7 +454,7 @@ Fail red:       #cc4444 (--accent-red)
 |--------|-------|-------|
 | SUCCESS / OK / operational | #3d9970 green | Max 10% surface |
 | WARN / DEGRADED / P1 | #d4a843 amber | |
-| FAIL / P0 / DOWN | #cc4444 red | Always with warning icon |
+| FAIL / P0 / DOWN | #cc4444 red | Always with ⚠️ icon |
 | DISABLED / ARCHIVE | #55555e gray | |
 | P2 | yellow-400 | |
 
@@ -368,24 +484,26 @@ Fail red:       #cc4444 (--accent-red)
 </div>
 ```
 
-### Spacing
+### Spacing (Golden Ratio Informed)
 
-- Desktop grid: 12 columns, 24px gutter
+- Desktop grid: 12 columns, 24px gutter, max-width 1440px
 - Mobile: 1 column, 16px gutter
-- Card padding: p-5 (20px)
+- Card padding: dominant widgets p-5 (20px), supporting widgets p-4 (16px), Ops band p-3 (12px)
 - Section gaps: gap-6 (24px)
+- Band separator: 48px vertical gap between bands (≈ 24px × ϕ rounded)
+- Vertical within bands: dominant widget gets ≈ 61.8% of available height, supporting splits remainder
 
 ### Icons (symbols, not illustrations)
 
 | Track | Icon |
 |-------|------|
-| Product | screen/app |
-| Agents | gear/robot |
-| Events | pulse/bell |
-| Compliance | shield/check |
-| Safety | triangle |
-| Investor | rising chart |
-| Ops | server/key |
+| Product | □ (screen/app) |
+| Agents | ⚙ (gear/robot) |
+| Events | ◉ (pulse/bell) |
+| Compliance | ◈ (shield/check) |
+| Safety | ⚠ (triangle) |
+| Investor | ↗ (rising chart) |
+| Ops | ⊞ (server/key) |
 
 ### Interactions
 
@@ -403,8 +521,8 @@ Fail red:       #cc4444 (--accent-red)
 
 ### Naming (COMPLIANCE enforced)
 
-| Use | Never |
-|-----|-------|
+| ✅ Use | ❌ Never |
+|--------|---------|
 | Object | entry, journal |
 | Pattern | trait, personality |
 | Archetype | personality type |
@@ -413,39 +531,170 @@ Fail red:       #cc4444 (--accent-red)
 
 ---
 
-## 4. IMPLEMENTATION NOTES
+## 4. TYPES CONTRACT (types/portal.ts)
 
-### Data Source Priority
+All mock data MUST use these types. When Supabase/API is wired, same shapes.
 
-1. **Mock data first** — all widgets render with hardcoded mock values from INVESTOR.md + AGENTS.md
-2. **Supabase wiring** — when tables exist, replace mock with real queries
-3. **SSE/WebSocket** — for live event feed (W10, W11, W12) when event bus is active
+```typescript
+// types/portal.ts — Portal dashboard data contracts
 
-### Missing API Endpoints (TODO)
+// W1: Hero KPIs
+export interface PortalKpi {
+  arr: number;          // PLN, from kpi_daily
+  mrr: number;          // PLN
+  runway: number;       // months
+  nrr: number;          // %, net revenue retention
+  dau: number;          // daily active users
+  churn: number;        // %, monthly
+  ltvCac: number;       // ratio
+  conversion: number;   // %, free→paid
+  updatedAt: string;    // ISO 8601
+}
 
-These endpoints need creation for full dashboard functionality:
-- `GET /api/kpi/daily` — aggregated daily metrics
-- `GET /api/kpi/weekly` — aggregated weekly
-- `GET /api/events/feed` — paginated event log
-- `GET /api/agents/status` — all agent layers + policies
-- `GET /api/agents/logs` — paginated agent activity
-- `GET /api/ops/health` — aggregated CI + infra status
-- `GET /api/compliance/scan` — latest compliance results
+// W2: System Status
+export interface PortalSystemStatus {
+  edge: 'operational' | 'degraded' | 'down';
+  serverless: 'operational' | 'degraded' | 'down';
+  database: 'operational' | 'degraded' | 'down';
+  latestCommit: string;
+  ciStatus: 'green' | 'red' | 'pending';
+  appVersion: string;
+  safetyCoreVersion: string;
+  portalContractVersion: string;  // tracks UI↔backend compat
+}
 
-### Component Mapping
+// W3: Safety/Compliance Summary
+export interface PortalSafetySummary {
+  p0Status: 'PASS' | 'FAIL';
+  p1Status: 'PASS' | 'WARN' | 'FAIL';
+  p2Status: 'PASS' | 'WARN' | 'FAIL';
+  nuclearEvents24h: number;
+  languageViolations24h: number;
+}
 
-| Widget | Component file | Key dependency |
-|--------|---------------|----------------|
-| W1 hero_kpi_overview | HeroKpiGrid.tsx | @silence/ui MetricCard |
-| W2 hero_system_status | SystemStatus.tsx | /api/health fetch |
-| W3 hero_safety_compliance | SafetyComplianceStatus.tsx | nuclear_events query |
-| W4 product_app_status | AppStatusCards.tsx | Health endpoints |
-| W5 product_module_activation | ModuleTable.tsx | Static MODULES.md data |
-| W7 agents_layer_status | AgentLayers.tsx | agent_policies query |
-| W10 events_rate_overview | EventRate.tsx | events table aggregation |
-| W19 business_kpi_timeline | KpiTimeline.tsx | Recharts line chart |
-| W22 ops_deployment_status | OpsStatus.tsx | CI + health aggregation |
-| W24 ops_build_order | BuildProgress.tsx | Static CHANGELOG data |
+// W5: Module Activation
+export interface PortalModule {
+  name: string;         // e.g. "@silence/core"
+  type: 'open' | 'closed';
+  edgeSafe: boolean;
+  status: 'ready' | 'building' | 'planned';
+  events: string[];     // dot.notation event names
+  pricing: string;      // "MIT" | "pay-per-use" | "per-seat" | etc.
+}
+
+// W7: Agent Layer
+export interface PortalAgentLayer {
+  layer: 0 | 1 | 2;
+  name: 'Guardian' | 'Revenue' | 'Growth';
+  status: 'ACTIVE' | 'PAUSED' | 'LOCKED';
+  agents: { id: string; name: string; enabled: boolean; tasksToday: number }[];
+  unlockCondition?: string;
+  unlockMet: boolean;
+}
+
+// W8: Agent Performance
+export interface PortalAgentPerformance {
+  agentId: string;
+  layer: 0 | 1 | 2;
+  tasksTotal: number;
+  successRate: number;  // 0-1
+  costMonth: number;    // USD
+  estimatedRoi: number; // multiplier
+}
+
+// W10: Event Rate
+export interface PortalEventRate {
+  eventsPerMin: number;
+  byDomain: Record<'pattern' | 'archetype' | 'safety' | 'agent' | 'platform', number>;
+  errorPercent: number;
+}
+
+// W13: Compliance Matrix Row
+export interface PortalComplianceRow {
+  module: string;
+  p0Safety: 'Required' | 'Core' | 'N/A' | 'Optional' | 'Enforcer';
+  p1Language: 'Required' | 'Core' | 'N/A' | 'Supports';
+  p2Framing: 'Required' | 'N/A' | 'Supports';
+  currentStatus: 'PASS' | 'WARN' | 'FAIL';
+}
+
+// W22: Ops Status
+export interface PortalOpsService {
+  name: string;         // "Vercel Portal" | "Supabase" | "n8n" | "Stripe" | etc.
+  status: 'operational' | 'degraded' | 'down';
+  lastDeploy?: string;  // ISO 8601
+  url?: string;
+}
+
+// W24: Build Order Phase
+export interface PortalBuildPhase {
+  phase: 0 | 1 | 2 | 3;
+  name: string;
+  tasks: { name: string; status: 'done' | 'building' | 'planned' }[];
+  completionPercent: number;
+}
+```
+
+## 5. WIDGET → DATA SOURCE MAPPING
+
+| Widget | API Endpoint (TODO) | Supabase Table/View | Event Source | Doc Reference |
+|--------|--------------------|--------------------|-------------|---------------|
+| W1 hero_kpi | GET /api/kpi/daily | kpi_daily, kpi_weekly | — | INVESTOR.md §KPI |
+| W2 system_status | GET /api/health | — | — | DEPLOYMENT.md §Health |
+| W3 safety_compliance | GET /api/compliance/summary | nuclear_events, language_violations | crisis.detected | SAFETY.md §Testing, COMPLIANCE.md §P0 |
+| W4 app_status | GET /api/health (per app) | — | — | README.md §Apps |
+| W5 module_activation | Static (MODULES.md) | — | — | MODULES.md §Module Map |
+| W6 archetype_overview | GET /api/archetypes/distribution | archetypes | archetype.updated | ARCHETYPES.md §Scoring |
+| W7 agent_layers | GET /api/agents/status | agent_policies | — | AGENTS.md §3-Layer |
+| W8 agent_performance | GET /api/agents/performance | agent_logs, kpi_daily | agent.run.completed | AGENTS.md §Cost Summary |
+| W9 agent_alerts | GET /api/agents/alerts | anomaly_events, platform_limits | anomaly.detected | AGENTS.md §Orchestrator |
+| W10 event_rate | GET /api/events/rate | events | * (all) | EVENTS.md §Catalog |
+| W11 event_timeline | GET /api/events/feed | events | * (all) | EVENTS.md §Persistence |
+| W12 crisis_detected | GET /api/safety/crises | nuclear_events | crisis.detected | SAFETY.md §3-Layer |
+| W13 compliance_matrix | GET /api/compliance/matrix | language_violations | — | COMPLIANCE.md §Matrix |
+| W14 crisis_feed | GET /api/safety/feed | nuclear_events | crisis.detected, risk.flag.raised | SAFETY.md §CrisisModal |
+| W15 language_guard | GET /api/compliance/language | language_violations | — | COMPLIANCE.md §P1 |
+| W16 arch_layers | GET /api/health (extended) | — | — | ARCHITECTURE.md §Request Flow |
+| W17 module_detail | Static (MODULES.md) | — | — | MODULES.md §Details |
+| W18 data_layer | GET /api/ops/data | events (count), kpi_daily | — | ARCHITECTURE.md §Data Layer |
+| W19 kpi_timeline | GET /api/kpi/timeline | kpi_daily, kpi_weekly | — | INVESTOR.md §Revenue Targets |
+| W20 unit_economics | Static (INVESTOR.md) | — | — | INVESTOR.md §Unit Economics |
+| W21 revenue_targets | GET /api/kpi/targets | kpi_daily | — | INVESTOR.md §Revenue Targets |
+| W22 ops_status | GET /api/ops/health | — | — | DEPLOYMENT.md §Health Checks |
+| W23 orchestrator_rules | GET /api/agents/rules | agent_policies | — | AGENTS.md §Orchestrator |
+| W24 build_progress | Static (CHANGELOG.md) | — | — | CHANGELOG.md §3.0.0 |
+
+## 6. VISUAL WEIGHT HIERARCHY
+
+Not all bands are equal. Apply visual hierarchy:
+
+| Band | Weight | Visual treatment |
+|------|--------|-----------------|
+| **A: Hero** | HIGHEST | Full width, prominent, larger cards, bg-[#111113] |
+| **B: Product/Agents/Events** | HIGH | 3-column, full-size cards, standard bg |
+| **C: Compliance/Safety** | HIGH | Full width, accent-red borders when FAIL |
+| **D: Architecture/Modules** | MEDIUM | Slightly muted, smaller text, bg-[#0c0c0e] |
+| **E: Investor/Business** | MEDIUM | Standard |
+| **F: Ops/Deployment** | LOW | Compact cards, text-sm, reduced padding (p-3 not p-5), text-[#888893] default |
+
+Band F (Ops) should feel like "utility drawer" — always accessible but not fighting for attention with Product/Agents.
+
+## 7. DOCS BINDING (TODO comments in code)
+
+Every widget component MUST have a header comment binding it to docs:
+
+```tsx
+/**
+ * W13: compliance_matrix_status
+ * Business Q: "Czy P0/P1/P2 są zgodne w runtime?"
+ * Data source: GET /api/compliance/matrix (TODO) | Supabase: language_violations
+ * Doc refs: COMPLIANCE.md §Compliance Matrix, SAFETY.md §Testing Requirements
+ * Events: crisis.detected (trigger refresh)
+ * Contract: PortalComplianceRow from types/portal.ts
+ */
+```
+
+This ensures when docs change, devs know which widgets need updating.
 
 ### Grain Overlay (global, same as PatternLens)
 
@@ -459,5 +708,6 @@ body::before {
 
 ## CHANGELOG (PORTAL_SPEC.md)
 
-- 2026-02-08 v5.1 — Full 24-widget implementation, detailed spec from PORTAL_DASHBOARD_SPEC.md
-- 2026-02-08 v5.0 — Initial spec, 24 widgets, F-pattern layout
+- 2026-02-08 v5.1.1 — Golden ratio grid, types contract, widget-data source mapping, visual weight hierarchy, docs binding
+- 2026-02-08 v5.1 — Full 24-widget implementation
+- 2026-02-08 v5.0 — Initial spec
