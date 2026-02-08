@@ -424,6 +424,7 @@ export default function InvestorDashboard() {
                       backgroundColor: isUs
                         ? "rgba(50,184,198,0.05)"
                         : "transparent",
+                      borderLeft: isUs ? "2px solid #21808d" : "2px solid transparent",
                     }}
                   >
                     <td

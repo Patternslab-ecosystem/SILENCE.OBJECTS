@@ -115,8 +115,20 @@
   /* ═══════════════════════════════════════════
      TYPOGRAPHY
      ═══════════════════════════════════════════ */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-display: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-body: 'Outfit', system-ui, sans-serif;
+
+  /* ═══════════════════════════════════════════
+     SILENCE DARK TOKENS
+     ═══════════════════════════════════════════ */
+  --accent-teal: #21808d;
+  --accent-amber: #d4a843;
+  --accent-green: #3d9970;
+  --accent-red: #cc4444;
+  --glow-teal: rgba(33,128,141,0.15);
+  --glow-amber: rgba(212,168,67,0.10);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -633,3 +645,29 @@ a:hover {
   min-width: var(--touch-target);
   min-height: var(--touch-target);
 }
+
+/* ═══════════════════════════════════════════════════
+   SILENCE DARK — Film Grain Overlay
+   ═══════════════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════════════
+   SILENCE DARK — Custom Scrollbar
+   ═══════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-void); }
+::-webkit-scrollbar-thumb { background: #222228; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #333340; }
+
+/* ═══════════════════════════════════════════════════
+   SILENCE DARK — Selection
+   ═══════════════════════════════════════════════════ */
+::selection { background: rgba(33, 128, 141, 0.3); color: var(--text-primary); }

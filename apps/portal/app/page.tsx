@@ -131,7 +131,7 @@ export default function DashboardPage() {
       <section className="mb-6">
         <h2
           className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)" }}
+          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
         >
           Hero KPIs
         </h2>
@@ -340,7 +340,7 @@ export default function DashboardPage() {
       <section className="mb-6">
         <h2
           className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)" }}
+          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
         >
           Health &amp; Risk
         </h2>
@@ -469,7 +469,7 @@ export default function DashboardPage() {
       <section className="mb-6">
         <h2
           className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)" }}
+          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
         >
           Agents &amp; Structures
         </h2>
@@ -626,7 +626,7 @@ export default function DashboardPage() {
       <section className="mb-6">
         <h2
           className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)" }}
+          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
         >
           Business
         </h2>
@@ -725,7 +725,7 @@ export default function DashboardPage() {
       <section className="mb-6">
         <h2
           className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)" }}
+          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
         >
           Ops
         </h2>
@@ -847,7 +847,7 @@ export default function DashboardPage() {
       <section className="mb-6">
         <h2
           className="text-sm font-semibold uppercase tracking-wide mb-4"
-          style={{ color: "var(--color-text-secondary)" }}
+          style={{ color: "var(--color-text-secondary)", borderLeft: "2px solid #21808d", paddingLeft: 12, fontFamily: "'JetBrains Mono', monospace" }}
         >
           Modules ({MODULE_STATUS.length})
         </h2>
@@ -875,10 +875,13 @@ export default function DashboardPage() {
                   {mod.name}
                 </span>
                 <span
-                  className="text-xs ml-auto flex-shrink-0"
+                  className="text-xs ml-auto flex-shrink-0 px-1.5 py-0.5 rounded"
                   style={{
-                    color: mod.type === "open" ? "var(--color-primary)" : "var(--color-warning)",
-                    opacity: 0.7,
+                    color: mod.type === "open" ? "#3d9970" : "#d4a843",
+                    background: mod.type === "open" ? "rgba(61,153,112,0.1)" : "rgba(212,168,67,0.1)",
+                    border: mod.type === "open" ? "1px solid rgba(61,153,112,0.2)" : "1px solid rgba(212,168,67,0.2)",
+                    fontSize: "10px",
+                    fontWeight: 600,
                   }}
                 >
                   {mod.type === "open" ? "O" : "C"}
