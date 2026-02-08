@@ -1,6 +1,7 @@
 # SILENCE.OBJECTS
 
 > Modular framework for structural analysis of behavioral patterns.
+> NOT a chatbot. NOT a wellness app. NOT therapy. A FRAMEWORK.
 
 [![License: MIT](https://img.shields.io/badge/Core-MIT-green.svg)]()
 [![License: Proprietary](https://img.shields.io/badge/Closed_Modules-Proprietary-red.svg)]()
@@ -8,30 +9,26 @@
 
 ## What is SILENCE.OBJECTS?
 
-A composable, API-first, event-driven framework that provides structural analysis of behavioral patterns as systems. It is **not** a chatbot, not a wellness app, not therapy. It is a framework with modules you can deploy, license, extend, and compose.
+A composable, API-first, event-driven framework that provides structural analysis of behavioral patterns as systems.
 
 **Model:** Open Core (like Redis, Elastic, Supabase)
 - Open source core → community adoption → enterprise upsell
 - Closed modules → B2B licensing + pay-per-use
+- API-first: core as stable capabilities, apps as thin UI adapters
 
 ## Quick Start
 
 ```bash
-# Clone
 git clone https://github.com/Patternslab-ecosystem/SILENCE.OBJECTS.git
 cd SILENCE.OBJECTS
-
-# Install
 pnpm install
-
-# Dev (Portal Dashboard)
-pnpm dev
-
-# Build
-pnpm build
+pnpm dev          # runs apps/portal (dashboard)
+pnpm build        # builds all packages + apps
 ```
 
-## Architecture
+**Requirements:** Node.js 18+, pnpm, Supabase project (EU region), Vercel account.
+
+## Architecture (summary)
 
 ```
 Client (PatternLens / PatternsLab / Portal)
@@ -40,14 +37,16 @@ Client (PatternLens / PatternsLab / Portal)
 Edge Runtime ── auth, rate limit, feature flags, language scan
   │
   ▼
-Thin Handler ── HTTP ↔ command mapping, input validation
+Thin Handler ── HTTP ↔ command mapping, input validation (@silence/contracts)
   │
   ▼
 Domain Module ── @silence/core, @silence/archetypes, @silence/ai ...
-  │
+  │              wrapped by @silence/safety middleware
   ▼
-Event Bus ── @silence/events → Dashboard, Agents, Analytics
+Event Bus ── @silence/events → Dashboard, Agents, Analytics, Notifications
 ```
+
+Full details: [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Monorepo Structure
 
@@ -59,8 +58,8 @@ SILENCE.OBJECTS/
 │   ├── core/            # @silence/core — pattern detection engine
 │   ├── archetypes/      # @silence/archetypes — Jungian classification
 │   ├── symbolic/        # @silence/symbolic — pattern catalysts
-│   ├── language/        # @silence/language — vocabulary guardrails
-│   ├── validator/       # @silence/validator — contract enforcement
+│   ├── language/        # @silence/language — vocabulary guardrails (edge-safe)
+│   ├── validator/       # @silence/validator — contract enforcement (edge-safe)
 │   ├── ui/              # @silence/ui — design system
 │   ├── safety/          # @silence/safety — crisis detection [CLOSED]
 │   ├── ai/              # @silence/ai — Claude integration [CLOSED]
@@ -70,13 +69,14 @@ SILENCE.OBJECTS/
 │   ├── legal/           # @silence/legal — compliance [CLOSED]
 │   └── linkedin-agent/  # @silence/linkedin-agent [CLOSED]
 ├── apps/
-│   ├── portal/          # Dashboard + investor view
+│   ├── portal/          # Dashboard + investor view + agent control
 │   ├── patternlens/     # Consumer PWA
 │   └── patternslab/     # B2B institutional
 ├── agents/              # AI agent army (n8n orchestrated)
-├── docs/                # Documentation
-├── scripts/             # CI/CD, language checks
-└── supabase/            # Database schema + migrations
+├── docs/                # Documentation (this set)
+├── tooling/             # ESLint, TSConfig, generators
+├── supabase/            # Database schema + migrations
+└── .github/workflows/   # CI/CD pipelines
 ```
 
 ## Applications
@@ -89,11 +89,26 @@ SILENCE.OBJECTS/
 
 ## Stack
 
-- **Frontend:** Next.js 15+, React 19, TypeScript strict, Tailwind 4
-- **Backend:** Vercel Edge + Serverless, tRPC / Server Actions
-- **Data:** Supabase Postgres (EU), Drizzle ORM, Upstash Redis
-- **AI:** Claude Sonnet 4, Whisper, AgentRuntime abstraction
-- **Infra:** Vercel, GitHub Actions, n8n (Hetzner), Sentry
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 15+, React 19, TypeScript strict, Tailwind 4, Zustand, TanStack Query |
+| Backend | Vercel Edge + Serverless, tRPC / Server Actions |
+| Data | Supabase Postgres (EU), Drizzle ORM, Upstash Redis |
+| AI | Claude Sonnet 4 (primary), GPT-4o (fallback), Whisper |
+| Agents | n8n (Hetzner CX22), 3-layer hierarchy |
+| Infra | Vercel, GitHub Actions, Sentry, Cloudflare DNS |
+| Payments | Stripe (PL/UK/US/EU) |
+
+## Framework Contract
+
+All implementations MUST comply:
+
+1. **Object ≠ User** — an object is a recorded behavioral event, never a representation of the person
+2. **Interpretation ≠ Truth** — all output is structural hypothesis, never fact
+3. **No Advice** — the system never tells the user what to do
+4. **No Diagnosis** — the system never classifies medically or psychologically
+5. **Language is Structural** — engineering-grade vocabulary only (see COMPLIANCE.md)
+6. **User Retains Control** — the system presents structure, the user decides meaning
 
 ## Documentation
 
@@ -112,17 +127,6 @@ SILENCE.OBJECTS/
 | [CONTRIBUTING.md](docs/CONTRIBUTING.md) | How to contribute to open modules |
 | [CHANGELOG.md](docs/CHANGELOG.md) | Version history |
 
-## Framework Contract
-
-All implementations MUST comply with these invariants:
-
-1. **Object ≠ User** — an object is a recorded behavioral event, never a representation of the person
-2. **Interpretation ≠ Truth** — all output is structural hypothesis, never fact
-3. **No Advice** — the system never tells the user what to do
-4. **No Diagnosis** — the system never classifies medically or psychologically
-5. **Language is Structural** — engineering-grade vocabulary only (see [01-LANGUAGE.md](docs/framework/01-LANGUAGE.md))
-6. **User Retains Control** — the system presents structure, the user decides meaning
-
 ## Disclaimer
 
 ```
@@ -132,11 +136,12 @@ It does not provide therapy, diagnosis, or crisis support.
 
 ## Links
 
-- **GitHub:** https://github.com/Patternslab-ecosystem/SILENCE.OBJECTS
-- **Vercel:** https://vercel.com/silence-objects/silence-objects
-- **PatternLens:** https://patternlens.app
-- **PatternsLab:** https://patternslab.app
-- **Investor:** https://patternslab.work
+| Resource | URL |
+|----------|-----|
+| GitHub | https://github.com/Patternslab-ecosystem/SILENCE.OBJECTS |
+| PatternLens | https://patternlens.app |
+| PatternsLab | https://patternslab.app |
+| Investor Portal | https://patternslab.work |
 
 ## License
 
@@ -147,3 +152,6 @@ It does not provide therapy, diagnosis, or crisis support.
 ---
 
 **SILENCE.OBJECTS** © 2025-2026 | Built by PatternLabs
+
+---
+*CHANGELOG (README.md) — 2026-02-08: Enriched quickstart, added stack table, framework contract section, aligned with DIPLO BIBLE v3.0. (topic: docs-v3-baseline)*
