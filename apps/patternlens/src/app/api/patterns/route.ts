@@ -103,23 +103,23 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Fetch objects with interpretations (columns match 001_patternlens.sql)
+    // Fetch objects with interpretations (REAL schema: TEXT columns)
     const { data: objects, error: fetchError } = await supabase
       .from('objects')
       .select(`
         id,
         input_text,
-        detected_theme,
+        theme,
         interpretations (
           lens,
-          phase_1_context,
-          phase_2_tension,
-          phase_3_meaning,
-          phase_4_function
+          context_phase,
+          tension_phase,
+          meaning_phase,
+          function_phase
         )
       `)
       .eq('user_id', user.id)
-      .is('deleted_at', null)
+      .eq('is_archived', false)
       .in('id', object_ids);
 
     if (fetchError || !objects || objects.length < 3) {
@@ -134,36 +134,28 @@ export async function POST(req: NextRequest) {
       const lensA = obj.interpretations?.find((i: { lens: string }) => i.lens === 'A');
       const lensB = obj.interpretations?.find((i: { lens: string }) => i.lens === 'B');
 
-      // phase columns are JSONB with { title, content } structure
-      const getContent = (phase: unknown) => {
-        if (phase && typeof phase === 'object' && 'content' in (phase as Record<string, unknown>)) {
-          return (phase as Record<string, string>).content;
-        }
-        return 'brak';
-      };
-
       return `
 OBIEKT ${idx + 1} (ID: ${obj.id}):
-Temat: ${obj.detected_theme || 'brak'}
+Temat: ${obj.theme || 'brak'}
 Input: "${obj.input_text.substring(0, 200)}..."
 
 Soczewka A:
-- Kontekst: ${getContent(lensA?.phase_1_context)}
-- Napięcie: ${getContent(lensA?.phase_2_tension)}
-- Znaczenie: ${getContent(lensA?.phase_3_meaning)}
-- Funkcja: ${getContent(lensA?.phase_4_function)}
+- Kontekst: ${lensA?.context_phase || 'brak'}
+- Napięcie: ${lensA?.tension_phase || 'brak'}
+- Znaczenie: ${lensA?.meaning_phase || 'brak'}
+- Funkcja: ${lensA?.function_phase || 'brak'}
 
 Soczewka B:
-- Kontekst: ${getContent(lensB?.phase_1_context)}
-- Napięcie: ${getContent(lensB?.phase_2_tension)}
-- Znaczenie: ${getContent(lensB?.phase_3_meaning)}
-- Funkcja: ${getContent(lensB?.phase_4_function)}
+- Kontekst: ${lensB?.context_phase || 'brak'}
+- Napięcie: ${lensB?.tension_phase || 'brak'}
+- Znaczenie: ${lensB?.meaning_phase || 'brak'}
+- Funkcja: ${lensB?.function_phase || 'brak'}
 `;
     }).join('\n---\n');
 
     // Call Claude for synthesis
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 2048,
       messages: [{
         role: 'user',
@@ -191,17 +183,18 @@ Soczewka B:
       }, { status: 422 });
     }
 
-    // Save patterns to database (columns match 001_patternlens.sql)
-    // patterns table: id, user_id, pattern_name, pattern_theme, object_count, first_detected, last_updated
+    // Save patterns to database (REAL schema: pattern_name, pattern_description, confidence)
     const patternRecords = patterns.map((p: {
       pattern_name: string;
       pattern_theme: string;
+      frequency?: string;
       related_objects?: string[];
     }) => ({
       user_id: user.id,
+      object_id: object_ids[0],
       pattern_name: p.pattern_name,
-      pattern_theme: p.pattern_theme || null,
-      object_count: p.related_objects?.length || object_ids.length,
+      pattern_description: `Theme: ${p.pattern_theme || 'unknown'}. Frequency: ${p.frequency || 'unknown'}. Objects: ${(p.related_objects || object_ids).length}`,
+      confidence: 0.75,
     }));
 
     const { data: savedPatterns, error: saveError } = await supabase

@@ -5,19 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
-interface InterpretationPhase {
-  title: string;
-  content: string;
-}
-
 interface Interpretation {
   id: string;
   lens: 'A' | 'B';
-  phase_1_context: InterpretationPhase;
-  phase_2_tension: InterpretationPhase;
-  phase_3_meaning: InterpretationPhase;
-  phase_4_function: InterpretationPhase;
-  confidence_score: number;
+  context_phase: string;
+  tension_phase: string;
+  meaning_phase: string;
+  function_phase: string;
+  confidence: number;
   risk_level: string;
   created_at: string;
 }
@@ -25,9 +20,10 @@ interface Interpretation {
 interface ObjectData {
   id: string;
   input_text: string;
-  input_method: string;
+  input_source: string;
   selected_lens: string | null;
-  detected_theme: string | null;
+  theme: string | null;
+  processing_status: string;
   created_at: string;
   interpretations?: Interpretation[];
 }
@@ -101,12 +97,12 @@ export default function ObjectDetailPage() {
   const hasInterpretations = lensA || lensB;
   const status = hasInterpretations ? 'completed' : 'pending';
 
-  const phaseKeys = ['phase_1_context', 'phase_2_tension', 'phase_3_meaning', 'phase_4_function'] as const;
+  const phaseKeys = ['context_phase', 'tension_phase', 'meaning_phase', 'function_phase'] as const;
   const phaseLabels: Record<string, string> = {
-    phase_1_context: t.results.context,
-    phase_2_tension: t.results.tension,
-    phase_3_meaning: t.results.meaning,
-    phase_4_function: t.results.function,
+    context_phase: t.results.context,
+    tension_phase: t.results.tension,
+    meaning_phase: t.results.meaning,
+    function_phase: t.results.function,
   };
 
   return (
@@ -144,11 +140,11 @@ export default function ObjectDetailPage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>{object.input_text}</p>
           <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
             <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
-              {t.common.method}: {object.input_method === 'voice' ? t.analysis.voice : t.analysis.text}
+              {t.common.method}: {object.input_source === 'voice' ? t.analysis.voice : t.analysis.text}
             </span>
-            {object.detected_theme && (
+            {object.theme && (
               <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
-                {t.common.theme}: {object.detected_theme}
+                {t.common.theme}: {object.theme}
               </span>
             )}
           </div>
@@ -176,21 +172,21 @@ export default function ObjectDetailPage() {
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {phaseKeys.map((key) => {
-                const phase = lensA[key];
+                const text = (lensA as any)[key];
                 return (
                   <div key={key} style={{ padding: 16, background: 'var(--bg-surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <p style={{ color: 'var(--accent-cyan)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em', fontFamily: 'var(--font-mono)' }}>
                         {phaseLabels[key]}
                       </p>
-                      {lensA.confidence_score != null && (
-                        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: lensA.confidence_score >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
-                          {Math.round(lensA.confidence_score * 100)}%
+                      {lensA.confidence != null && (
+                        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: lensA.confidence >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
+                          {Math.round(lensA.confidence * 100)}%
                         </span>
                       )}
                     </div>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>
-                      {phase?.content || t.results.awaitingAnalysis}
+                      {text || t.results.awaitingAnalysis}
                     </p>
                   </div>
                 );
@@ -212,7 +208,7 @@ export default function ObjectDetailPage() {
                     {t.results.lensAFull}
                   </p>
                   <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>
-                    {lensA.phase_1_context?.content || ''}
+                    {lensA.context_phase || ''}
                   </p>
                 </div>
               )}
@@ -222,7 +218,7 @@ export default function ObjectDetailPage() {
                     {t.results.lensBFull}
                   </p>
                   <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>
-                    {lensB.phase_1_context?.content || ''}
+                    {lensB.context_phase || ''}
                   </p>
                 </div>
               )}
@@ -241,8 +237,8 @@ export default function ObjectDetailPage() {
                 <p style={{ color: 'var(--accent-cyan)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
                   {t.results.lensA}
                 </p>
-                <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: lensA.confidence_score >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
-                  {Math.round(lensA.confidence_score * 100)}%
+                <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: lensA.confidence >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
+                  {Math.round(lensA.confidence * 100)}%
                 </p>
               </div>
               {lensB && (
@@ -250,8 +246,8 @@ export default function ObjectDetailPage() {
                   <p style={{ color: 'var(--accent-purple)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
                     {t.results.lensB}
                   </p>
-                  <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: lensB.confidence_score >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
-                    {Math.round(lensB.confidence_score * 100)}%
+                  <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: lensB.confidence >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
+                    {Math.round(lensB.confidence * 100)}%
                   </p>
                 </div>
               )}

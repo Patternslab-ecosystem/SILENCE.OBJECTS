@@ -33,11 +33,11 @@ export async function GET() {
       id: string;
       object_id: string;
       lens: string;
-      phase_1_context: unknown;
-      phase_2_tension: unknown;
-      phase_3_meaning: unknown;
-      phase_4_function: unknown;
-      confidence_score: number | null;
+      context_phase: string;
+      tension_phase: string;
+      meaning_phase: string;
+      function_phase: string;
+      confidence: number | null;
       risk_level: string;
       created_at: string;
     }> = [];
@@ -80,20 +80,20 @@ export async function GET() {
       objects: reports?.map((obj) => ({
         id: obj.id,
         input_text: obj.input_text,
-        input_method: obj.input_method,
+        input_source: obj.input_source,
         selected_lens: obj.selected_lens,
-        detected_theme: obj.detected_theme,
+        theme: obj.theme,
         created_at: obj.created_at,
         interpretations: interpretations
           .filter((i) => i.object_id === obj.id)
           .map((i) => ({
             id: i.id,
             lens: i.lens,
-            phase_1_context: i.phase_1_context,
-            phase_2_tension: i.phase_2_tension,
-            phase_3_meaning: i.phase_3_meaning,
-            phase_4_function: i.phase_4_function,
-            confidence_score: i.confidence_score,
+            context_phase: i.context_phase,
+            tension_phase: i.tension_phase,
+            meaning_phase: i.meaning_phase,
+            function_phase: i.function_phase,
+            confidence: i.confidence,
             risk_level: i.risk_level,
             created_at: i.created_at,
           })),

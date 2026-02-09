@@ -30,25 +30,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Failed to save report" }, { status: 500 });
     }
 
-    // Insert interpretations with JSONB phase fields
+    // Insert interpretations with TEXT phase fields (REAL schema)
     const interpretations = [
       {
         object_id: report.id,
         lens: "A",
-        phase_1_context: { summary: lensA.context },
-        phase_2_tension: { summary: lensA.tension },
-        phase_3_meaning: { summary: lensA.meaning },
-        phase_4_function: { summary: lensA.function },
-        confidence_score: lensA.confidence
+        context_phase: lensA.context,
+        tension_phase: lensA.tension,
+        meaning_phase: lensA.meaning,
+        function_phase: lensA.function,
+        confidence: lensA.confidence || 0.5,
+        risk_level: riskLevel || "NONE",
       },
       {
         object_id: report.id,
         lens: "B",
-        phase_1_context: { summary: lensB.context },
-        phase_2_tension: { summary: lensB.tension },
-        phase_3_meaning: { summary: lensB.meaning },
-        phase_4_function: { summary: lensB.function },
-        confidence_score: lensB.confidence
+        context_phase: lensB.context,
+        tension_phase: lensB.tension,
+        meaning_phase: lensB.meaning,
+        function_phase: lensB.function,
+        confidence: lensB.confidence || 0.5,
+        risk_level: riskLevel || "NONE",
       },
     ];
 
@@ -80,12 +82,12 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Columns match 001_patternlens.sql (no risk_level on objects table)
+    // REAL schema columns
     const { data: reports, error } = await supabase
       .from("objects")
-      .select("id, input_text, selected_lens, detected_theme, created_at")
+      .select("id, input_text, selected_lens, theme, created_at")
       .eq("user_id", user.id)
-      .is("deleted_at", null)
+      .eq("is_archived", false)
       .order("created_at", { ascending: false });
 
     if (error) {

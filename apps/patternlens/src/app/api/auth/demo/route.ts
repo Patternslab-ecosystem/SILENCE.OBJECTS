@@ -173,27 +173,27 @@ async function createSampleObjects(supabase: any, userId: string) {
       .single();
 
     if (newReport) {
-      // Add sample interpretations with JSONB phase fields
+      // Add sample interpretations with TEXT phase fields (REAL schema)
       await supabase.from("interpretations").insert([
         {
           object_id: newReport.id,
           lens: "A",
-          phase_1_context: { summary: "Pattern emerges in achievement-related situations" },
-          phase_2_tension: { summary: "Conflict between desire for success and fear of failure" },
-          phase_3_meaning: { summary: "May reflect internalized early experiences with performance expectations" },
-          phase_4_function: { summary: "Procrastination serves as protection against potential criticism" },
-          confidence_score: 0.85,
-          risk_level: "none",
+          context_phase: "Pattern emerges in achievement-related situations",
+          tension_phase: "Conflict between desire for success and fear of failure",
+          meaning_phase: "May reflect internalized early experiences with performance expectations",
+          function_phase: "Procrastination serves as protection against potential criticism",
+          confidence: 0.85,
+          risk_level: "NONE",
         },
         {
           object_id: newReport.id,
           lens: "B",
-          phase_1_context: { summary: "Automatic thoughts triggered by task assignment" },
-          phase_2_tension: { summary: "Cognitive distortions amplifying perceived difficulty" },
-          phase_3_meaning: { summary: "Learned avoidance pattern reinforced by temporary tension reduction" },
-          phase_4_function: { summary: "Short-term activation reduction maintaining long-term pattern" },
-          confidence_score: 0.82,
-          risk_level: "none",
+          context_phase: "Automatic thoughts triggered by task assignment",
+          tension_phase: "Cognitive distortions amplifying perceived difficulty",
+          meaning_phase: "Learned avoidance pattern reinforced by temporary tension reduction",
+          function_phase: "Short-term activation reduction maintaining long-term pattern",
+          confidence: 0.82,
+          risk_level: "NONE",
         },
       ]);
     }

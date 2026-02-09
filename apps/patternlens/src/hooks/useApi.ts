@@ -15,36 +15,35 @@ function createClient() {
   );
 }
 
-// Types — matched to 001_patternlens.sql migration + API response
+// Types — matched to REAL Supabase schema (TEXT columns, not JSONB)
 export interface PLObject {
   id: string;
   input_text: string;
-  input_method?: 'text' | 'voice';
+  input_source?: string;
   selected_lens: string | null;
-  detected_theme: string | null;
+  theme: string | null;
+  processing_status?: string;
+  is_archived?: boolean;
   created_at: string;
   interpretations?: Interpretation[];
-}
-
-export interface InterpretationPhase {
-  title: string;
-  content: string;
 }
 
 export interface Interpretation {
   id: string;
   lens: 'A' | 'B';
-  phase_1_context: InterpretationPhase;
-  phase_2_tension: InterpretationPhase;
-  phase_3_meaning: InterpretationPhase;
-  phase_4_function: InterpretationPhase;
-  confidence_score: number;
+  context_phase: string;
+  tension_phase: string;
+  meaning_phase: string;
+  function_phase: string;
+  confidence: number;
   risk_level: string;
   created_at?: string;
 }
 
 // Derived helpers
 export function getProcessingStatus(obj: PLObject): 'completed' | 'pending' {
+  if (obj.processing_status === 'completed') return 'completed';
+  if (obj.processing_status === 'pending') return 'pending';
   return obj.interpretations && obj.interpretations.length > 0 ? 'completed' : 'pending';
 }
 

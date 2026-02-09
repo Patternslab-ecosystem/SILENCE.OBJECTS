@@ -1,8 +1,7 @@
 // ============================================
-// src/app/api/objects/interpret/route.ts
-// PatternLens v5.0 - AI Processing Endpoint
-// MATCHED TO 001_patternlens.sql MIGRATION SCHEMA
-// PASSIVE safety profile (v5.0 ADR)
+// /api/objects/interpret — AI dual-lens analysis
+// MATCHED TO REAL SUPABASE SCHEMA
+// interpretations: TEXT columns (context_phase, tension_phase, etc.)
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,25 +9,16 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Anthropic from '@anthropic-ai/sdk';
 
-// ============================================
-// CONFIGURATION
-// ============================================
-
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-// Crisis keywords (PASSIVE: show resources only, no DB logging)
 const HARD_KEYWORDS_PL = [
   'samobójstwo', 'zabić się', 'odebrać sobie życie',
   'skok z balkonu', 'przedawkowanie', 'powiesić się',
   'chcę umrzeć', 'nie chcę żyć', 'skończę z tym',
   'zakończyć życie', 'targnąć się na życie'
 ];
-
-// ============================================
-// HELPER: Create Supabase Client
-// ============================================
 
 async function createSupabaseClient() {
   const cookieStore = await cookies();
@@ -50,10 +40,6 @@ async function createSupabaseClient() {
   );
 }
 
-// ============================================
-// HELPER: Crisis Resources
-// ============================================
-
 function getCrisisResources() {
   return [
     { id: 'telefon-zaufania', name: 'Telefon Zaufania', phone: '116 123', description: '24/7' },
@@ -63,30 +49,6 @@ function getCrisisResources() {
 }
 
 // ============================================
-// AI PROMPT TEMPLATE
-// ============================================
-
-const SYSTEM_PROMPT = `Jesteś analitykiem strukturalnym SILENCE.OBJECTS. Analizujesz wzorce zachowań, NIE dajesz porad.
-
-KRYTYCZNE ZASADY:
-1. To narzędzie analizy wzorców, NIE terapia
-2. Używasz TYLKO terminologii SILENCE.OBJECTS
-3. ZAKAZANE słowa: porada, terapia, diagnoza, leczenie, pomoc, wsparcie, granice, trauma
-4. WYMAGANE słowa: wzorzec, struktura, funkcja, napięcie, konstrukcja, obiekt
-
-STRUKTURA ODPOWIEDZI (JSON):
-{
-  "kontekst": "Obiektywny opis sytuacji (max 100 słów)",
-  "napiecie": "Główne napięcie strukturalne (max 80 słów)",
-  "znaczenie": "Co napięcie ujawnia o wzorcu (max 100 słów)",
-  "funkcja": "Jaką funkcję pełni ten wzorzec (max 80 słów)",
-  "temat": "work|relationship|conflict|self",
-  "pewnosc": 70-95
-}
-
-Odpowiadaj TYLKO w formacie JSON, bez żadnego tekstu przed ani po.`;
-
-// ============================================
 // POST /api/objects/interpret
 // ============================================
 
@@ -94,7 +56,6 @@ export async function POST(req: NextRequest) {
   const startTime = Date.now();
 
   try {
-    // 1. AUTH
     const supabase = await createSupabaseClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -102,7 +63,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. PARSE REQUEST
     const body = await req.json();
     const { object_id } = body;
 
@@ -110,23 +70,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'object_id required' }, { status: 400 });
     }
 
-    // 3. FETCH OBJECT (columns match 001_patternlens.sql)
+    // Fetch object — REAL schema columns
     const { data: object, error: fetchError } = await supabase
       .from('objects')
-      .select('id, input_text, input_method, selected_lens, detected_theme')
+      .select('id, input_text, input_source, selected_lens, theme')
       .eq('id', object_id)
       .eq('user_id', user.id)
-      .is('deleted_at', null)
       .single();
 
     if (fetchError || !object) {
       return NextResponse.json({ error: 'Object not found' }, { status: 404 });
     }
 
-    // 4. SAFETY CHECK (PASSIVE: show resources only, no DB logging per v5.0 ADR)
+    // Crisis check
     const lowerText = object.input_text.toLowerCase();
     const hardMatch = HARD_KEYWORDS_PL.some(k => lowerText.includes(k));
-
     if (hardMatch) {
       return NextResponse.json({
         crisis: true,
@@ -135,114 +93,135 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    // 5. AI PROCESSING - DUAL LENS
-    const lensAPrompt = `Analiza przez SOCZEWKĘ A (perspektywa ochronna - co wzorzec chroni):
+    // Single Claude call for dual-lens analysis
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 3000,
+      system: `You are a structural behavioral pattern analyst using the SILENCE.OBJECTS framework.
+Analyze the input using dual-lens structural interpretation with 4 phases each.
+NEVER provide therapy, diagnosis, advice, or treatment.
+You provide structural analysis only — patterns, tensions, and functions.
 
-"${object.input_text}"
+Respond ONLY in valid JSON:
+{
+  "lens_a": {
+    "context": "Phase 1 — what context/situation is described",
+    "tension": "Phase 2 — what structural tension exists",
+    "meaning": "Phase 3 — what meaning or significance emerges",
+    "function": "Phase 4 — what function does this pattern serve"
+  },
+  "lens_b": {
+    "context": "Phase 1 — alternative contextual reading",
+    "tension": "Phase 2 — alternative tension interpretation",
+    "meaning": "Phase 3 — alternative meaning",
+    "function": "Phase 4 — alternative functional reading"
+  },
+  "patterns": [
+    { "name": "pattern name", "description": "brief description", "confidence": 0.85 }
+  ],
+  "theme": "work|relationship|conflict|self",
+  "confidence": 0.82
+}`,
+      messages: [{
+        role: 'user',
+        content: `Analyze this structural pattern:\n\n${object.input_text}`
+      }],
+    });
 
-${SYSTEM_PROMPT}`;
+    const generationTime = Date.now() - startTime;
+    const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
 
-    const lensBPrompt = `Analiza przez SOCZEWKĘ B (perspektywa adaptacyjna - dokąd wzorzec prowadzi):
-
-"${object.input_text}"
-
-${SYSTEM_PROMPT}`;
-
-    const [lensAResponse, lensBResponse] = await Promise.all([
-      anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: lensAPrompt }]
-      }),
-      anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: lensBPrompt }]
-      })
-    ]);
-
-    // 6. PARSE AI RESPONSES
-    const parseAIResponse = (response: Anthropic.Message) => {
-      const text = response.content[0].type === 'text' ? response.content[0].text : '';
-      try {
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
-      } catch {
-        console.error('JSON parse error:', text);
-        return null;
-      }
-    };
-
-    const lensA = parseAIResponse(lensAResponse);
-    const lensB = parseAIResponse(lensBResponse);
-
-    if (!lensA || !lensB) {
-      throw new Error('AI response parsing failed');
+    let analysis;
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    } catch {
+      analysis = null;
     }
 
-    // 7. SAVE INTERPRETATIONS (columns match 001_patternlens.sql)
-    // phase_1_context through phase_4_function are JSONB columns
-    // confidence_score is DECIMAL(3,2) — store as 0.00-1.00
-    const interpretations = [
-      {
-        object_id,
-        lens: 'A',
-        phase_1_context: { title: 'Kontekst', content: lensA.kontekst },
-        phase_2_tension: { title: 'Napięcie', content: lensA.napiecie },
-        phase_3_meaning: { title: 'Znaczenie', content: lensA.znaczenie },
-        phase_4_function: { title: 'Funkcja', content: lensA.funkcja },
-        confidence_score: (lensA.pewnosc || 80) / 100,
-        risk_level: 'none'
-      },
-      {
-        object_id,
-        lens: 'B',
-        phase_1_context: { title: 'Kontekst', content: lensB.kontekst },
-        phase_2_tension: { title: 'Napięcie', content: lensB.napiecie },
-        phase_3_meaning: { title: 'Znaczenie', content: lensB.znaczenie },
-        phase_4_function: { title: 'Funkcja', content: lensB.funkcja },
-        confidence_score: (lensB.pewnosc || 80) / 100,
-        risk_level: 'none'
-      }
-    ];
+    if (!analysis) {
+      return NextResponse.json({ error: 'Analysis parsing failed' }, { status: 500 });
+    }
 
-    const { data: savedInterpretations, error: saveError } = await supabase
+    // Save interpretations — REAL schema: TEXT columns, not JSONB
+    const { data: lensAData } = await supabase
       .from('interpretations')
-      .insert(interpretations)
-      .select();
+      .insert({
+        object_id: object.id,
+        lens: 'A',
+        context_phase: analysis.lens_a.context,
+        tension_phase: analysis.lens_a.tension,
+        meaning_phase: analysis.lens_a.meaning,
+        function_phase: analysis.lens_a.function,
+        model_version: 'claude-sonnet-4-20250514',
+        generation_time_ms: generationTime,
+        confidence: analysis.confidence || 0.5,
+        risk_level: 'NONE',
+      })
+      .select()
+      .single();
 
-    if (saveError) {
-      console.error('Save error:', saveError);
-      throw new Error('Failed to save interpretations');
+    const { data: lensBData } = await supabase
+      .from('interpretations')
+      .insert({
+        object_id: object.id,
+        lens: 'B',
+        context_phase: analysis.lens_b.context,
+        tension_phase: analysis.lens_b.tension,
+        meaning_phase: analysis.lens_b.meaning,
+        function_phase: analysis.lens_b.function,
+        model_version: 'claude-sonnet-4-20250514',
+        generation_time_ms: generationTime,
+        confidence: analysis.confidence || 0.5,
+        risk_level: 'NONE',
+      })
+      .select()
+      .single();
+
+    // Save patterns to separate table
+    if (analysis.patterns?.length) {
+      await supabase.from('patterns').insert(
+        analysis.patterns.map((p: any) => ({
+          object_id: object.id,
+          user_id: user.id,
+          pattern_name: p.name,
+          pattern_description: p.description,
+          confidence: p.confidence || 0.5,
+        }))
+      );
     }
 
-    // 8. UPDATE OBJECT detected_theme (only mutable column in migration)
-    const detectedTheme = lensA.temat || 'self';
+    // Update object status + theme
     await supabase
       .from('objects')
-      .update({ detected_theme: detectedTheme })
-      .eq('id', object_id);
+      .update({
+        processing_status: 'completed',
+        completed_at: new Date().toISOString(),
+        theme: analysis.theme || 'self',
+      })
+      .eq('id', object.id);
 
-    // 9. RETURN SUCCESS
-    const duration = Date.now() - startTime;
+    // Increment weekly count (non-blocking)
+    try { await supabase.rpc('increment_weekly_objects', { uid: user.id }); } catch {}
 
     return NextResponse.json({
       success: true,
       object_id,
       interpretations: {
-        lensA: savedInterpretations?.find(i => i.lens === 'A'),
-        lensB: savedInterpretations?.find(i => i.lens === 'B')
+        lensA: lensAData,
+        lensB: lensBData,
       },
+      patterns: analysis.patterns,
+      confidence: analysis.confidence,
       performance: {
-        duration_ms: duration,
+        duration_ms: Date.now() - startTime,
         target_ms: 15000,
-        within_target: duration < 15000
+        within_target: (Date.now() - startTime) < 15000
       }
     });
 
   } catch (error) {
     console.error('Interpret error:', error);
-
     return NextResponse.json({
       error: 'Processing failed',
       message: process.env.NODE_ENV === 'development' ? String(error) : undefined,
@@ -252,7 +231,7 @@ ${SYSTEM_PROMPT}`;
 }
 
 // ============================================
-// GET /api/objects/interpret - Status Check
+// GET /api/objects/interpret — Status Check
 // ============================================
 
 export async function GET(req: NextRequest) {
@@ -270,31 +249,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Only select columns that exist in 001_patternlens.sql
+  // REAL schema columns
   const { data, error } = await supabase
     .from('objects')
     .select(`
       id,
       input_text,
-      input_method,
+      input_source,
       selected_lens,
-      detected_theme,
+      theme,
+      processing_status,
       created_at,
       interpretations (
         id,
         lens,
-        phase_1_context,
-        phase_2_tension,
-        phase_3_meaning,
-        phase_4_function,
-        confidence_score,
+        context_phase,
+        tension_phase,
+        meaning_phase,
+        function_phase,
+        confidence,
         risk_level,
         created_at
       )
     `)
     .eq('id', object_id)
     .eq('user_id', user.id)
-    .is('deleted_at', null)
     .single();
 
   if (error) {

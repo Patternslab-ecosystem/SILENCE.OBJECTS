@@ -1,16 +1,11 @@
 // ============================================
-// src/app/api/objects/route.ts
-// PatternLens v5.0 - Objects CRUD API
-// MATCHED TO 001_patternlens.sql MIGRATION SCHEMA
+// /api/objects — Create + List objects
+// MATCHED TO REAL SUPABASE SCHEMA
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-
-// ============================================
-// HELPER: Create Supabase Client
-// ============================================
 
 async function createSupabaseClient() {
   const cookieStore = await cookies();
@@ -32,7 +27,6 @@ async function createSupabaseClient() {
   );
 }
 
-// Crisis keywords (PASSIVE mode: show resources, no logging)
 const HARD_KEYWORDS_PL = [
   'samobójstwo', 'zabić się', 'odebrać sobie życie',
   'chcę umrzeć', 'nie chcę żyć', 'skończę z tym'
@@ -49,7 +43,7 @@ function getCrisisResources() {
 }
 
 // ============================================
-// POST /api/objects - Create Object
+// POST /api/objects — Create Object
 // ============================================
 
 export async function POST(req: NextRequest) {
@@ -64,26 +58,19 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const {
-      input_text,                       // required
-      input_method = 'text' as string,  // 'text' | 'voice' — matches migration column
-      selected_lens,                    // 'A' | 'B' | null
-      consents
-    } = body;
+    const { input_text, input_source = 'text', selected_lens } = body;
 
-    // Validation
     if (!input_text || input_text.trim().length < 50) {
-      return NextResponse.json({ error: 'Minimum 50 znaków wymagane' }, { status: 400 });
+      return NextResponse.json({ error: 'Minimum 50 characters required' }, { status: 400 });
     }
 
     if (input_text.length > 5000) {
-      return NextResponse.json({ error: 'Maksimum 5000 znaków' }, { status: 400 });
+      return NextResponse.json({ error: 'Maximum 5000 characters' }, { status: 400 });
     }
 
-    // Crisis check (PASSIVE: show resources only, no DB logging per v5.0 ADR)
+    // Crisis check (PASSIVE)
     const lowerText = input_text.toLowerCase();
     const hardMatch = HARD_KEYWORDS_PL.some(k => lowerText.includes(k));
-
     if (hardMatch) {
       return NextResponse.json({
         crisis: true,
@@ -92,7 +79,7 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    // Check tier limits by counting objects created in last 7 days
+    // Check tier limits
     const { data: profile } = await supabase
       .from('profiles')
       .select('tier, object_count')
@@ -105,8 +92,7 @@ export async function POST(req: NextRequest) {
         .from('objects')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .gte('created_at', sevenDaysAgo)
-        .is('deleted_at', null);
+        .gte('created_at', sevenDaysAgo);
 
       const weeklyUsed = weeklyCount || 0;
       if (weeklyUsed >= FREE_OBJECT_LIMIT) {
@@ -118,13 +104,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Create object (columns match 001_patternlens.sql migration)
+    // Create object — columns match REAL schema
     const { data: obj, error: insertError } = await supabase
       .from('objects')
       .insert({
         user_id: user.id,
         input_text: input_text.trim(),
-        input_method,
+        input_source,
         selected_lens: selected_lens || null,
       })
       .select()
@@ -135,28 +121,16 @@ export async function POST(req: NextRequest) {
       throw new Error('Failed to create object');
     }
 
-    // Increment object_count via DB function (non-blocking)
+    // Increment object_count (non-blocking)
     try { await supabase.rpc('increment_object_count', { p_user_id: user.id }); } catch {}
 
-    // Log consents if provided (consent_logs table has RLS INSERT policy)
-    if (consents && typeof consents === 'object') {
-      const consentRecords = Object.entries(consents).map(([type, granted]) => ({
-        user_id: user.id,
-        consent_type: type,
-        granted: Boolean(granted)
-      }));
-
-      try { await supabase.from('consent_logs').insert(consentRecords); } catch {}
-    }
-
-    // Count remaining for response
+    // Count remaining
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { count: currentWeekly } = await supabase
       .from('objects')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
-      .gte('created_at', sevenDaysAgo)
-      .is('deleted_at', null);
+      .gte('created_at', sevenDaysAgo);
 
     return NextResponse.json({
       success: true,
@@ -174,7 +148,7 @@ export async function POST(req: NextRequest) {
 }
 
 // ============================================
-// GET /api/objects - List Objects
+// GET /api/objects — List Objects
 // ============================================
 
 export async function GET(req: NextRequest) {
@@ -191,29 +165,32 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
     const offset = (page - 1) * limit;
 
-    // Columns match 001_patternlens.sql migration schema
+    // Columns match REAL Supabase schema
     const { data: objects, error, count } = await supabase
       .from('objects')
       .select(`
         id,
         input_text,
-        input_method,
+        input_source,
         selected_lens,
-        detected_theme,
+        theme,
+        processing_status,
+        is_archived,
         created_at,
         interpretations (
           id,
           lens,
-          phase_1_context,
-          phase_2_tension,
-          phase_3_meaning,
-          phase_4_function,
-          confidence_score,
-          risk_level
+          context_phase,
+          tension_phase,
+          meaning_phase,
+          function_phase,
+          confidence,
+          risk_level,
+          created_at
         )
       `, { count: 'exact' })
       .eq('user_id', user.id)
-      .is('deleted_at', null)
+      .eq('is_archived', false)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

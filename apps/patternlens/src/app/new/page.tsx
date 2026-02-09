@@ -234,12 +234,17 @@ export default function NewObject() {
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent-cyan)', letterSpacing: '0.1em' }}>{t.results.lensA}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{t.results.lensAName}</span>
                   </div>
-                  {['phase_1_context', 'phase_2_tension', 'phase_3_meaning', 'phase_4_function'].map(key => {
-                    const phase = (lensA as any)[key];
-                    return phase?.content ? (
+                  {[
+                    { key: 'context_phase', label: t.results.context, color: 'var(--accent-cyan)' },
+                    { key: 'tension_phase', label: t.results.tension, color: 'var(--accent-cyan)' },
+                    { key: 'meaning_phase', label: t.results.meaning, color: 'var(--accent-cyan)' },
+                    { key: 'function_phase', label: t.results.function, color: 'var(--accent-cyan)' },
+                  ].map(({ key, label, color }) => {
+                    const text = (lensA as any)[key];
+                    return text ? (
                       <div key={key} style={{ marginBottom: 8, padding: 8, background: 'rgba(0,0,0,0.2)', borderRadius: 6 }}>
-                        <p style={{ fontSize: 10, color: 'var(--accent-cyan)', textTransform: 'uppercase', marginBottom: 4 }}>{phase.title}</p>
-                        <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{phase.content}</p>
+                        <p style={{ fontSize: 10, color, textTransform: 'uppercase', marginBottom: 4 }}>{label}</p>
+                        <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{text}</p>
                       </div>
                     ) : null;
                   })}
@@ -252,12 +257,17 @@ export default function NewObject() {
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent-purple)', letterSpacing: '0.1em' }}>{t.results.lensB}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{t.results.lensBName}</span>
                   </div>
-                  {['phase_1_context', 'phase_2_tension', 'phase_3_meaning', 'phase_4_function'].map(key => {
-                    const phase = (lensB as any)[key];
-                    return phase?.content ? (
+                  {[
+                    { key: 'context_phase', label: t.results.context, color: 'var(--accent-purple)' },
+                    { key: 'tension_phase', label: t.results.tension, color: 'var(--accent-purple)' },
+                    { key: 'meaning_phase', label: t.results.meaning, color: 'var(--accent-purple)' },
+                    { key: 'function_phase', label: t.results.function, color: 'var(--accent-purple)' },
+                  ].map(({ key, label, color }) => {
+                    const text = (lensB as any)[key];
+                    return text ? (
                       <div key={key} style={{ marginBottom: 8, padding: 8, background: 'rgba(0,0,0,0.2)', borderRadius: 6 }}>
-                        <p style={{ fontSize: 10, color: 'var(--accent-purple)', textTransform: 'uppercase', marginBottom: 4 }}>{phase.title}</p>
-                        <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{phase.content}</p>
+                        <p style={{ fontSize: 10, color, textTransform: 'uppercase', marginBottom: 4 }}>{label}</p>
+                        <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{text}</p>
                       </div>
                     ) : null;
                   })}

@@ -84,7 +84,7 @@ export function ObjectCard({
             {formatDate(object.created_at)}
           </span>
           <span style={{ fontSize: 14 }}>
-            {object.input_method === 'voice' ? '\uD83C\uDFA4' : '\u270D\uFE0F'}
+            {object.input_source === 'voice' ? '\uD83C\uDFA4' : '\u270D\uFE0F'}
           </span>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -101,10 +101,10 @@ export function ObjectCard({
         {object.input_text.length > 150 && '...'}
       </p>
 
-      {object.detected_theme && (
+      {object.theme && (
         <div style={{ fontSize: 12 }}>
           <span style={{ color: 'var(--text-muted)' }}>{t.common.theme}:</span>
-          <span style={{ color: 'var(--accent-cyan)', marginLeft: 4 }}>{object.detected_theme}</span>
+          <span style={{ color: 'var(--accent-cyan)', marginLeft: 4 }}>{object.theme}</span>
         </div>
       )}
 
@@ -130,18 +130,17 @@ export function ObjectCard({
                   <p style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', marginBottom: 8 }}>
                     {t.results.lensA} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>{t.results.lensAName}</span>
                   </p>
-                  {['phase_1_context', 'phase_2_tension', 'phase_3_meaning', 'phase_4_function'].map(key => {
-                    const phase = (lensA as any)[key];
-                    const labels: Record<string, string> = {
-                      phase_1_context: t.results.context,
-                      phase_2_tension: t.results.tension,
-                      phase_3_meaning: t.results.meaning,
-                      phase_4_function: t.results.function,
-                    };
-                    return phase?.content ? (
+                  {[
+                    { key: 'context_phase', label: t.results.context },
+                    { key: 'tension_phase', label: t.results.tension },
+                    { key: 'meaning_phase', label: t.results.meaning },
+                    { key: 'function_phase', label: t.results.function },
+                  ].map(({ key, label }) => {
+                    const text = (lensA as any)[key];
+                    return text ? (
                       <div key={key} style={{ marginBottom: 6 }}>
-                        <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{labels[key]}</span>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{phase.content}</p>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{label}</span>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{text}</p>
                       </div>
                     ) : null;
                   })}
@@ -153,18 +152,17 @@ export function ObjectCard({
                   <p style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--accent-purple)', marginBottom: 8 }}>
                     {t.results.lensB} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>{t.results.lensBName}</span>
                   </p>
-                  {['phase_1_context', 'phase_2_tension', 'phase_3_meaning', 'phase_4_function'].map(key => {
-                    const phase = (lensB as any)[key];
-                    const labels: Record<string, string> = {
-                      phase_1_context: t.results.context,
-                      phase_2_tension: t.results.tension,
-                      phase_3_meaning: t.results.meaning,
-                      phase_4_function: t.results.function,
-                    };
-                    return phase?.content ? (
+                  {[
+                    { key: 'context_phase', label: t.results.context },
+                    { key: 'tension_phase', label: t.results.tension },
+                    { key: 'meaning_phase', label: t.results.meaning },
+                    { key: 'function_phase', label: t.results.function },
+                  ].map(({ key, label }) => {
+                    const text = (lensB as any)[key];
+                    return text ? (
                       <div key={key} style={{ marginBottom: 6 }}>
-                        <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{labels[key]}</span>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{phase.content}</p>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{label}</span>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{text}</p>
                       </div>
                     ) : null;
                   })}
