@@ -94,7 +94,7 @@ export default function NewObject() {
           Nowy Obiekt
         </h1>
         <p style={{ fontFamily: "'Outfit', sans-serif", color: '#888893', fontSize: 14, marginBottom: 28 }}>
-          Opisz sytuacj\u0119 do analizy strukturalnej
+          Opisz sytuację do analizy strukturalnej
         </p>
 
         {/* Mode Toggle */}
@@ -119,7 +119,7 @@ export default function NewObject() {
               color: mode === 'voice' ? '#fff' : '#888893',
             }}
           >
-            G\u0142os
+            Głos
           </button>
         </div>
 
@@ -147,7 +147,7 @@ export default function NewObject() {
               value={text}
               onChange={e => setText(e.target.value)}
               disabled={crisisLock || isProcessing}
-              placeholder="Opisz sytuacj\u0119, interakcj\u0119 lub zaobserwowany wzorzec..."
+              placeholder="Opisz sytuację, interakcję lub zaobserwowany wzorzec..."
               style={{
                 width: '100%', minHeight: 240, padding: 20,
                 background: '#1a1a1e', border: '1px solid #222228',
@@ -182,7 +182,7 @@ export default function NewObject() {
             opacity: text.length < minChars ? 0.4 : 1,
           }}
         >
-          {creating ? 'Zapisuj\u0119 obiekt...' : interpreting ? 'Analiza AI (dual-lens)...' : 'Analizuj Obiekt'}
+          {creating ? 'Zapisuję obiekt...' : interpreting ? 'Analiza AI (dual-lens)...' : 'Analizuj Obiekt'}
         </button>
 
         {/* Error */}
@@ -205,10 +205,10 @@ export default function NewObject() {
               fontWeight: 600, fontSize: 18, color: '#cc4444',
               textAlign: 'center', marginBottom: 16,
             }}>
-              Wykryto tre\u015b\u0107 wymagaj\u0105c\u0105 uwagi
+              Wykryto treść wymagającą uwagi
             </h2>
             <p style={{ color: '#888893', fontSize: 13, textAlign: 'center', marginBottom: 24 }}>
-              PatternLens to narz\u0119dzie analizy strukturalnej. W sytuacji kryzysowej skontaktuj si\u0119 z profesjonaln\u0105 pomoc\u0105.
+              PatternLens to narzędzie analizy strukturalnej. W sytuacji kryzysowej skontaktuj się z profesjonalną pomocą.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {crisisResources.map((r: any, i: number) => (

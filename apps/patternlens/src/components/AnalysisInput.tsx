@@ -58,7 +58,7 @@ export function AnalysisInput({ onSuccess, canCreate = true, remaining }: Analys
 
   const handleVoiceTranscript = (transcript: string) => {
     setText(prev => prev ? prev + ' ' + transcript : transcript);
-    setMode('text'); // Switch back to text to review + submit
+    setMode('text');
   };
 
   return (
@@ -75,7 +75,7 @@ export function AnalysisInput({ onSuccess, canCreate = true, remaining }: Analys
           onClick={() => setMode('voice')}
           className={mode === 'voice' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}
         >
-          G\u0142os
+          Głos
         </button>
       </div>
 
@@ -101,7 +101,7 @@ export function AnalysisInput({ onSuccess, canCreate = true, remaining }: Analys
         <div>
           <textarea
             className="input textarea"
-            placeholder="Opisz sytuacj\u0119, kt\u00f3ra Ci\u0119 niepokoi lub wzorzec, kt\u00f3ry chcesz zrozumie\u0107... (min. 50 znak\u00f3w)"
+            placeholder="Opisz sytuację, która Cię niepokoi lub wzorzec, który chcesz zrozumieć... (min. 50 znaków)"
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={maxChars}
@@ -118,7 +118,7 @@ export function AnalysisInput({ onSuccess, canCreate = true, remaining }: Analys
             </div>
             <div>
               {charCount < minChars ? (
-                <span style={{ color: 'var(--warning)' }}>Jeszcze {minChars - charCount} znak\u00f3w</span>
+                <span style={{ color: 'var(--warning)' }}>Jeszcze {minChars - charCount} znaków</span>
               ) : (
                 <span style={{ color: 'var(--success)' }}>Gotowe do analizy</span>
               )}
@@ -137,10 +137,10 @@ export function AnalysisInput({ onSuccess, canCreate = true, remaining }: Analys
         {isProcessing ? (
           <>
             <span className="spinner" />
-            Analizuj\u0119...
+            Analizuję...
           </>
         ) : (
-          'Analizuj struktur\u0119'
+          'Analizuj strukturę'
         )}
       </button>
 
@@ -152,7 +152,7 @@ export function AnalysisInput({ onSuccess, canCreate = true, remaining }: Analys
           border: '1px solid rgba(245, 158, 11, 0.3)',
           borderRadius: 8, textAlign: 'center',
         }}>
-          <p style={{ color: 'var(--warning)', marginBottom: 8 }}>Osi\u0105gni\u0119to tygodniowy limit ({remaining === 0 ? '0/7' : '7/7'} obiekt\u00f3w)</p>
+          <p style={{ color: 'var(--warning)', marginBottom: 8 }}>Osiągnięto tygodniowy limit (0/7 obiektów)</p>
           <a href="/upgrade" className="btn btn-secondary btn-sm">Ulepsz do PRO</a>
         </div>
       )}

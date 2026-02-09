@@ -114,7 +114,7 @@ export function ObjectCard({
             className="expand-btn"
             onClick={() => setExpanded(!expanded)}
           >
-            {expanded ? 'Zwi\u0144' : 'Poka\u017c interpretacje'}
+            {expanded ? 'Zwiń' : 'Pokaż interpretacje'}
           </button>
 
           {expanded && (
@@ -128,7 +128,7 @@ export function ObjectCard({
                       <p>{lensA.phase_1_context?.content || ''}</p>
                     </div>
                     <div className="phase">
-                      <span className="phase-label">Napi\u0119cie</span>
+                      <span className="phase-label">Napięcie</span>
                       <p>{lensA.phase_2_tension?.content || ''}</p>
                     </div>
                     <div className="phase">
@@ -152,7 +152,7 @@ export function ObjectCard({
                       <p>{lensB.phase_1_context?.content || ''}</p>
                     </div>
                     <div className="phase">
-                      <span className="phase-label">Napi\u0119cie</span>
+                      <span className="phase-label">Napięcie</span>
                       <p>{lensB.phase_2_tension?.content || ''}</p>
                     </div>
                     <div className="phase">

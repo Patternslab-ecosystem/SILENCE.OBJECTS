@@ -68,7 +68,7 @@ export default function DashboardPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
         <div className="spinner" />
-        <p>{'\u0141adowanie...'}</p>
+        <p>Ładowanie...</p>
       </div>
     );
   }
@@ -85,10 +85,10 @@ export default function DashboardPage() {
         {/* Welcome */}
         <section style={{ marginBottom: 32 }}>
           <h1 className="gradient-text" style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700 }}>
-            Dzie\u0144 dobry!
+            Dzień dobry!
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', marginTop: 4 }}>
-            Co chcesz dzi\u015b przeanalizowa\u0107?
+            Co chcesz dziś przeanalizować?
           </p>
         </section>
 
@@ -98,7 +98,7 @@ export default function DashboardPage() {
             <span style={{ fontSize: 28 }}>&#128202;</span>
             <div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-neon)' }}>{objects.length}</div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--color-text-tertiary)' }}>Obiekt\u00f3w</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--color-text-tertiary)' }}>Obiektów</div>
             </div>
           </div>
 
@@ -111,17 +111,17 @@ export default function DashboardPage() {
           </div>
 
           <div className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 28 }}>{profile?.tier === 'PRO' ? '\u2b50' : '\ud83d\udcc8'}</span>
+            <span style={{ fontSize: 28 }}>&#128200;</span>
             <div>
               {profile?.tier === 'FREE' ? (
                 <>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-neon)' }}>{remainingObjects}/7</div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-tertiary)' }}>Pozosta\u0142o</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary-neon)' }}>{remainingObjects ?? 7}/7</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-tertiary)' }}>Pozostało</div>
                 </>
               ) : (
                 <>
                   <div><span className="badge badge-pro">PRO</span></div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-tertiary)' }}>Bez limit\u00f3w</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-tertiary)' }}>Bez limitów</div>
                 </>
               )}
             </div>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
         {/* Pending Objects */}
         {pendingObjects.length > 0 && (
           <section style={{ marginBottom: 32 }}>
-            <h2>Oczekuj\u0105ce na analiz\u0119 <span className="badge badge-warning" style={{ marginLeft: 8 }}>{pendingObjects.length}</span></h2>
+            <h2>Oczekujące na analizę <span className="badge badge-warning" style={{ marginLeft: 8 }}>{pendingObjects.length}</span></h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: 16, marginTop: 16 }}>
               {pendingObjects.map(obj => (
                 <ObjectCard key={obj.id} object={obj} onInterpret={handleInterpret} />
@@ -166,8 +166,8 @@ export default function DashboardPage() {
           ) : (
             <div className="glass-card" style={{ textAlign: 'center', padding: 48 }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>&#128269;</div>
-              <p>Nie masz jeszcze \u017cadnych analiz.</p>
-              <p style={{ color: 'var(--color-text-tertiary)', marginTop: 4 }}>Opisz sytuacj\u0119 powy\u017cej, aby rozpocz\u0105\u0107.</p>
+              <p>Nie masz jeszcze żadnych analiz.</p>
+              <p style={{ color: 'var(--color-text-tertiary)', marginTop: 4 }}>Opisz sytuację powyżej, aby rozpocząć.</p>
             </div>
           )}
         </section>
@@ -180,8 +180,8 @@ export default function DashboardPage() {
             borderColor: 'var(--accent-purple)',
           }}>
             <div>
-              <h3>Odblokuj pe\u0142ny potencja\u0142</h3>
-              <p style={{ color: 'var(--color-text-secondary)' }}>Z PRO masz nieograniczon\u0105 liczb\u0119 analiz i wzorce ghost.</p>
+              <h3>Odblokuj pełny potencjał</h3>
+              <p style={{ color: 'var(--color-text-secondary)' }}>Z PRO masz nieograniczoną liczbę analiz i wzorce ghost.</p>
             </div>
             <a href="/upgrade" className="btn btn-primary">Ulepsz do PRO - 49 PLN/mies</a>
           </section>
@@ -191,7 +191,7 @@ export default function DashboardPage() {
       <footer style={{ padding: '24px 0', borderTop: '1px solid var(--color-border)' }}>
         <div className="container">
           <p style={{ color: 'var(--color-text-tertiary)', textAlign: 'center', fontSize: '0.875rem' }}>
-            PatternLens to narz\u0119dzie analizy strukturalnej, nie terapia.
+            PatternLens to narzędzie analizy strukturalnej, nie terapia.
           </p>
         </div>
       </footer>

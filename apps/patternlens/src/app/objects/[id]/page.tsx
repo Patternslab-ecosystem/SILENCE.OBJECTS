@@ -101,7 +101,7 @@ export default function ObjectDetailPage() {
 
   const phases = lensA ? [
     { name: 'Kontekst', content: lensA.phase_1_context?.content || '', confidence: lensA.confidence_score },
-    { name: 'Napi\u0119cie', content: lensA.phase_2_tension?.content || '', confidence: lensA.confidence_score },
+    { name: 'Napięcie', content: lensA.phase_2_tension?.content || '', confidence: lensA.confidence_score },
     { name: 'Znaczenie', content: lensA.phase_3_meaning?.content || '', confidence: lensA.confidence_score },
     { name: 'Funkcja', content: lensA.phase_4_function?.content || '', confidence: lensA.confidence_score },
   ] : null
@@ -132,10 +132,10 @@ export default function ObjectDetailPage() {
 
         {/* Input Text */}
         <div style={{ marginBottom: 32, padding: 20, background: '#111', borderRadius: 8, border: '1px solid #222' }}>
-          <p style={{ color: '#21808d', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em' }}>Tekst wej\u015bciowy</p>
+          <p style={{ color: '#21808d', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em' }}>Tekst wejściowy</p>
           <p style={{ color: '#ccc', fontSize: 14, lineHeight: 1.6 }}>{object.input_text}</p>
           <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
-            <span style={{ color: '#555', fontSize: 11 }}>Metoda: {object.input_method === 'voice' ? 'G\u0142os' : 'Tekst'}</span>
+            <span style={{ color: '#555', fontSize: 11 }}>Metoda: {object.input_method === 'voice' ? 'Głos' : 'Tekst'}</span>
             {object.detected_theme && <span style={{ color: '#555', fontSize: 11 }}>Temat: {object.detected_theme}</span>}
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function ObjectDetailPage() {
                 cursor: interpreting ? 'wait' : 'pointer',
               }}
             >
-              {interpreting ? 'Analiza AI...' : 'Uruchom analiz\u0119 dual-lens'}
+              {interpreting ? 'Analiza AI...' : 'Uruchom analizę dual-lens'}
             </button>
           </div>
         )}
@@ -173,7 +173,7 @@ export default function ObjectDetailPage() {
                       </span>
                     )}
                   </div>
-                  <p style={{ color: '#ccc', fontSize: 13, lineHeight: 1.5 }}>{phase.content || 'Oczekuje na analiz\u0119'}</p>
+                  <p style={{ color: '#ccc', fontSize: 13, lineHeight: 1.5 }}>{phase.content || 'Oczekuje na analizę'}</p>
                 </div>
               ))}
             </div>
@@ -183,7 +183,7 @@ export default function ObjectDetailPage() {
         {/* Dual Lens */}
         {hasInterpretations && (
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#888', marginBottom: 16 }}>Podw\u00f3jna soczewka</h2>
+            <h2 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#888', marginBottom: 16 }}>Podwójna soczewka</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {lensA && (
                 <div style={{ padding: 16, background: '#111', borderRadius: 8, border: '1px solid rgba(33,128,141,0.3)' }}>
@@ -208,7 +208,7 @@ export default function ObjectDetailPage() {
         {/* Confidence */}
         {hasInterpretations && lensA && (
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#888', marginBottom: 16 }}>Pewno\u015b\u0107</h2>
+            <h2 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#888', marginBottom: 16 }}>Pewność</h2>
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 1, padding: 20, background: '#111', borderRadius: 8, border: '1px solid #222', textAlign: 'center' }}>
                 <p style={{ color: '#21808d', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em' }}>Soczewka A</p>
@@ -230,7 +230,7 @@ export default function ObjectDetailPage() {
 
         {/* Disclaimer */}
         <p style={{ color: '#555', fontSize: 11, textAlign: 'center', marginTop: 32 }}>
-          Narz\u0119dzie analizy strukturalnej. Nie porada ani diagnoza.
+          Narzędzie analizy strukturalnej. Nie porada ani diagnoza.
         </p>
       </div>
     </div>

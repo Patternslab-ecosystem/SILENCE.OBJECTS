@@ -210,7 +210,7 @@ export function useProfile() {
     ? Math.max(0, 7 - (profile?.weekly_objects_used || 0))
     : null;
 
-  const canCreateObject = profile?.tier === 'PRO' || (remainingObjects !== null && remainingObjects > 0);
+  const canCreateObject = !profile || profile.tier === 'PRO' || (remainingObjects !== null && remainingObjects > 0);
 
   return { profile, loading, fetchProfile, remainingObjects, canCreateObject };
 }
