@@ -8,6 +8,32 @@ const ALLOWED_ORIGINS = [
   process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '',
 ].filter(Boolean)
 
+// Routes accessible without authentication
+const PUBLIC_ROUTES = [
+  '/',
+  '/login',
+  '/auth',
+  '/signup',
+  '/reset-password',
+  '/help',
+  '/pricing',
+  '/test-supabase',
+  '/terms',
+  '/privacy',
+  '/support',
+  '/emergency',
+  '/upgrade',
+]
+
+// API routes accessible without authentication
+const PUBLIC_API_ROUTES = [
+  '/api/health',
+  '/api/debug',
+  '/api/auth',
+  '/api/stripe/webhook',
+  '/api/analyze',
+]
+
 function setCorsHeaders(response: NextResponse, origin: string): NextResponse {
   if (ALLOWED_ORIGINS.includes(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin)
@@ -27,76 +53,90 @@ export async function middleware(request: NextRequest) {
     return setCorsHeaders(response, origin)
   }
 
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  // If Supabase env vars are missing, pass through all requests
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.next()
+  }
+
+  try {
+    let supabaseResponse = NextResponse.next({
+      request,
+    })
+
+    const supabase = createServerClient(
+      supabaseUrl,
+      supabaseKey,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            supabaseResponse = NextResponse.next({
+              request,
+            })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            )
+          },
         },
-        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
+      }
+    )
+
+    // Refresh session
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const pathname = request.nextUrl.pathname
+
+    // Check if public route
+    const isPublicRoute = PUBLIC_ROUTES.some(route =>
+      pathname === route || pathname.startsWith(route + '/')
+    )
+
+    // Check if public API
+    const isPublicApi = PUBLIC_API_ROUTES.some(route =>
+      pathname.startsWith(route)
+    )
+
+    // If not logged in and trying to access protected route → redirect to login
+    if (!user && !isPublicRoute && !isPublicApi) {
+      const redirectUrl = new URL('/login', request.url)
+      return NextResponse.redirect(redirectUrl)
     }
-  )
 
-  // Refresh session
-  const { data: { user } } = await supabase.auth.getUser()
+    // If logged in and on login page → redirect to dashboard
+    if (user && pathname === '/login') {
+      const redirectUrl = new URL('/dashboard', request.url)
+      return NextResponse.redirect(redirectUrl)
+    }
 
-  // Public routes - no auth required
-  const publicRoutes = ['/login', '/auth', '/signup', '/reset-password', '/help', '/pricing', '/test-supabase', '/terms', '/privacy']
-  const isPublicRoute = publicRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  )
+    // Set CORS headers on API responses
+    if (pathname.startsWith('/api/')) {
+      setCorsHeaders(supabaseResponse, origin)
+    }
 
-  // API routes that don't require auth
-  const publicApiRoutes = ['/api/health', '/api/debug', '/api/auth/callback', '/api/auth/signout', '/api/stripe/webhook', '/api/analyze']
-  const isPublicApi = publicApiRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  )
-
-  // If not logged in and trying to access protected route
-  if (!user && !isPublicRoute && !isPublicApi) {
-    const redirectUrl = new URL('/login', request.url)
-    return NextResponse.redirect(redirectUrl)
+    return supabaseResponse
+  } catch {
+    // If middleware crashes for any reason, pass through instead of blocking
+    return NextResponse.next()
   }
-
-  // If logged in and trying to access login page, redirect to dashboard
-  if (user && request.nextUrl.pathname === '/login') {
-    const redirectUrl = new URL('/dashboard', request.url)
-    return NextResponse.redirect(redirectUrl)
-  }
-
-  // Set CORS headers on API responses
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    setCorsHeaders(supabaseResponse, origin)
-  }
-
-  return supabaseResponse
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files (images, icons, etc.)
-     * - API routes that don't need auth
+     * - _next (all internal Next.js paths)
+     * - favicon.ico, icons, manifest
+     * - Static assets (images, fonts, etc.)
+     * - .well-known directory
+     * - screenshots directory
+     * - service worker and offline page
      */
-    '/((?!_next/static|_next/image|favicon.ico|icon-.*|apple-icon.*|manifest.json|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)',
+    '/((?!_next|favicon\\.ico|icon-.*|apple-.*|manifest\\.json|robots\\.txt|sitemap\\.xml|sw\\.js|offline\\.html|screenshots|well-known|\\.well-known|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|css|js|map)$).*)',
   ],
 }
