@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// Must be nodejs runtime — Buffer + FormData needed for Whisper
+// Whisper STT — requires OPENAI_API_KEY in env
 export const runtime = 'nodejs';
+export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
   try {
