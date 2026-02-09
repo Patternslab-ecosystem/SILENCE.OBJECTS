@@ -16,7 +16,7 @@ export function VoiceDump({
   disabled = false,
   maxDuration = 120,
 }: VoiceDumpProps) {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
 
   const { transcribe, isTranscribing } = useTranscription({
@@ -25,6 +25,7 @@ export function VoiceDump({
       setError(null);
     },
     onError: (err) => setError(err.message),
+    language: lang,
   });
 
   const handleRecordingComplete = useCallback(

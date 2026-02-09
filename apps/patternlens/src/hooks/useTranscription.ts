@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 interface UseTranscriptionOptions {
   onSuccess?: (text: string) => void;
   onError?: (error: Error) => void;
+  language?: string;
 }
 
 interface UseTranscriptionReturn {
@@ -17,6 +18,7 @@ interface UseTranscriptionReturn {
 export function useTranscription({
   onSuccess,
   onError,
+  language = 'en',
 }: UseTranscriptionOptions = {}): UseTranscriptionReturn {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -31,6 +33,7 @@ export function useTranscription({
         // Create form data with audio file
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.webm");
+        formData.append("language", language);
 
         // Send to transcription API
         const response = await fetch("/api/voice/transcribe", {
@@ -58,7 +61,7 @@ export function useTranscription({
         setIsTranscribing(false);
       }
     },
-    [onSuccess, onError]
+    [onSuccess, onError, language]
   );
 
   return {

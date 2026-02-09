@@ -7,29 +7,37 @@ import { CLAUDE_MODEL } from '@/constants/app';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
-// Polish filler words to remove
-const FILLER_WORDS_PL = [
-  'no', 'więc', 'znaczy', 'jakby', 'wiesz', 'kurde', 'no i',
-  'yyyy', 'eeee', 'mmm', 'hmm', 'no tak', 'w sumie'
-];
+// Filler words to remove per language
+const FILLER_WORDS: Record<string, string[]> = {
+  pl: ['no', 'więc', 'znaczy', 'jakby', 'wiesz', 'kurde', 'no i',
+       'yyyy', 'eeee', 'mmm', 'hmm', 'no tak', 'w sumie'],
+  en: ['um', 'uh', 'like', 'you know', 'so', 'well', 'basically',
+       'literally', 'actually', 'right', 'yeah', 'mmm', 'hmm'],
+};
 
-function cleanPolishTranscription(text: string): string {
+function cleanTranscription(text: string, language: string): string {
   let cleaned = text;
+  const fillers = FILLER_WORDS[language] || FILLER_WORDS.en;
 
-  for (const filler of FILLER_WORDS_PL) {
+  for (const filler of fillers) {
     const regex = new RegExp(`\\b${filler}\\b`, 'gi');
     cleaned = cleaned.replace(regex, '');
   }
 
-  // Clean up multiple spaces
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
-
   return cleaned;
 }
 
-async function transcribeAudio(base64Audio: string, mediaType: string): Promise<string> {
+const TRANSCRIPTION_PROMPTS: Record<string, string> = {
+  pl: 'Transkrybuj to nagranie audio po polsku. Zwróć TYLKO transkrybowany tekst, bez komentarzy ani formatowania.',
+  en: 'Transcribe this audio recording in English. Return ONLY the transcribed text, no comments or formatting.',
+};
+
+async function transcribeAudio(base64Audio: string, mediaType: string, language: string): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured');
+
+  const prompt = TRANSCRIPTION_PROMPTS[language] || TRANSCRIPTION_PROMPTS.en;
 
   const response = await fetch(ANTHROPIC_API_URL, {
     method: 'POST',
@@ -54,7 +62,7 @@ async function transcribeAudio(base64Audio: string, mediaType: string): Promise<
           },
           {
             type: 'text',
-            text: 'Transkrybuj to nagranie audio po polsku. Zwróć TYLKO transkrybowany tekst, bez komentarzy ani formatowania.'
+            text: prompt
           }
         ]
       }]
@@ -83,6 +91,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const audioFile = formData.get('audio') as File;
+    const language = (formData.get('language') as string) || 'en';
 
     if (!audioFile) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
@@ -93,8 +102,8 @@ export async function POST(request: NextRequest) {
     const base64Audio = buffer.toString('base64');
     const mediaType = audioFile.type || 'audio/webm';
 
-    const transcription = await transcribeAudio(base64Audio, mediaType);
-    const cleanedText = cleanPolishTranscription(transcription);
+    const transcription = await transcribeAudio(base64Audio, mediaType, language);
+    const cleanedText = cleanTranscription(transcription, language);
 
     return NextResponse.json({
       text: cleanedText,
