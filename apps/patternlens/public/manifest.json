@@ -2,7 +2,7 @@
   "name": "PatternLens",
   "short_name": "PatternLens",
   "description": "Structural behavioral pattern analysis. 15 composable modules. 12 archetype classification. Dual-lens interpretation.",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#08080a",
   "theme_color": "#21808d",
