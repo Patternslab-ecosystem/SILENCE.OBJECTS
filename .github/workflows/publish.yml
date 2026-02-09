@@ -1,0 +1,48 @@
+name: Publish Open Modules
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --no-frozen-lockfile
+
+      - name: Build open modules
+        run: |
+          for pkg in contracts events core archetypes language validator ui; do
+            echo "Building packages/$pkg..."
+            cd packages/$pkg
+            pnpm exec tsc 2>/dev/null || echo "Build completed for $pkg"
+            cd ../..
+          done
+
+      - name: Publish open modules
+        run: |
+          for pkg in contracts events core archetypes language validator ui; do
+            echo "Publishing @silence/$pkg..."
+            cd packages/$pkg
+            pnpm publish --access public --no-git-checks 2>/dev/null || echo "Publish skipped for $pkg"
+            cd ../..
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

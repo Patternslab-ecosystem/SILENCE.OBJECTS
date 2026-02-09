@@ -39,6 +39,10 @@ export default function LegalLayout({
               Terms of Service
             </Link>
             <span className="text-[#2d3748]">|</span>
+            <Link href="/support" className="hover:text-[#f5f7fa] transition-colors">
+              Support
+            </Link>
+            <span className="text-[#2d3748]">|</span>
             <Link href="/emergency" className="hover:text-[#f5f7fa] transition-colors">
               Crisis Resources
             </Link>

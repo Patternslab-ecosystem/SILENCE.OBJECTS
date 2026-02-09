@@ -54,7 +54,7 @@ const UK_RESOURCES: RegionalCrisisResources = {
   primary: {
     name: "Samaritans",
     number: "116 123",
-    description: "Free emotional support, available 24/7",
+    description: "Free crisis support, available 24/7",
     type: "phone",
     available: "24/7",
   },
@@ -76,7 +76,7 @@ const UK_RESOURCES: RegionalCrisisResources = {
     {
       name: "Mind Infoline",
       number: "0300 123 3393",
-      description: "Mental health information and support",
+      description: "Information and crisis support resources",
       type: "phone",
       available: "9:00-18:00 Mon-Fri",
     },
@@ -129,7 +129,7 @@ const EU_RESOURCES: RegionalCrisisResources = {
   secondary: {
     name: "Telefono Amico (IT) / SOS Amitié (FR)",
     number: "116 123",
-    description: "Emotional support helpline (varies by country)",
+    description: "Crisis support helpline (varies by country)",
     type: "phone",
     available: "Varies",
   },

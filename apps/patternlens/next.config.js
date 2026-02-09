@@ -34,6 +34,19 @@ const nextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com va.vercel-scripts.com",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: *.supabase.co",
+              "font-src 'self'",
+              "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com va.vercel-scripts.com",
+              "frame-src js.stripe.com",
+              "media-src 'self' blob:",
+            ].join('; '),
+          },
         ],
       },
     ]

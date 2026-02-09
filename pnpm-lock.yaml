@@ -150,6 +150,10 @@ importers:
         version: 5.9.3
 
   packages/archetypes:
+    dependencies:
+      '@silence/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
       typescript:
         specifier: ^5
@@ -162,18 +166,33 @@ importers:
         version: 5.9.3
 
   packages/core:
+    dependencies:
+      '@silence/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@silence/events':
+        specifier: workspace:*
+        version: link:../events
     devDependencies:
       typescript:
         specifier: ^5
         version: 5.9.3
 
   packages/events:
+    dependencies:
+      '@silence/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
       typescript:
         specifier: ^5
         version: 5.9.3
 
   packages/language:
+    dependencies:
+      '@silence/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
       typescript:
         specifier: ^5
@@ -199,6 +218,13 @@ importers:
         version: 5.9.3
 
   packages/validator:
+    dependencies:
+      '@silence/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@silence/language':
+        specifier: workspace:*
+        version: link:../language
     devDependencies:
       typescript:
         specifier: ^5

@@ -4,6 +4,10 @@
   "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "dependencies": {
+    "@silence/contracts": "workspace:*",
+    "@silence/language": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5"
   }
