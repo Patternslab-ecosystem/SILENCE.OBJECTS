@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import type { PLObject } from '@/hooks/useApi';
+import { getProcessingStatus } from '@/hooks/useApi';
 
 interface ObjectCardProps {
   object: PLObject;
@@ -25,7 +26,10 @@ export function ObjectCard({
 }: ObjectCardProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const getRiskBadge = (risk: string) => {
+  const status = getProcessingStatus(object);
+
+  const getRiskBadge = () => {
+    const risk = object.interpretations?.[0]?.risk_level;
     switch (risk?.toLowerCase()) {
       case 'none':
       case 'low':
@@ -36,18 +40,14 @@ export function ObjectCard({
       case 'crisis':
         return <span className="badge badge-danger">WYSOKIE</span>;
       default:
-        return <span className="badge badge-info">-</span>;
+        return null;
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = () => {
     switch (status) {
       case 'completed':
-        return <span className="badge badge-success">✓ Gotowe</span>;
-      case 'processing':
-        return <span className="badge badge-warning pulse">⏳ Przetwarzanie</span>;
-      case 'failed':
-        return <span className="badge badge-danger">✗ Błąd</span>;
+        return <span className="badge badge-success">Gotowe</span>;
       default:
         return <span className="badge badge-info">Oczekuje</span>;
     }
@@ -88,8 +88,8 @@ export function ObjectCard({
           </span>
         </div>
         <div className="card-badges">
-          {getRiskBadge(object.risk_level)}
-          {getStatusBadge(object.processing_status)}
+          {getRiskBadge()}
+          {getStatusBadge()}
         </div>
       </div>
 
@@ -99,45 +99,45 @@ export function ObjectCard({
           {object.input_text.length > 150 && '...'}
         </p>
         
-        {object.object_theme && (
+        {object.detected_theme && (
           <div className="card-theme">
             <span className="theme-label">Temat:</span>
-            <span className="theme-value">{object.object_theme}</span>
+            <span className="theme-value">{object.detected_theme}</span>
           </div>
         )}
       </div>
 
       {/* Interpretations Preview */}
-      {object.processing_status === 'completed' && (lensA || lensB) && (
+      {status === 'completed' && (lensA || lensB) && (
         <div className={`card-interpretations ${expanded ? 'expanded' : ''}`}>
-          <button 
+          <button
             className="expand-btn"
             onClick={() => setExpanded(!expanded)}
           >
-            {expanded ? '▲ Zwiń' : '▼ Pokaż interpretacje'}
+            {expanded ? 'Zwi\u0144' : 'Poka\u017c interpretacje'}
           </button>
 
           {expanded && (
             <div className="interpretations-grid">
               {lensA && (
                 <div className="lens-card lens-a">
-                  <h4>🔍 Soczewka A <span className="lens-subtitle">Ochronna</span></h4>
+                  <h4>Soczewka A <span className="lens-subtitle">Ochronna</span></h4>
                   <div className="lens-phases">
                     <div className="phase">
                       <span className="phase-label">Kontekst</span>
-                      <p>{lensA.context_phase}</p>
+                      <p>{lensA.phase_1_context?.content || ''}</p>
                     </div>
                     <div className="phase">
-                      <span className="phase-label">Napięcie</span>
-                      <p>{lensA.tension_phase}</p>
+                      <span className="phase-label">Napi\u0119cie</span>
+                      <p>{lensA.phase_2_tension?.content || ''}</p>
                     </div>
                     <div className="phase">
                       <span className="phase-label">Znaczenie</span>
-                      <p>{lensA.meaning_phase}</p>
+                      <p>{lensA.phase_3_meaning?.content || ''}</p>
                     </div>
                     <div className="phase">
                       <span className="phase-label">Funkcja</span>
-                      <p>{lensA.function_phase}</p>
+                      <p>{lensA.phase_4_function?.content || ''}</p>
                     </div>
                   </div>
                 </div>
@@ -145,23 +145,23 @@ export function ObjectCard({
 
               {lensB && (
                 <div className="lens-card lens-b">
-                  <h4>🔮 Soczewka B <span className="lens-subtitle">Rozwojowa</span></h4>
+                  <h4>Soczewka B <span className="lens-subtitle">Rozwojowa</span></h4>
                   <div className="lens-phases">
                     <div className="phase">
                       <span className="phase-label">Kontekst</span>
-                      <p>{lensB.context_phase}</p>
+                      <p>{lensB.phase_1_context?.content || ''}</p>
                     </div>
                     <div className="phase">
-                      <span className="phase-label">Napięcie</span>
-                      <p>{lensB.tension_phase}</p>
+                      <span className="phase-label">Napi\u0119cie</span>
+                      <p>{lensB.phase_2_tension?.content || ''}</p>
                     </div>
                     <div className="phase">
                       <span className="phase-label">Znaczenie</span>
-                      <p>{lensB.meaning_phase}</p>
+                      <p>{lensB.phase_3_meaning?.content || ''}</p>
                     </div>
                     <div className="phase">
                       <span className="phase-label">Funkcja</span>
-                      <p>{lensB.function_phase}</p>
+                      <p>{lensB.phase_4_function?.content || ''}</p>
                     </div>
                   </div>
                 </div>
@@ -173,20 +173,12 @@ export function ObjectCard({
 
       {/* Action Buttons */}
       <div className="card-actions">
-        {object.processing_status === 'pending' && (
-          <button 
+        {status === 'pending' && (
+          <button
             className="btn btn-primary btn-sm"
             onClick={() => onInterpret?.(object.id)}
           >
-            ▶️ Analizuj
-          </button>
-        )}
-        {object.processing_status === 'failed' && (
-          <button 
-            className="btn btn-secondary btn-sm"
-            onClick={() => onInterpret?.(object.id)}
-          >
-            🔄 Ponów
+            Analizuj
           </button>
         )}
       </div>

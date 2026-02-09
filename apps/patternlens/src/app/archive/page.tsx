@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { Header } from '@/components/layout/Header';
 import ObjectCard from '@/components/ObjectCard';
-import { useObjects, useInterpret, useProfile, usePatterns } from '@/hooks/useApi';
+import { useObjects, useInterpret, useProfile, usePatterns, getProcessingStatus } from '@/hooks/useApi';
 
 export default function ArchivePage() {
   const router = useRouter();
@@ -74,8 +74,8 @@ export default function ArchivePage() {
 
   const filteredObjects = objects.filter(obj => {
     if (filter === 'all') return true;
-    if (filter === 'completed') return obj.processing_status === 'completed';
-    if (filter === 'pending') return obj.processing_status === 'pending';
+    if (filter === 'completed') return getProcessingStatus(obj) === 'completed';
+    if (filter === 'pending') return getProcessingStatus(obj) === 'pending';
     return true;
   });
 
@@ -106,7 +106,7 @@ export default function ArchivePage() {
         <section className="page-header">
           <h1 className="gradient-text">Archiwum obiektów</h1>
           <p className="text-secondary">
-            {objects.length} obiektów | {objects.filter(o => o.processing_status === 'completed').length} przeanalizowanych
+            {objects.length} obiektów | {objects.filter(o => getProcessingStatus(o) === 'completed').length} przeanalizowanych
           </p>
         </section>
 
@@ -116,10 +116,10 @@ export default function ArchivePage() {
               Wszystkie ({objects.length})
             </button>
             <button className={`btn btn-sm ${filter === 'completed' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilter('completed')}>
-              ✓ Gotowe ({objects.filter(o => o.processing_status === 'completed').length})
+              ✓ Gotowe ({objects.filter(o => getProcessingStatus(o) === 'completed').length})
             </button>
             <button className={`btn btn-sm ${filter === 'pending' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilter('pending')}>
-              ⏳ Oczekujące ({objects.filter(o => o.processing_status === 'pending').length})
+              ⏳ Oczekujące ({objects.filter(o => getProcessingStatus(o) === 'pending').length})
             </button>
           </div>
 

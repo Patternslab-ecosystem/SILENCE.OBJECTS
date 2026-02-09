@@ -15,32 +15,37 @@ function createClient() {
   );
 }
 
-// Types
+// Types — matched to 001_patternlens.sql migration + API response
 export interface PLObject {
   id: string;
   input_text: string;
   input_method?: 'text' | 'voice';
-  object_theme: string | null;
   selected_lens: string | null;
-  risk_level: string;
-  processing_status: 'pending' | 'processing' | 'completed' | 'failed';
-  is_archived: boolean;
+  detected_theme: string | null;
   created_at: string;
-  updated_at: string;
   interpretations?: Interpretation[];
+}
+
+export interface InterpretationPhase {
+  title: string;
+  content: string;
 }
 
 export interface Interpretation {
   id: string;
-  object_id: string;
   lens: 'A' | 'B';
-  context_phase: string;
-  tension_phase: string;
-  meaning_phase: string;
-  function_phase: string;
-  model_version: string;
-  generation_time_ms: number;
-  created_at: string;
+  phase_1_context: InterpretationPhase;
+  phase_2_tension: InterpretationPhase;
+  phase_3_meaning: InterpretationPhase;
+  phase_4_function: InterpretationPhase;
+  confidence_score: number;
+  risk_level: string;
+  created_at?: string;
+}
+
+// Derived helpers
+export function getProcessingStatus(obj: PLObject): 'completed' | 'pending' {
+  return obj.interpretations && obj.interpretations.length > 0 ? 'completed' : 'pending';
 }
 
 export interface Profile {

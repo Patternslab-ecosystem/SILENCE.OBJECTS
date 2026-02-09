@@ -131,6 +131,35 @@
   --accent-red: #cc4444;
   --glow-teal: rgba(33,128,141,0.15);
   --glow-amber: rgba(212,168,67,0.10);
+
+  /* ═══════════════════════════════════════════
+     LEGACY v4 TOKENS (dashboard compatibility)
+     ═══════════════════════════════════════════ */
+  --primary-neon: #00f7ff;
+  --accent-purple: #9d00ff;
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(0, 247, 255, 0.2);
+  --glass-blur: 12px;
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #94a3b8;
+  --color-border: #334155;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --font-size-xs: 0.6875rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -673,3 +702,29 @@ body::before {
    SILENCE DARK — Selection
    ═══════════════════════════════════════════════════ */
 ::selection { background: rgba(33, 128, 141, 0.3); color: var(--text-primary); }
+
+/* ═══════════════════════════════════════════════════
+   LEGACY v4 UTILITIES (dashboard compatibility)
+   ═══════════════════════════════════════════════════ */
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(var(--glass-blur));
+  padding: var(--space-xl);
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 0 var(--space-lg); }
+.gradient-text { background: linear-gradient(135deg, var(--primary-neon), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.text-secondary { color: var(--color-text-secondary); }
+.text-tertiary { color: var(--color-text-tertiary); }
+.text-warning { color: var(--warning); }
+.text-success { color: var(--success); }
+.text-center { text-align: center; }
+.ml-md { margin-left: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.btn-lg { padding: 1rem 2rem; font-size: 1rem; }
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.8125rem; }
+.btn-full { width: 100%; }
+.spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.pulse { animation: pl-pulse-glow 2s infinite; }
