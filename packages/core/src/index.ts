@@ -729,3 +729,188 @@ export function getPatternCounts(
   });
   return result;
 }
+
+// ============================================
+// SYSTEM METAPHOR DETECTION
+// ============================================
+
+/** System metaphor types — computational metaphors for behavioral states */
+export type SystemMetaphorType =
+  | 'overload_protocol'
+  | 'buffer_overflow'
+  | 'deadlock_loop'
+  | 'kernel_panic';
+
+/** Result of system metaphor detection */
+export interface MetaphorDetection {
+  type: SystemMetaphorType;
+  label: string;
+  severity: 'LOW' | 'MEDIUM' | 'CRITICAL';
+  description: string;
+  detectedAt: string;
+}
+
+/** Input shape for metaphor detection — recent analysis history */
+export interface MetaphorInput {
+  patterns: string[];
+  tensions: string[];
+  timestamp: string;
+  confidence?: number;
+  hasCrisisKeywords?: boolean;
+}
+
+/**
+ * Detect system metaphors from a window of recent analysis results.
+ *
+ * 4 metaphors (ordered by severity):
+ * - overload_protocol: High-frequency objects with high pattern diversity
+ * - buffer_overflow: Repeated identical pattern configurations (loop)
+ * - deadlock_loop: Persistent opposing tensions with no new patterns
+ * - kernel_panic: Crisis keywords + LOSS/CONFLICT dominance (triggers safety Layer 2)
+ *
+ * Returns the highest-severity metaphor detected, or null if none apply.
+ */
+export function detectSystemMetaphor(
+  objects: MetaphorInput[],
+  windowDays: number = 14,
+): MetaphorDetection | null {
+  if (!objects || objects.length < 2) return null;
+
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000);
+
+  // Filter to window
+  const recent = objects.filter((o) => {
+    try {
+      return new Date(o.timestamp) >= cutoff;
+    } catch {
+      return false;
+    }
+  });
+
+  if (recent.length < 2) return null;
+
+  const detectedAt = now.toISOString();
+
+  // --- Check kernel_panic first (highest severity) ---
+  const hasCrisis = recent.some((o) => o.hasCrisisKeywords === true);
+  if (hasCrisis) {
+    const lastObj = recent[recent.length - 1];
+    const hasLoss = lastObj.patterns.includes('LOSS');
+    const hasConflict = lastObj.patterns.includes('CONFLICT');
+    const highConfidence = (lastObj.confidence ?? 0) > 0.7;
+
+    if ((hasLoss || hasConflict) && highConfidence) {
+      return {
+        type: 'kernel_panic',
+        label: 'System alert — resources available',
+        severity: 'CRITICAL',
+        description:
+          'Critical structural signal detected. Pattern configuration combined with elevated language signals a state requiring resource display.',
+        detectedAt,
+      };
+    }
+  }
+
+  // --- Check deadlock_loop ---
+  if (recent.length >= 5) {
+    // Collect all tensions across the window
+    const tensionCounts = new Map<string, number>();
+    const allPatternCategories = new Set<string>();
+
+    for (const obj of recent) {
+      for (const t of obj.tensions) {
+        tensionCounts.set(t, (tensionCounts.get(t) || 0) + 1);
+      }
+      for (const p of obj.patterns) {
+        allPatternCategories.add(p);
+      }
+    }
+
+    // Find tensions that appear in 5+ objects
+    const dominantTensions = Array.from(tensionCounts.entries()).filter(
+      ([, count]) => count >= 5,
+    );
+
+    // Check if new categories stopped emerging (same categories repeating)
+    const firstHalf = recent.slice(0, Math.floor(recent.length / 2));
+    const secondHalf = recent.slice(Math.floor(recent.length / 2));
+    const firstCategories = new Set(firstHalf.flatMap((o) => o.patterns));
+    const secondCategories = new Set(secondHalf.flatMap((o) => o.patterns));
+    const newInSecondHalf = Array.from(secondCategories).filter(
+      (c) => !firstCategories.has(c),
+    );
+
+    if (dominantTensions.length >= 2 && newInSecondHalf.length === 0) {
+      return {
+        type: 'deadlock_loop',
+        label: 'Deadlock Loop — persistent opposing tensions',
+        severity: 'MEDIUM',
+        description:
+          'Two or more forces are in persistent opposition with no resolution vector. Neither side is yielding, creating analytical paralysis.',
+        detectedAt,
+      };
+    }
+  }
+
+  // --- Check buffer_overflow ---
+  if (recent.length >= 3) {
+    // Check for repeated identical pattern configurations
+    let consecutiveRepeats = 0;
+    for (let i = 1; i < recent.length; i++) {
+      const prev = recent[i - 1].patterns.sort().join(',');
+      const curr = recent[i].patterns.sort().join(',');
+      const prevTensions = recent[i - 1].tensions.sort().join(',');
+      const currTensions = recent[i].tensions.sort().join(',');
+
+      if (prev === curr && prevTensions === currTensions && prev.length > 0) {
+        consecutiveRepeats++;
+      } else {
+        consecutiveRepeats = 0;
+      }
+
+      if (consecutiveRepeats >= 2) {
+        return {
+          type: 'buffer_overflow',
+          label: 'Buffer Overflow — recurring pattern loop detected',
+          severity: 'MEDIUM',
+          description:
+            'A structural loop is detected — the same pattern configuration keeps recurring without evolution. The analytical buffer is full of repeated signals.',
+          detectedAt,
+        };
+      }
+    }
+  }
+
+  // --- Check overload_protocol ---
+  // High frequency: 5+ objects in 48h window
+  const last48h = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+  const recentBurst = recent.filter((o) => {
+    try {
+      return new Date(o.timestamp) >= last48h;
+    } catch {
+      return false;
+    }
+  });
+
+  if (recentBurst.length >= 5) {
+    const uniqueCategories = new Set(recentBurst.flatMap((o) => o.patterns));
+    const totalTensions = recentBurst.reduce(
+      (sum, o) => sum + o.tensions.length,
+      0,
+    );
+
+    if (uniqueCategories.size >= 3 && totalTensions > 0) {
+      return {
+        type: 'overload_protocol',
+        label: 'Overload Protocol detected — high-density pattern activity',
+        severity: 'LOW',
+        description:
+          'The system is processing more inputs than its normal throughput. Multiple pattern categories are simultaneously active, creating analytical density.',
+        detectedAt,
+      };
+    }
+  }
+
+  return null;
+}

@@ -42,7 +42,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: *.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com va.vercel-scripts.com",
+              "connect-src 'self' *.supabase.co wss://*.supabase.co api.anthropic.com api.openai.com api.stripe.com va.vercel-scripts.com https://sentry.io https://*.upstash.io",
               "frame-src js.stripe.com",
               "media-src 'self' blob:",
             ].join('; '),
