@@ -1,39 +1,179 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { cn, layout, text, badge } from "@/constants/design-system";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
-interface HeaderProps { email?: string; tier: string; remainingObjects?: number | null; }
+interface HeaderProps {
+  tier?: string;
+  remainingObjects?: number | null;
+}
 
-export function Header({ email, tier }: HeaderProps) {
+export function Header({ tier = 'FREE', remainingObjects }: HeaderProps) {
   const router = useRouter();
+  const { lang, setLang, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await fetch("/api/auth/signout", { method: "POST" });
-    router.push("/login");
+    await fetch('/api/auth/signout', { method: 'POST' });
+    router.push('/login');
     router.refresh();
   };
 
   return (
-    <header className={layout.header}>
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-[var(--primary)] rounded-md flex items-center justify-center">
-          <span className="text-white text-sm font-semibold">S</span>
+    <header style={{
+      height: 56,
+      background: 'rgba(18, 18, 26, 0.9)',
+      borderBottom: '1px solid var(--border)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 20px',
+      position: 'sticky',
+      top: 0,
+      zIndex: 50,
+      backdropFilter: 'blur(12px)',
+    }}>
+      {/* Logo */}
+      <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+        <div style={{
+          width: 28, height: 28,
+          background: 'var(--accent-cyan)',
+          borderRadius: 6,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>S</span>
         </div>
-        <span className="text-base font-semibold tracking-[-0.3px]">SILENCE</span>
-      </div>
-      <div className="flex items-center gap-4">
-        {tier === "FREE" && <div className={cn(badge.base, badge.primary)}>FREE TIER</div>}
-        <div className="relative">
-          <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors">
-            <span className={text.secondary}>{email}</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={cn("text-[var(--text-muted)] transition-transform", menuOpen && "rotate-180")}><path d="M6 9l6 6 6-6"/></svg>
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontWeight: 600,
+          fontSize: 15,
+          color: 'var(--text-primary)',
+          letterSpacing: '-0.02em',
+        }}>
+          SILENCE
+        </span>
+      </Link>
+
+      {/* Right side */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Language Switcher */}
+        <div style={{ display: 'flex', gap: 0, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)' }}>
+          <button
+            onClick={() => setLang('en')}
+            style={{
+              padding: '4px 10px',
+              fontSize: 11,
+              fontWeight: 600,
+              fontFamily: 'var(--font-mono)',
+              background: lang === 'en' ? 'var(--accent-cyan)' : 'transparent',
+              color: lang === 'en' ? '#fff' : 'var(--text-muted)',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => setLang('pl')}
+            style={{
+              padding: '4px 10px',
+              fontSize: 11,
+              fontWeight: 600,
+              fontFamily: 'var(--font-mono)',
+              background: lang === 'pl' ? 'var(--accent-cyan)' : 'transparent',
+              color: lang === 'pl' ? '#fff' : 'var(--text-muted)',
+              border: 'none',
+              borderLeft: '1px solid var(--border)',
+              cursor: 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            PL
+          </button>
+        </div>
+
+        {/* Tier badge */}
+        {tier === 'FREE' ? (
+          <span style={{
+            padding: '3px 8px',
+            fontSize: 10,
+            fontWeight: 600,
+            fontFamily: 'var(--font-mono)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            background: 'var(--accent-cyan-muted)',
+            color: 'var(--accent-cyan)',
+            border: '1px solid var(--lens-a-border)',
+            borderRadius: 4,
+          }}>
+            {t.nav.freeTier}
+          </span>
+        ) : (
+          <span className="badge badge-pro">{t.pro.badge}</span>
+        )}
+
+        {/* Menu */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{
+              padding: '6px 10px',
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              borderRadius: 6,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 13,
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           </button>
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg shadow-lg overflow-hidden z-50">
-              <button onClick={handleSignOut} className="w-full px-4 py-2.5 text-left text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-colors">Sign Out</button>
+            <div style={{
+              position: 'absolute',
+              right: 0,
+              top: '100%',
+              marginTop: 4,
+              width: 180,
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              boxShadow: 'var(--shadow-lg)',
+              overflow: 'hidden',
+              zIndex: 100,
+            }}>
+              <Link href="/dashboard" style={{
+                display: 'block', padding: '10px 16px', fontSize: 13,
+                color: 'var(--text-secondary)', textDecoration: 'none',
+              }}>
+                {t.nav.dashboard}
+              </Link>
+              <Link href="/archive" style={{
+                display: 'block', padding: '10px 16px', fontSize: 13,
+                color: 'var(--text-secondary)', textDecoration: 'none',
+              }}>
+                {t.nav.archive}
+              </Link>
+              <div style={{ height: 1, background: 'var(--border)' }} />
+              <button
+                onClick={handleSignOut}
+                style={{
+                  display: 'block', width: '100%', padding: '10px 16px',
+                  fontSize: 13, color: 'var(--accent-red)',
+                  background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer',
+                }}
+              >
+                {t.nav.signOut}
+              </button>
             </div>
           )}
         </div>

@@ -1,8 +1,3 @@
-// ============================================
-// src/app/archive/page.tsx
-// PatternLens v4.0 - Objects Archive
-// ============================================
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -11,19 +6,21 @@ import { createBrowserClient } from '@supabase/ssr';
 import { Header } from '@/components/layout/Header';
 import ObjectCard from '@/components/ObjectCard';
 import { useObjects, useInterpret, useProfile, usePatterns, getProcessingStatus } from '@/hooks/useApi';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function ArchivePage() {
   const router = useRouter();
-  
+  const { t } = useLanguage();
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  
+
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending'>('all');
-  
+
   const { objects, fetchObjects } = useObjects();
   const { interpret } = useInterpret();
   const { profile, fetchProfile, remainingObjects } = useProfile();
@@ -65,7 +62,7 @@ export default function ArchivePage() {
 
   const handleSynthesize = async () => {
     if (selectedIds.size < 3) {
-      alert('Wybierz minimum 3 obiekty do syntezy wzorców');
+      alert(t.archive.minAlert);
       return;
     }
     const result = await synthesize(Array.from(selectedIds));
@@ -79,76 +76,103 @@ export default function ArchivePage() {
     return true;
   });
 
+  const completedCount = objects.filter(o => getProcessingStatus(o) === 'completed').length;
+  const pendingCount = objects.filter(o => getProcessingStatus(o) === 'pending').length;
+
   if (loading) {
     return (
-      <div className="loading-screen">
+      <div style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 16,
+        background: 'var(--bg-base)',
+      }}>
         <div className="spinner" />
-        <p>Ładowanie...</p>
-        <style jsx>{`
-          .loading-screen {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-lg);
-          }
-        `}</style>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+          {t.common.loading}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="archive-page">
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       <Header tier={profile?.tier || 'FREE'} remainingObjects={remainingObjects} />
 
-      <main className="container">
-        <section className="page-header">
-          <h1 className="gradient-text">Archiwum obiektów</h1>
-          <p className="text-secondary">
-            {objects.length} obiektów | {objects.filter(o => getProcessingStatus(o) === 'completed').length} przeanalizowanych
+      <main className="container" style={{ padding: '32px 16px' }}>
+        {/* Page Header */}
+        <section style={{ marginBottom: 24 }}>
+          <h1 style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 22, color: 'var(--text-primary)', marginBottom: 4 }}>
+            {t.archive.title}
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+            {objects.length} {t.archive.objectsLabel} | {completedCount} {t.archive.analyzedLabel}
           </p>
         </section>
 
-        <section className="toolbar glass-card-static">
-          <div className="filters">
-            <button className={`btn btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilter('all')}>
-              Wszystkie ({objects.length})
+        {/* Toolbar */}
+        <section style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: 12, marginBottom: 20,
+          background: 'var(--bg-surface)', border: '1px solid var(--border)',
+          borderRadius: 10, flexWrap: 'wrap', gap: 10,
+        }}>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              className={`btn btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setFilter('all')}
+            >
+              {t.archive.all} ({objects.length})
             </button>
-            <button className={`btn btn-sm ${filter === 'completed' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilter('completed')}>
-              ✓ Gotowe ({objects.filter(o => getProcessingStatus(o) === 'completed').length})
+            <button
+              className={`btn btn-sm ${filter === 'completed' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setFilter('completed')}
+            >
+              {t.archive.done} ({completedCount})
             </button>
-            <button className={`btn btn-sm ${filter === 'pending' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilter('pending')}>
-              ⏳ Oczekujące ({objects.filter(o => getProcessingStatus(o) === 'pending').length})
+            <button
+              className={`btn btn-sm ${filter === 'pending' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setFilter('pending')}
+            >
+              {t.archive.pending} ({pendingCount})
             </button>
           </div>
 
-          <div className="actions">
+          <div style={{ display: 'flex', gap: 6 }}>
             <button className="btn btn-ghost btn-sm" onClick={handleSelectAll}>
-              {selectedIds.size === filteredObjects.length ? '☐ Odznacz' : '☑ Zaznacz wszystkie'}
+              {selectedIds.size === filteredObjects.length ? t.archive.deselect : t.archive.selectAll}
             </button>
-            
+
             {selectedIds.size >= 3 && (
               <button className="btn btn-primary btn-sm" onClick={handleSynthesize} disabled={synthesizing}>
-                {synthesizing ? '⏳ Synteza...' : `🔮 Syntetyzuj wzorce (${selectedIds.size})`}
+                {synthesizing ? t.archive.synthesizing : `${t.archive.synthesize} (${selectedIds.size})`}
               </button>
             )}
           </div>
         </section>
 
+        {/* Selection info */}
         {selectedIds.size > 0 && (
-          <div className="selection-info">
-            <span className="text-neon">{selectedIds.size}</span> obiektów zaznaczonych
-            {selectedIds.size < 3 && <span className="text-tertiary"> (min. 3 do syntezy)</span>}
+          <div style={{
+            padding: 12, marginBottom: 16,
+            background: 'var(--accent-cyan-muted)', borderRadius: 8, textAlign: 'center',
+            fontSize: 13, color: 'var(--text-secondary)',
+          }}>
+            <span style={{ color: 'var(--accent-cyan)', fontWeight: 600 }}>{selectedIds.size}</span> {t.archive.selected}
+            {selectedIds.size < 3 && <span style={{ color: 'var(--text-muted)' }}> {t.archive.minForSynthesis}</span>}
           </div>
         )}
 
-        <section className="objects-section">
+        {/* Objects grid */}
+        <section>
           {filteredObjects.length > 0 ? (
-            <div className="objects-grid">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+              gap: 12,
+            }}>
               {filteredObjects.map(obj => (
-                <ObjectCard 
-                  key={obj.id} 
+                <ObjectCard
+                  key={obj.id}
                   object={obj}
                   onInterpret={handleInterpret}
                   onSelect={handleSelect}
@@ -158,49 +182,16 @@ export default function ArchivePage() {
               ))}
             </div>
           ) : (
-            <div className="empty-state glass-card">
-              <div className="empty-icon">📭</div>
-              <p>Brak obiektów w tej kategorii</p>
+            <div style={{
+              textAlign: 'center', padding: 48,
+              background: 'var(--bg-surface)', border: '1px solid var(--border)',
+              borderRadius: 12,
+            }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{t.archive.empty}</p>
             </div>
           )}
         </section>
       </main>
-
-      <style jsx>{`
-        .archive-page { min-height: 100vh; }
-        main { padding: var(--space-2xl) var(--space-lg); }
-        .page-header { margin-bottom: var(--space-xl); }
-        .page-header h1 { margin-bottom: var(--space-sm); }
-        .toolbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: var(--space-md);
-          margin-bottom: var(--space-lg);
-          flex-wrap: wrap;
-          gap: var(--space-md);
-        }
-        .filters, .actions { display: flex; gap: var(--space-sm); }
-        .selection-info {
-          padding: var(--space-md);
-          background: rgba(0, 247, 255, 0.1);
-          border-radius: var(--radius-md);
-          margin-bottom: var(--space-lg);
-          text-align: center;
-        }
-        .objects-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-          gap: var(--space-lg);
-        }
-        .empty-state { text-align: center; padding: var(--space-3xl); }
-        .empty-icon { font-size: 48px; margin-bottom: var(--space-lg); }
-        @media (max-width: 768px) {
-          .toolbar { flex-direction: column; }
-          .filters, .actions { width: 100%; justify-content: center; }
-          .objects-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
     </div>
   );
 }

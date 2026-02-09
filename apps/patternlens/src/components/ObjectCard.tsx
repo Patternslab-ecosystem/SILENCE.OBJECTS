@@ -1,13 +1,9 @@
-// ============================================
-// src/components/ObjectCard.tsx
-// PatternLens v4.0 - Object Display Card
-// ============================================
-
 'use client';
 
 import { useState } from 'react';
 import type { PLObject } from '@/hooks/useApi';
 import { getProcessingStatus } from '@/hooks/useApi';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface ObjectCardProps {
   object: PLObject;
@@ -17,13 +13,14 @@ interface ObjectCardProps {
   selected?: boolean;
 }
 
-export function ObjectCard({ 
-  object, 
-  onInterpret, 
+export function ObjectCard({
+  object,
+  onInterpret,
   onSelect,
   selectable = false,
-  selected = false 
+  selected = false,
 }: ObjectCardProps) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
 
   const status = getProcessingStatus(object);
@@ -33,23 +30,14 @@ export function ObjectCard({
     switch (risk?.toLowerCase()) {
       case 'none':
       case 'low':
-        return <span className="badge badge-success">NISKIE</span>;
+        return <span className="badge badge-success">{t.risk.low}</span>;
       case 'medium':
-        return <span className="badge badge-warning">ŚREDNIE</span>;
+        return <span className="badge badge-warning">{t.risk.medium}</span>;
       case 'high':
       case 'crisis':
-        return <span className="badge badge-danger">WYSOKIE</span>;
+        return <span className="badge badge-danger">{t.risk.high}</span>;
       default:
         return null;
-    }
-  };
-
-  const getStatusBadge = () => {
-    switch (status) {
-      case 'completed':
-        return <span className="badge badge-success">Gotowe</span>;
-      default:
-        return <span className="badge badge-info">Oczekuje</span>;
     }
   };
 
@@ -58,112 +46,128 @@ export function ObjectCard({
     const now = new Date();
     const diff = now.getTime() - d.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (days === 0) return 'Dzisiaj';
-    if (days === 1) return 'Wczoraj';
-    if (days < 7) return `${days} dni temu`;
-    return d.toLocaleDateString('pl-PL');
+
+    if (days === 0) return t.common.today;
+    if (days === 1) return t.common.yesterday;
+    if (days < 7) return `${days} ${t.common.daysAgo}`;
+    return d.toLocaleDateString('en-US');
   };
 
   const lensA = object.interpretations?.find(i => i.lens === 'A');
   const lensB = object.interpretations?.find(i => i.lens === 'B');
 
   return (
-    <div className={`object-card glass-card ${selected ? 'selected' : ''}`}>
+    <div style={{
+      background: 'var(--bg-surface)',
+      border: selected ? '1px solid var(--accent-cyan)' : '1px solid var(--border)',
+      borderRadius: 12,
+      padding: 20,
+      position: 'relative',
+      boxShadow: selected ? '0 0 20px rgba(6, 182, 212, 0.15)' : 'none',
+      transition: 'all 200ms',
+    }}>
       {selectable && (
-        <div className="card-checkbox">
-          <input 
-            type="checkbox" 
+        <div style={{ position: 'absolute', top: 16, left: 16 }}>
+          <input
+            type="checkbox"
             checked={selected}
             onChange={(e) => onSelect?.(object.id, e.target.checked)}
+            style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--accent-cyan)' }}
           />
         </div>
       )}
 
-      <div className="card-header">
-        <div className="card-meta">
-          <span className="card-date">{formatDate(object.created_at)}</span>
-          <span className="card-source">
-            {object.input_method === 'voice' ? '🎤' : '✍️'}
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
+            {formatDate(object.created_at)}
+          </span>
+          <span style={{ fontSize: 14 }}>
+            {object.input_method === 'voice' ? '\uD83C\uDFA4' : '\u270D\uFE0F'}
           </span>
         </div>
-        <div className="card-badges">
+        <div style={{ display: 'flex', gap: 6 }}>
           {getRiskBadge()}
-          {getStatusBadge()}
+          <span className={status === 'completed' ? 'badge badge-success' : 'badge badge-info'}>
+            {status === 'completed' ? t.object.completed : t.object.pending}
+          </span>
         </div>
       </div>
 
-      <div className="card-content">
-        <p className="card-text">
-          {object.input_text.substring(0, 150)}
-          {object.input_text.length > 150 && '...'}
-        </p>
-        
-        {object.detected_theme && (
-          <div className="card-theme">
-            <span className="theme-label">Temat:</span>
-            <span className="theme-value">{object.detected_theme}</span>
-          </div>
-        )}
-      </div>
+      {/* Content */}
+      <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: 14, marginBottom: 8 }}>
+        {object.input_text.substring(0, 150)}
+        {object.input_text.length > 150 && '...'}
+      </p>
 
-      {/* Interpretations Preview */}
+      {object.detected_theme && (
+        <div style={{ fontSize: 12 }}>
+          <span style={{ color: 'var(--text-muted)' }}>{t.common.theme}:</span>
+          <span style={{ color: 'var(--accent-cyan)', marginLeft: 4 }}>{object.detected_theme}</span>
+        </div>
+      )}
+
+      {/* Interpretations */}
       {status === 'completed' && (lensA || lensB) && (
-        <div className={`card-interpretations ${expanded ? 'expanded' : ''}`}>
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 12, paddingTop: 12 }}>
           <button
-            className="expand-btn"
             onClick={() => setExpanded(!expanded)}
+            style={{
+              background: 'none', border: 'none',
+              color: 'var(--text-secondary)', cursor: 'pointer',
+              fontSize: 13, fontFamily: 'var(--font-mono)',
+              width: '100%', textAlign: 'center', padding: 4,
+            }}
           >
-            {expanded ? 'Zwiń' : 'Pokaż interpretacje'}
+            {expanded ? t.object.collapse : t.object.showInterpretations}
           </button>
 
           {expanded && (
-            <div className="interpretations-grid">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 12 }}>
               {lensA && (
-                <div className="lens-card lens-a">
-                  <h4>Soczewka A <span className="lens-subtitle">Ochronna</span></h4>
-                  <div className="lens-phases">
-                    <div className="phase">
-                      <span className="phase-label">Kontekst</span>
-                      <p>{lensA.phase_1_context?.content || ''}</p>
-                    </div>
-                    <div className="phase">
-                      <span className="phase-label">Napięcie</span>
-                      <p>{lensA.phase_2_tension?.content || ''}</p>
-                    </div>
-                    <div className="phase">
-                      <span className="phase-label">Znaczenie</span>
-                      <p>{lensA.phase_3_meaning?.content || ''}</p>
-                    </div>
-                    <div className="phase">
-                      <span className="phase-label">Funkcja</span>
-                      <p>{lensA.phase_4_function?.content || ''}</p>
-                    </div>
-                  </div>
+                <div style={{ padding: 12, background: 'rgba(0,0,0,0.2)', borderRadius: 8, borderLeft: '3px solid var(--accent-cyan)' }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', marginBottom: 8 }}>
+                    {t.results.lensA} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>{t.results.lensAName}</span>
+                  </p>
+                  {['phase_1_context', 'phase_2_tension', 'phase_3_meaning', 'phase_4_function'].map(key => {
+                    const phase = (lensA as any)[key];
+                    const labels: Record<string, string> = {
+                      phase_1_context: t.results.context,
+                      phase_2_tension: t.results.tension,
+                      phase_3_meaning: t.results.meaning,
+                      phase_4_function: t.results.function,
+                    };
+                    return phase?.content ? (
+                      <div key={key} style={{ marginBottom: 6 }}>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{labels[key]}</span>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{phase.content}</p>
+                      </div>
+                    ) : null;
+                  })}
                 </div>
               )}
 
               {lensB && (
-                <div className="lens-card lens-b">
-                  <h4>Soczewka B <span className="lens-subtitle">Rozwojowa</span></h4>
-                  <div className="lens-phases">
-                    <div className="phase">
-                      <span className="phase-label">Kontekst</span>
-                      <p>{lensB.phase_1_context?.content || ''}</p>
-                    </div>
-                    <div className="phase">
-                      <span className="phase-label">Napięcie</span>
-                      <p>{lensB.phase_2_tension?.content || ''}</p>
-                    </div>
-                    <div className="phase">
-                      <span className="phase-label">Znaczenie</span>
-                      <p>{lensB.phase_3_meaning?.content || ''}</p>
-                    </div>
-                    <div className="phase">
-                      <span className="phase-label">Funkcja</span>
-                      <p>{lensB.phase_4_function?.content || ''}</p>
-                    </div>
-                  </div>
+                <div style={{ padding: 12, background: 'rgba(0,0,0,0.2)', borderRadius: 8, borderLeft: '3px solid var(--accent-purple)' }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--accent-purple)', marginBottom: 8 }}>
+                    {t.results.lensB} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>{t.results.lensBName}</span>
+                  </p>
+                  {['phase_1_context', 'phase_2_tension', 'phase_3_meaning', 'phase_4_function'].map(key => {
+                    const phase = (lensB as any)[key];
+                    const labels: Record<string, string> = {
+                      phase_1_context: t.results.context,
+                      phase_2_tension: t.results.tension,
+                      phase_3_meaning: t.results.meaning,
+                      phase_4_function: t.results.function,
+                    };
+                    return phase?.content ? (
+                      <div key={key} style={{ marginBottom: 6 }}>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{labels[key]}</span>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{phase.content}</p>
+                      </div>
+                    ) : null;
+                  })}
                 </div>
               )}
             </div>
@@ -171,177 +175,17 @@ export function ObjectCard({
         </div>
       )}
 
-      {/* Action Buttons */}
-      <div className="card-actions">
-        {status === 'pending' && (
+      {/* Actions */}
+      {status === 'pending' && onInterpret && (
+        <div style={{ marginTop: 12 }}>
           <button
             className="btn btn-primary btn-sm"
-            onClick={() => onInterpret?.(object.id)}
+            onClick={() => onInterpret(object.id)}
           >
-            Analizuj
+            {t.object.analyze}
           </button>
-        )}
-      </div>
-
-      <style jsx>{`
-        .object-card {
-          position: relative;
-        }
-
-        .object-card.selected {
-          border-color: var(--primary-neon);
-          box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
-        }
-
-        .card-checkbox {
-          position: absolute;
-          top: var(--space-md);
-          left: var(--space-md);
-        }
-
-        .card-checkbox input {
-          width: 20px;
-          height: 20px;
-          cursor: pointer;
-        }
-
-        .card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: var(--space-md);
-        }
-
-        .card-meta {
-          display: flex;
-          align-items: center;
-          gap: var(--space-sm);
-        }
-
-        .card-date {
-          color: var(--color-text-tertiary);
-          font-size: var(--font-size-sm);
-        }
-
-        .card-source {
-          font-size: 16px;
-        }
-
-        .card-badges {
-          display: flex;
-          gap: var(--space-sm);
-        }
-
-        .card-content {
-          margin-bottom: var(--space-md);
-        }
-
-        .card-text {
-          color: var(--color-text-secondary);
-          line-height: 1.6;
-        }
-
-        .card-theme {
-          margin-top: var(--space-sm);
-          font-size: var(--font-size-sm);
-        }
-
-        .theme-label {
-          color: var(--color-text-tertiary);
-        }
-
-        .theme-value {
-          color: var(--primary-neon);
-          margin-left: var(--space-xs);
-        }
-
-        .card-interpretations {
-          border-top: 1px solid var(--color-border);
-          padding-top: var(--space-md);
-        }
-
-        .expand-btn {
-          background: none;
-          border: none;
-          color: var(--color-text-secondary);
-          cursor: pointer;
-          font-size: var(--font-size-sm);
-          padding: var(--space-sm);
-          width: 100%;
-          text-align: center;
-        }
-
-        .expand-btn:hover {
-          color: var(--primary-neon);
-        }
-
-        .interpretations-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: var(--space-md);
-          margin-top: var(--space-md);
-        }
-
-        .lens-card {
-          padding: var(--space-md);
-          border-radius: var(--radius-md);
-          background: rgba(0, 0, 0, 0.2);
-        }
-
-        .lens-a {
-          border-left: 3px solid var(--primary-neon);
-        }
-
-        .lens-b {
-          border-left: 3px solid var(--accent-purple);
-        }
-
-        .lens-card h4 {
-          font-size: var(--font-size-base);
-          margin-bottom: var(--space-md);
-          display: flex;
-          align-items: center;
-          gap: var(--space-sm);
-        }
-
-        .lens-subtitle {
-          font-size: var(--font-size-xs);
-          color: var(--color-text-tertiary);
-          font-weight: normal;
-        }
-
-        .lens-phases {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-sm);
-        }
-
-        .phase {
-          padding: var(--space-sm);
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: var(--radius-sm);
-        }
-
-        .phase-label {
-          display: block;
-          font-size: var(--font-size-xs);
-          color: var(--color-text-tertiary);
-          text-transform: uppercase;
-          margin-bottom: var(--space-xs);
-        }
-
-        .phase p {
-          font-size: var(--font-size-sm);
-          color: var(--color-text-secondary);
-          margin: 0;
-        }
-
-        .card-actions {
-          display: flex;
-          gap: var(--space-sm);
-          margin-top: var(--space-md);
-        }
-      `}</style>
+        </div>
+      )}
     </div>
   );
 }

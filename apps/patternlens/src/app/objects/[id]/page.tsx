@@ -1,181 +1,200 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface InterpretationPhase {
-  title: string
-  content: string
+  title: string;
+  content: string;
 }
 
 interface Interpretation {
-  id: string
-  lens: 'A' | 'B'
-  phase_1_context: InterpretationPhase
-  phase_2_tension: InterpretationPhase
-  phase_3_meaning: InterpretationPhase
-  phase_4_function: InterpretationPhase
-  confidence_score: number
-  risk_level: string
-  created_at: string
+  id: string;
+  lens: 'A' | 'B';
+  phase_1_context: InterpretationPhase;
+  phase_2_tension: InterpretationPhase;
+  phase_3_meaning: InterpretationPhase;
+  phase_4_function: InterpretationPhase;
+  confidence_score: number;
+  risk_level: string;
+  created_at: string;
 }
 
 interface ObjectData {
-  id: string
-  input_text: string
-  input_method: string
-  selected_lens: string | null
-  detected_theme: string | null
-  created_at: string
-  interpretations?: Interpretation[]
+  id: string;
+  input_text: string;
+  input_method: string;
+  selected_lens: string | null;
+  detected_theme: string | null;
+  created_at: string;
+  interpretations?: Interpretation[];
 }
 
 export default function ObjectDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const [object, setObject] = useState<ObjectData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [interpreting, setInterpreting] = useState(false)
+  const params = useParams();
+  const router = useRouter();
+  const { t } = useLanguage();
+  const [object, setObject] = useState<ObjectData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [interpreting, setInterpreting] = useState(false);
 
   useEffect(() => {
     async function load() {
       try {
-        // Load object with interpretations via the interpret GET endpoint
-        const res = await fetch(`/api/objects/interpret?object_id=${params.id}`)
-        if (res.status === 401) { router.push('/login'); return }
-        if (!res.ok) { setError('Object not found'); setLoading(false); return }
-        const data = await res.json()
-        setObject(data)
+        const res = await fetch(`/api/objects/interpret?object_id=${params.id}`);
+        if (res.status === 401) { router.push('/login'); return; }
+        if (!res.ok) { setError(t.common.objectNotFound); setLoading(false); return; }
+        const data = await res.json();
+        setObject(data);
       } catch {
-        setError('Failed to load object')
+        setError(t.common.objectNotFound);
       }
-      setLoading(false)
+      setLoading(false);
     }
-    if (params.id) load()
-  }, [params.id, router])
+    if (params.id) load();
+  }, [params.id, router, t.common.objectNotFound]);
 
   const handleInterpret = async () => {
-    if (!object || interpreting) return
-    setInterpreting(true)
+    if (!object || interpreting) return;
+    setInterpreting(true);
     try {
       const res = await fetch('/api/objects/interpret', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ object_id: object.id })
-      })
+        body: JSON.stringify({ object_id: object.id }),
+      });
       if (res.ok) {
-        // Reload object with new interpretations
-        const reloadRes = await fetch(`/api/objects/interpret?object_id=${object.id}`)
+        const reloadRes = await fetch(`/api/objects/interpret?object_id=${object.id}`);
         if (reloadRes.ok) {
-          const data = await reloadRes.json()
-          setObject(data)
+          const data = await reloadRes.json();
+          setObject(data);
         }
       }
     } catch { /* ignore */ }
-    setInterpreting(false)
-  }
+    setInterpreting(false);
+  };
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', color: '#888' }}>
-        <div className="spinner" /> Loading...
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)', color: 'var(--text-muted)' }}>
+        <div className="spinner" style={{ marginRight: 8 }} /> {t.common.loading}
       </div>
-    )
+    );
   }
 
   if (error || !object) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', color: '#888', gap: 16 }}>
-        <p>{error || 'Object not found'}</p>
-        <Link href="/dashboard" style={{ color: '#21808d', textDecoration: 'none' }}>Back to Dashboard</Link>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)', color: 'var(--text-muted)', gap: 16 }}>
+        <p>{error || t.common.objectNotFound}</p>
+        <Link href="/dashboard" style={{ color: 'var(--accent-cyan)', textDecoration: 'none', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+          &larr; {t.common.backToDashboard}
+        </Link>
       </div>
-    )
+    );
   }
 
-  const lensA = object.interpretations?.find(i => i.lens === 'A')
-  const lensB = object.interpretations?.find(i => i.lens === 'B')
-  const hasInterpretations = lensA || lensB
-  const status = hasInterpretations ? 'completed' : 'pending'
+  const lensA = object.interpretations?.find(i => i.lens === 'A');
+  const lensB = object.interpretations?.find(i => i.lens === 'B');
+  const hasInterpretations = lensA || lensB;
+  const status = hasInterpretations ? 'completed' : 'pending';
 
-  const phases = lensA ? [
-    { name: 'Kontekst', content: lensA.phase_1_context?.content || '', confidence: lensA.confidence_score },
-    { name: 'Napięcie', content: lensA.phase_2_tension?.content || '', confidence: lensA.confidence_score },
-    { name: 'Znaczenie', content: lensA.phase_3_meaning?.content || '', confidence: lensA.confidence_score },
-    { name: 'Funkcja', content: lensA.phase_4_function?.content || '', confidence: lensA.confidence_score },
-  ] : null
+  const phaseKeys = ['phase_1_context', 'phase_2_tension', 'phase_3_meaning', 'phase_4_function'] as const;
+  const phaseLabels: Record<string, string> = {
+    phase_1_context: t.results.context,
+    phase_2_tension: t.results.tension,
+    phase_3_meaning: t.results.meaning,
+    phase_4_function: t.results.function,
+  };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#e8e8e8' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 20px' }}>
-        <Link href="/dashboard" style={{ color: '#888', fontSize: 13, textDecoration: 'none', marginBottom: 24, display: 'inline-block' }}>
-          &larr; Dashboard
+        <Link href="/dashboard" style={{ color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none', fontFamily: 'var(--font-mono)', marginBottom: 24, display: 'inline-block' }}>
+          &larr; {t.common.backToDashboard}
         </Link>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Obiekt</h1>
-            <p style={{ color: '#666', fontSize: 12, fontFamily: 'monospace' }}>
-              {object.id.substring(0, 8)}... &middot; {new Date(object.created_at).toLocaleDateString('pl-PL')}
+            <h1 style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
+              {t.object.title}
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
+              {object.id.substring(0, 8)}... &middot; {new Date(object.created_at).toLocaleDateString('en-US')}
             </p>
           </div>
           <span style={{
-            padding: '4px 12px', borderRadius: 4, fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-            background: status === 'completed' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)',
-            color: status === 'completed' ? '#10b981' : '#f59e0b',
-            border: `1px solid ${status === 'completed' ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
+            padding: '4px 12px', borderRadius: 4, fontSize: 11, fontWeight: 600,
+            fontFamily: 'var(--font-mono)', textTransform: 'uppercase',
+            background: status === 'completed' ? 'var(--success-muted)' : 'var(--warning-muted)',
+            color: status === 'completed' ? 'var(--success)' : 'var(--warning)',
+            border: `1px solid ${status === 'completed' ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`,
           }}>
-            {status === 'completed' ? 'Przeanalizowany' : 'Oczekuje'}
+            {status === 'completed' ? t.object.completed : t.object.pending}
           </span>
         </div>
 
         {/* Input Text */}
-        <div style={{ marginBottom: 32, padding: 20, background: '#111', borderRadius: 8, border: '1px solid #222' }}>
-          <p style={{ color: '#21808d', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em' }}>Tekst wejściowy</p>
-          <p style={{ color: '#ccc', fontSize: 14, lineHeight: 1.6 }}>{object.input_text}</p>
+        <div style={{ marginBottom: 32, padding: 20, background: 'var(--bg-surface)', borderRadius: 10, border: '1px solid var(--border)' }}>
+          <p style={{ color: 'var(--accent-cyan)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em', fontFamily: 'var(--font-mono)' }}>
+            {t.object.inputText}
+          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>{object.input_text}</p>
           <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
-            <span style={{ color: '#555', fontSize: 11 }}>Metoda: {object.input_method === 'voice' ? 'Głos' : 'Tekst'}</span>
-            {object.detected_theme && <span style={{ color: '#555', fontSize: 11 }}>Temat: {object.detected_theme}</span>}
+            <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+              {t.common.method}: {object.input_method === 'voice' ? t.analysis.voice : t.analysis.text}
+            </span>
+            {object.detected_theme && (
+              <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+                {t.common.theme}: {object.detected_theme}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Interpret Button (if no interpretations yet) */}
+        {/* Interpret Button */}
         {!hasInterpretations && (
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <button
               onClick={handleInterpret}
               disabled={interpreting}
-              style={{
-                padding: '14px 32px', background: interpreting ? 'rgba(33,128,141,0.5)' : '#21808d',
-                color: '#fff', border: 'none', borderRadius: 12,
-                fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, fontSize: 14,
-                cursor: interpreting ? 'wait' : 'pointer',
-              }}
+              className="btn btn-primary"
+              style={{ padding: '14px 32px' }}
             >
-              {interpreting ? 'Analiza AI...' : 'Uruchom analizę dual-lens'}
+              {interpreting ? t.object.analyzing : t.object.runAnalysis}
             </button>
           </div>
         )}
 
         {/* 4-Phase Analysis (Lens A) */}
-        {phases && (
+        {lensA && (
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#888', marginBottom: 16 }}>Analiza 4-fazowa (Soczewka A)</h2>
+            <h2 style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: 16, fontFamily: 'var(--font-mono)' }}>
+              {t.results.fourPhase}
+            </h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              {phases.map((phase) => (
-                <div key={phase.name} style={{ padding: 16, background: '#111', borderRadius: 8, border: '1px solid #222' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <p style={{ color: '#21808d', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>{phase.name}</p>
-                    {phase.confidence != null && (
-                      <span style={{ fontSize: 11, fontFamily: 'monospace', color: phase.confidence >= 0.8 ? '#10b981' : phase.confidence >= 0.6 ? '#14b8a6' : '#f59e0b' }}>
-                        {Math.round(phase.confidence * 100)}%
-                      </span>
-                    )}
+              {phaseKeys.map((key) => {
+                const phase = lensA[key];
+                return (
+                  <div key={key} style={{ padding: 16, background: 'var(--bg-surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <p style={{ color: 'var(--accent-cyan)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em', fontFamily: 'var(--font-mono)' }}>
+                        {phaseLabels[key]}
+                      </p>
+                      {lensA.confidence_score != null && (
+                        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: lensA.confidence_score >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
+                          {Math.round(lensA.confidence_score * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>
+                      {phase?.content || t.results.awaitingAnalysis}
+                    </p>
                   </div>
-                  <p style={{ color: '#ccc', fontSize: 13, lineHeight: 1.5 }}>{phase.content || 'Oczekuje na analizę'}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -183,20 +202,26 @@ export default function ObjectDetailPage() {
         {/* Dual Lens */}
         {hasInterpretations && (
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#888', marginBottom: 16 }}>Podwójna soczewka</h2>
+            <h2 style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: 16, fontFamily: 'var(--font-mono)' }}>
+              {t.results.dualLensTitle}
+            </h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {lensA && (
-                <div style={{ padding: 16, background: '#111', borderRadius: 8, border: '1px solid rgba(33,128,141,0.3)' }}>
-                  <p style={{ color: '#21808d', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em' }}>Soczewka A &mdash; Ochronna</p>
-                  <p style={{ color: '#ccc', fontSize: 13, lineHeight: 1.5 }}>
+                <div style={{ padding: 16, background: 'var(--bg-surface)', borderRadius: 8, border: '1px solid var(--lens-a-border)' }}>
+                  <p style={{ color: 'var(--accent-cyan)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em', fontFamily: 'var(--font-mono)' }}>
+                    {t.results.lensAFull}
+                  </p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>
                     {lensA.phase_1_context?.content || ''}
                   </p>
                 </div>
               )}
               {lensB && (
-                <div style={{ padding: 16, background: '#111', borderRadius: 8, border: '1px solid rgba(212,168,67,0.3)' }}>
-                  <p style={{ color: '#d4a843', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em' }}>Soczewka B &mdash; Rozwojowa</p>
-                  <p style={{ color: '#ccc', fontSize: 13, lineHeight: 1.5 }}>
+                <div style={{ padding: 16, background: 'var(--bg-surface)', borderRadius: 8, border: '1px solid var(--lens-b-border)' }}>
+                  <p style={{ color: 'var(--accent-purple)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em', fontFamily: 'var(--font-mono)' }}>
+                    {t.results.lensBFull}
+                  </p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>
                     {lensB.phase_1_context?.content || ''}
                   </p>
                 </div>
@@ -208,18 +233,24 @@ export default function ObjectDetailPage() {
         {/* Confidence */}
         {hasInterpretations && lensA && (
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#888', marginBottom: 16 }}>Pewność</h2>
+            <h2 style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: 16, fontFamily: 'var(--font-mono)' }}>
+              {t.results.confidence}
+            </h2>
             <div style={{ display: 'flex', gap: 12 }}>
-              <div style={{ flex: 1, padding: 20, background: '#111', borderRadius: 8, border: '1px solid #222', textAlign: 'center' }}>
-                <p style={{ color: '#21808d', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em' }}>Soczewka A</p>
-                <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: lensA.confidence_score >= 0.8 ? '#10b981' : '#14b8a6' }}>
+              <div style={{ flex: 1, padding: 20, background: 'var(--bg-surface)', borderRadius: 8, border: '1px solid var(--border)', textAlign: 'center' }}>
+                <p style={{ color: 'var(--accent-cyan)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
+                  {t.results.lensA}
+                </p>
+                <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: lensA.confidence_score >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
                   {Math.round(lensA.confidence_score * 100)}%
                 </p>
               </div>
               {lensB && (
-                <div style={{ flex: 1, padding: 20, background: '#111', borderRadius: 8, border: '1px solid #222', textAlign: 'center' }}>
-                  <p style={{ color: '#d4a843', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, letterSpacing: '0.05em' }}>Soczewka B</p>
-                  <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: lensB.confidence_score >= 0.8 ? '#10b981' : '#14b8a6' }}>
+                <div style={{ flex: 1, padding: 20, background: 'var(--bg-surface)', borderRadius: 8, border: '1px solid var(--border)', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--accent-purple)', fontSize: 11, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
+                    {t.results.lensB}
+                  </p>
+                  <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)', color: lensB.confidence_score >= 0.8 ? 'var(--success)' : 'var(--accent-teal)' }}>
                     {Math.round(lensB.confidence_score * 100)}%
                   </p>
                 </div>
@@ -229,10 +260,10 @@ export default function ObjectDetailPage() {
         )}
 
         {/* Disclaimer */}
-        <p style={{ color: '#555', fontSize: 11, textAlign: 'center', marginTop: 32 }}>
-          Narzędzie analizy strukturalnej. Nie porada ani diagnoza.
+        <p style={{ color: 'var(--text-muted)', fontSize: 11, textAlign: 'center', marginTop: 32 }}>
+          {t.footer.disclaimer}
         </p>
       </div>
     </div>
-  )
+  );
 }
