@@ -22,6 +22,7 @@ export function Header({ tier = 'FREE', remainingObjects }: HeaderProps) {
   };
 
   return (
+    <>
     <header style={{
       height: 56,
       background: 'rgba(18, 18, 26, 0.9)',
@@ -95,25 +96,21 @@ export function Header({ tier = 'FREE', remainingObjects }: HeaderProps) {
           </button>
         </div>
 
-        {/* Tier badge */}
-        {tier === 'FREE' ? (
-          <span style={{
-            padding: '3px 8px',
-            fontSize: 10,
-            fontWeight: 600,
-            fontFamily: 'var(--font-mono)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            background: 'var(--accent-cyan-muted)',
-            color: 'var(--accent-cyan)',
-            border: '1px solid var(--lens-a-border)',
-            borderRadius: 4,
-          }}>
-            {t.nav.freeTier}
-          </span>
-        ) : (
-          <span className="badge badge-pro">{t.pro.badge}</span>
-        )}
+        {/* Beta badge */}
+        <span className="shimmer-card" style={{
+          padding: '3px 10px',
+          fontSize: 10,
+          fontWeight: 600,
+          fontFamily: 'var(--font-mono)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          background: 'rgba(6, 182, 212, 0.12)',
+          color: 'var(--accent-cyan)',
+          border: '1px solid rgba(6, 182, 212, 0.25)',
+          borderRadius: 999,
+        }}>
+          {t.beta.badge}
+        </span>
 
         {/* Menu */}
         <div style={{ position: 'relative' }}>
@@ -179,5 +176,34 @@ export function Header({ tier = 'FREE', remainingObjects }: HeaderProps) {
         </div>
       </div>
     </header>
+
+    {/* Beta banner */}
+    <div className="shimmer-card" style={{
+      padding: '8px 20px',
+      background: 'linear-gradient(90deg, rgba(6,182,212,0.06), rgba(20,184,166,0.06), rgba(6,182,212,0.06))',
+      borderBottom: '1px solid rgba(6,182,212,0.1)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+    }}>
+      <span style={{
+        fontSize: 10,
+        fontWeight: 600,
+        fontFamily: 'var(--font-mono)',
+        letterSpacing: '0.08em',
+        color: 'var(--accent-cyan)',
+        border: '1px solid rgba(6,182,212,0.25)',
+        borderRadius: 999,
+        padding: '2px 8px',
+        background: 'rgba(6,182,212,0.1)',
+      }}>
+        {t.beta.badge}
+      </span>
+      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+        {t.beta.unlimited}
+      </span>
+    </div>
+    </>
   );
 }

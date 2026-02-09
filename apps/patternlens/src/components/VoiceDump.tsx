@@ -3,20 +3,20 @@
 import { useState, useCallback } from "react";
 import { useMediaRecorder } from "@/hooks/useMediaRecorder";
 import { useTranscription } from "@/hooks/useTranscription";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface VoiceDumpProps {
   onTranscript: (text: string) => void;
-  onRecordingStart?: () => void;
-  onRecordingEnd?: () => void;
   disabled?: boolean;
-  maxDuration?: number; // seconds
+  maxDuration?: number;
 }
 
 export function VoiceDump({
   onTranscript,
   disabled = false,
-  maxDuration = 120
+  maxDuration = 120,
 }: VoiceDumpProps) {
+  const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
 
   const { transcribe, isTranscribing } = useTranscription({
@@ -27,9 +27,12 @@ export function VoiceDump({
     onError: (err) => setError(err.message),
   });
 
-  const handleRecordingComplete = useCallback((blob: Blob) => {
-    transcribe(blob);
-  }, [transcribe]);
+  const handleRecordingComplete = useCallback(
+    (blob: Blob) => {
+      transcribe(blob);
+    },
+    [transcribe]
+  );
 
   const {
     isRecording,
@@ -48,112 +51,154 @@ export function VoiceDump({
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const isProcessing = isTranscribing;
   const isDisabled = disabled || isProcessing;
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* Recording indicator */}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+      {/* Recording timer */}
       {isRecording && (
-        <div className="flex items-center gap-2 text-red-400">
-          <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-          <span className="font-mono text-sm">{formatDuration(duration)}</span>
-          {isPaused && <span className="text-xs text-slate-400">(paused)</span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            width: 10, height: 10, borderRadius: '50%',
+            background: 'var(--accent-red)',
+            animation: 'pulse-red 1.2s ease-in-out infinite',
+          }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--accent-red)' }}>
+            {formatDuration(duration)}
+          </span>
+          {isPaused && (
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>(paused)</span>
+          )}
         </div>
       )}
 
-      {/* Main controls */}
-      <div className="flex items-center gap-3">
+      {/* Main mic button — 80px */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {!isRecording ? (
           <button
             onClick={startRecording}
             disabled={isDisabled}
-            className="flex items-center justify-center w-14 h-14 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-full transition-colors"
+            style={{
+              width: 80, height: 80,
+              borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '2px solid var(--accent-cyan)',
+              background: 'rgba(6, 182, 212, 0.08)',
+              color: 'var(--accent-cyan)',
+              cursor: isDisabled ? 'not-allowed' : 'pointer',
+              opacity: isDisabled ? 0.4 : 1,
+              transition: 'all 200ms',
+            }}
             aria-label="Start recording"
           >
-            <MicIcon className="w-6 h-6 text-white" />
+            <MicIcon size={32} />
           </button>
         ) : (
           <>
             {/* Pause/Resume */}
             <button
               onClick={isPaused ? resumeRecording : pauseRecording}
-              className="flex items-center justify-center w-12 h-12 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors"
+              style={{
+                width: 48, height: 48,
+                borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all 150ms',
+              }}
               aria-label={isPaused ? "Resume" : "Pause"}
             >
-              {isPaused ? (
-                <PlayIcon className="w-5 h-5 text-white" />
-              ) : (
-                <PauseIcon className="w-5 h-5 text-white" />
-              )}
+              {isPaused ? <PlayIcon size={20} /> : <PauseIcon size={20} />}
             </button>
 
-            {/* Stop */}
+            {/* Stop — big, red pulse */}
             <button
               onClick={stopRecording}
-              className="flex items-center justify-center w-14 h-14 bg-slate-800 hover:bg-slate-700 border-2 border-red-500 rounded-full transition-colors"
+              className="pulse-red"
+              style={{
+                width: 80, height: 80,
+                borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--accent-red)',
+                border: 'none',
+                color: '#fff',
+                cursor: 'pointer',
+              }}
               aria-label="Stop recording"
             >
-              <StopIcon className="w-6 h-6 text-red-500" />
+              <StopIcon size={28} />
             </button>
           </>
         )}
       </div>
 
-      {/* Status */}
+      {/* Status label */}
+      <p style={{
+        fontSize: 13,
+        color: isRecording ? 'var(--accent-red)' : 'var(--text-secondary)',
+        fontFamily: 'var(--font-mono)',
+        textAlign: 'center',
+      }}>
+        {isRecording
+          ? t.analysis.recording
+          : isProcessing
+          ? t.analysis.analyzing
+          : t.voice.subtitle}
+      </p>
+
+      {/* Processing indicator */}
       {isTranscribing && (
-        <p className="text-sm text-slate-400 animate-pulse">
-          Processing audio...
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span className="spinner" />
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            {t.analysis.transcription}
+          </span>
+        </div>
       )}
 
       {/* Error */}
       {error && (
-        <p className="text-sm text-red-400">{error}</p>
-      )}
-
-      {/* Instructions */}
-      {!isRecording && !isProcessing && (
-        <p className="text-xs text-slate-500 text-center max-w-[240px] sm:max-w-[200px]">
-          Record your voice to document the Object
-        </p>
+        <p style={{ fontSize: 12, color: 'var(--accent-red)' }}>{error}</p>
       )}
     </div>
   );
 }
 
-// Icons
-function MicIcon({ className }: { className?: string }) {
+// Icons with configurable size
+function MicIcon({ size = 24 }: { size?: number }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
     </svg>
   );
 }
 
-function StopIcon({ className }: { className?: string }) {
+function StopIcon({ size = 24 }: { size?: number }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <rect x="6" y="6" width="12" height="12" rx="1" />
+    <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24">
+      <rect x="6" y="6" width="12" height="12" rx="2" />
     </svg>
   );
 }
 
-function PauseIcon({ className }: { className?: string }) {
+function PauseIcon({ size = 24 }: { size?: number }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24">
       <rect x="6" y="5" width="4" height="14" rx="1" />
       <rect x="14" y="5" width="4" height="14" rx="1" />
     </svg>
   );
 }
 
-function PlayIcon({ className }: { className?: string }) {
+function PlayIcon({ size = 24 }: { size?: number }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24">
       <path d="M8 5v14l11-7z" />
     </svg>
   );

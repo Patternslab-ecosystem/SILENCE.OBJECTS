@@ -11,7 +11,6 @@ export default function NewObject() {
   const router = useRouter();
   const { t } = useLanguage();
   const [text, setText] = useState('');
-  const [mode, setMode] = useState<'text' | 'voice'>('text');
   const [crisisLock, setCrisisLock] = useState(false);
   const [crisisResources, setCrisisResources] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +56,6 @@ export default function NewObject() {
 
   const handleVoiceTranscript = (transcript: string) => {
     setText(prev => prev ? prev + ' ' + transcript : transcript);
-    setMode('text');
   };
 
   const lensA = result?.lensA;
@@ -96,78 +94,97 @@ export default function NewObject() {
           {t.analysis.placeholder.split('...')[0]}...
         </p>
 
-        {/* Mode Toggle — pill style */}
-        <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', width: 'fit-content' }}>
-          <button
-            onClick={() => setMode('text')}
-            style={{
-              padding: '8px 20px', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)',
-              background: mode === 'text' ? 'var(--accent-cyan)' : 'transparent',
-              color: mode === 'text' ? '#fff' : 'var(--text-muted)',
-              border: 'none', cursor: 'pointer', transition: 'all 150ms',
-            }}
-          >
-            {t.analysis.text}
-          </button>
-          <button
-            onClick={() => setMode('voice')}
-            style={{
-              padding: '8px 20px', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)',
-              background: mode === 'voice' ? 'var(--accent-cyan)' : 'transparent',
-              color: mode === 'voice' ? '#fff' : 'var(--text-muted)',
-              border: 'none', borderLeft: '1px solid var(--border)', cursor: 'pointer', transition: 'all 150ms',
-            }}
-          >
-            {t.analysis.voice}
-          </button>
-        </div>
-
-        {/* Voice Mode */}
-        {mode === 'voice' && (
-          <div style={{ padding: '32px 0', textAlign: 'center' }}>
-            <VoiceDump
-              onTranscript={handleVoiceTranscript}
-              disabled={crisisLock || isProcessing}
-              maxDuration={120}
-            />
+        {/* Golden Ratio Grid: Voice 61.8% | Text 38.2% */}
+        <div style={{ display: 'grid', gap: 24, gridTemplateColumns: '1fr' }} className="new-golden-grid">
+          {/* VOICE PANEL */}
+          <div style={{
+            background: 'linear-gradient(135deg, var(--bg-surface), var(--bg-elevated))',
+            border: '1px solid rgba(6,182,212,0.15)',
+            borderRadius: 16, padding: 32,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            minHeight: 280, position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: 16,
+              background: 'radial-gradient(circle at 50% 50%, rgba(6,182,212,0.05), transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+            <p style={{
+              fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: 'var(--accent-cyan)',
+              marginBottom: 24, position: 'relative', zIndex: 1,
+            }}>
+              {t.voice.title}
+            </p>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <VoiceDump
+                onTranscript={handleVoiceTranscript}
+                disabled={crisisLock || isProcessing}
+                maxDuration={120}
+              />
+            </div>
             {text && (
-              <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-surface)', borderRadius: 12, border: '1px solid var(--border)', textAlign: 'left' }}>
+              <div style={{
+                marginTop: 24, width: '100%', padding: 14,
+                background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)',
+                borderRadius: 10, position: 'relative', zIndex: 1,
+              }}>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: 4 }}>{t.analysis.transcription}</p>
-                <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{text}</p>
+                <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6 }}>
+                  {text.length > 200 ? text.substring(0, 200) + '...' : text}
+                </p>
               </div>
             )}
           </div>
-        )}
 
-        {/* Text Mode */}
-        {mode === 'text' && (
-          <>
+          {/* TEXT PANEL */}
+          <div style={{
+            background: 'var(--bg-surface)', border: '1px solid var(--border)',
+            borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column',
+          }}>
+            <p style={{
+              fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12,
+            }}>
+              {t.analysis.text}
+            </p>
             <textarea
               value={text}
               onChange={e => setText(e.target.value)}
               disabled={crisisLock || isProcessing}
               placeholder={t.analysis.placeholder}
               className="input textarea"
-              style={{ minHeight: 240 }}
+              style={{ minHeight: 180, flex: 1 }}
             />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 12 }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: text.length < minChars ? 'var(--warning)' : 'var(--success)' }}>
-                {text.length} / 5000 {text.length < minChars && `(min. ${minChars})`}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, fontSize: 12, fontFamily: 'var(--font-mono)' }}>
+              <span style={{ color: text.length < minChars ? 'var(--warning)' : 'var(--success)' }}>
+                {text.length} / 5000
               </span>
+              {text.length < minChars && (
+                <span style={{ color: 'var(--warning)' }}>{minChars - text.length} {t.analysis.charsRemaining}</span>
+              )}
             </div>
-          </>
-        )}
+          </div>
+        </div>
 
         {/* Submit */}
         <button
           onClick={handleSubmit}
           disabled={isProcessing || crisisLock || text.length < minChars}
           className="btn btn-primary"
-          style={{ width: '100%', padding: '14px 0' }}
+          style={{ width: '100%', marginTop: 26, padding: '16px 0', fontSize: 14, fontWeight: 700, letterSpacing: '0.05em' }}
         >
           {creating ? t.analysis.saving : interpreting ? t.analysis.aiAnalysis : t.analysis.analyzeObject}
         </button>
+
+        {/* Responsive golden grid */}
+        <style>{`
+          @media (min-width: 768px) {
+            .new-golden-grid {
+              grid-template-columns: 0.618fr 0.382fr !important;
+            }
+          }
+        `}</style>
 
         {/* Error */}
         {error && (

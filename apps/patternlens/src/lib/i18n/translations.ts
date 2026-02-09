@@ -121,6 +121,14 @@ export const translations = {
       detected: 'Content requiring attention detected',
       disclaimer: 'PatternLens is a structural analysis tool. In a crisis situation, contact professional help.',
     },
+    beta: {
+      badge: 'EARLY ACCESS',
+      unlimited: 'Unlimited analyses during beta',
+    },
+    voice: {
+      title: 'Voice-first analysis',
+      subtitle: 'Record your voice, we will structure it for you.',
+    },
     footer: {
       disclaimer: 'Structural analysis tool. Not advice or diagnosis.',
     },
@@ -241,6 +249,14 @@ export const translations = {
     crisis: {
       detected: 'Wykryto treść wymagającą uwagi',
       disclaimer: 'PatternLens to narzędzie analizy strukturalnej. W sytuacji kryzysowej skontaktuj się z profesjonalną pomocą.',
+    },
+    beta: {
+      badge: 'WCZESNY DOSTĘP',
+      unlimited: 'Nielimitowane analizy w czasie bety',
+    },
+    voice: {
+      title: 'Analiza głosowa najpierw',
+      subtitle: 'Nagraj głos, a my ustrukturyzujemy treść.',
     },
     footer: {
       disclaimer: 'Narzędzie analizy strukturalnej. Nie porada ani diagnoza.',

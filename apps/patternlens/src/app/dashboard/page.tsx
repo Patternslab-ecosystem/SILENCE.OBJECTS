@@ -133,23 +133,14 @@ export default function DashboardPage() {
             background: 'var(--bg-surface)', border: '1px solid var(--border)',
             borderRadius: 10, padding: 20,
           }}>
-            {profile?.tier === 'FREE' ? (
-              <>
-                <div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--accent-amber)' }}>
-                  {remainingObjects ?? 7}/7
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-                  {t.dashboard.remaining}
-                </div>
-              </>
-            ) : (
-              <>
-                <div><span className="badge badge-pro">{t.pro.badge}</span></div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-                  {t.dashboard.unlimited}
-                </div>
-              </>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 20, fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>
+                &infin;
+              </span>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
+              {t.beta.unlimited}
+            </div>
           </div>
         </section>
 
@@ -221,27 +212,7 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* Upgrade Banner */}
-        {profile?.tier === 'FREE' && (
-          <section style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: 24, borderRadius: 12,
-            background: 'linear-gradient(135deg, var(--accent-purple-muted), var(--accent-cyan-muted))',
-            border: '1px solid var(--lens-b-border)',
-          }}>
-            <div>
-              <h3 style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 15, color: 'var(--text-primary)' }}>
-                {t.dashboard.unlockPotential}
-              </h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 2 }}>
-                {t.dashboard.unlockDescription}
-              </p>
-            </div>
-            <Link href="/upgrade" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
-              {t.dashboard.upgradePrice}
-            </Link>
-          </section>
-        )}
+        {/* Beta info — replaces upgrade banner */}
       </main>
 
       {/* Footer */}

@@ -205,11 +205,15 @@ export function useProfile() {
     }
   }, []);
 
-  const remainingObjects = profile?.tier === 'FREE' 
-    ? Math.max(0, 7 - (profile?.weekly_objects_used || 0))
-    : null;
+  // Beta mode: unlimited for all users
+  const BETA_MODE = true;
 
-  const canCreateObject = !profile || profile.tier === 'PRO' || (remainingObjects !== null && remainingObjects > 0);
+  const remainingObjects = BETA_MODE ? null
+    : profile?.tier === 'FREE'
+      ? Math.max(0, 7 - (profile?.weekly_objects_used || 0))
+      : null;
+
+  const canCreateObject = BETA_MODE || !profile || profile.tier === 'PRO' || (remainingObjects !== null && remainingObjects > 0);
 
   return { profile, loading, fetchProfile, remainingObjects, canCreateObject };
 }
