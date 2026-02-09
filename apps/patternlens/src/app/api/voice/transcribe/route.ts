@@ -1,84 +1,8 @@
-// TODO M3: Import safety middleware from @/lib/safety
-// Apply: normalizeInput, checkRateLimit, scanOutput to ALL AI/voice/medical/legal endpoints
-// See: DIPLO_BIBLE_v3 section IV.B @silence/safety
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { CLAUDE_MODEL } from '@/constants/app';
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-
-// Filler words to remove per language
-const FILLER_WORDS: Record<string, string[]> = {
-  pl: ['no', 'więc', 'znaczy', 'jakby', 'wiesz', 'kurde', 'no i',
-       'yyyy', 'eeee', 'mmm', 'hmm', 'no tak', 'w sumie'],
-  en: ['um', 'uh', 'like', 'you know', 'so', 'well', 'basically',
-       'literally', 'actually', 'right', 'yeah', 'mmm', 'hmm'],
-};
-
-function cleanTranscription(text: string, language: string): string {
-  let cleaned = text;
-  const fillers = FILLER_WORDS[language] || FILLER_WORDS.en;
-
-  for (const filler of fillers) {
-    const regex = new RegExp(`\\b${filler}\\b`, 'gi');
-    cleaned = cleaned.replace(regex, '');
-  }
-
-  cleaned = cleaned.replace(/\s+/g, ' ').trim();
-  return cleaned;
-}
-
-const TRANSCRIPTION_PROMPTS: Record<string, string> = {
-  pl: 'Transkrybuj to nagranie audio po polsku. Zwróć TYLKO transkrybowany tekst, bez komentarzy ani formatowania.',
-  en: 'Transcribe this audio recording in English. Return ONLY the transcribed text, no comments or formatting.',
-};
-
-async function transcribeAudio(base64Audio: string, mediaType: string, language: string): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured');
-
-  const prompt = TRANSCRIPTION_PROMPTS[language] || TRANSCRIPTION_PROMPTS.en;
-
-  const response = await fetch(ANTHROPIC_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: 4096,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'document',
-            source: {
-              type: 'base64',
-              media_type: mediaType,
-              data: base64Audio,
-            }
-          },
-          {
-            type: 'text',
-            text: prompt
-          }
-        ]
-      }]
-    })
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error('Claude transcription error:', response.status, errorBody);
-    throw new Error(`Claude API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  if (!data.content?.length) throw new Error('Empty response from Claude');
-  return data.content[0].text;
-}
+// Must be nodejs runtime — Buffer + FormData needed for Whisper
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,33 +10,93 @@ export async function POST(request: NextRequest) {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'UNAUTHORIZED' },
+        { status: 401 },
+      );
     }
 
     const formData = await request.formData();
-    const audioFile = formData.get('audio') as File;
-    const language = (formData.get('language') as string) || 'en';
+    const file = formData.get('audio') || formData.get('file');
+    const language = (formData.get('language') as string) || '';
 
-    if (!audioFile) {
-      return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
+    if (!file || !(file instanceof Blob)) {
+      return NextResponse.json(
+        { success: false, error: 'No audio file provided' },
+        { status: 400 },
+      );
     }
 
-    // Convert audio to base64 for Claude multimodal API
-    const buffer = Buffer.from(await audioFile.arrayBuffer());
-    const base64Audio = buffer.toString('base64');
-    const mediaType = audioFile.type || 'audio/webm';
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      console.error('OPENAI_API_KEY not set in environment');
+      return NextResponse.json(
+        { success: false, error: 'Voice transcription not configured' },
+        { status: 500 },
+      );
+    }
 
-    const transcription = await transcribeAudio(base64Audio, mediaType, language);
-    const cleanedText = cleanTranscription(transcription, language);
+    // Convert to buffer for Whisper API
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    return NextResponse.json({
-      text: cleanedText,
-      originalLength: transcription.length,
-      cleanedLength: cleanedText.length
+    // Call Whisper API — auto language detect, temperature 0 for accuracy
+    const whisperForm = new FormData();
+    whisperForm.append('file', new Blob([buffer]), 'recording.webm');
+    whisperForm.append('model', 'whisper-1');
+    whisperForm.append('response_format', 'json');
+    whisperForm.append('temperature', '0');
+
+    // Pass language hint if provided (ISO 639-1: 'en', 'pl')
+    if (language) {
+      whisperForm.append('language', language);
+    }
+
+    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+      },
+      body: whisperForm,
     });
 
-  } catch (error) {
-    console.error('Transcription error:', error);
-    return NextResponse.json({ error: 'Transcription failed' }, { status: 500 });
+    if (!whisperResponse.ok) {
+      const errorBody = await whisperResponse.text();
+      console.error('Whisper API error:', whisperResponse.status, errorBody);
+      return NextResponse.json(
+        { success: false, error: 'Transcription failed' },
+        { status: 500 },
+      );
+    }
+
+    const data = await whisperResponse.json();
+    const transcription = data.text || '';
+
+    // Save to voice_dumps (non-blocking — transcription still returned if save fails)
+    if (transcription.length > 0) {
+      try {
+        await supabase.from('voice_dumps').insert({
+          user_id: user.id,
+          transcription,
+          duration_seconds: Math.round(buffer.byteLength / 16000),
+        });
+      } catch (err) {
+        console.error('voice_dumps insert error:', err);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      text: transcription,
+      transcription,
+      language: language || 'auto',
+    });
+
+  } catch (err) {
+    console.error('Transcribe route error:', err);
+    return NextResponse.json(
+      { success: false, error: 'INTERNAL_ERROR' },
+      { status: 500 },
+    );
   }
 }
