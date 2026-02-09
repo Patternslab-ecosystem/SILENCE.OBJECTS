@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./app/*"
+      ],
+      "@lib/*": [
+        "./lib/*"
       ]
     }
   },
@@ -32,6 +35,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "lib/**/*.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [

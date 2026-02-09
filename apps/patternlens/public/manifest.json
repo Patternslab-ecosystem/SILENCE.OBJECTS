@@ -11,12 +11,12 @@
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "screenshots": [
-    { "src": "/screenshots/screenshot-dashboard.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Dashboard — objects, patterns, timeline" },
-    { "src": "/screenshots/screenshot-analysis.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Dual-lens structural analysis" },
-    { "src": "/screenshots/screenshot-voice.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Voice input — transcribe and analyze" }
+    { "src": "/screenshots/dashbord.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Dashboard — objects, patterns, timeline" },
+    { "src": "/screenshots/analysis.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Dual-lens structural analysis" },
+    { "src": "/screenshots/voice.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Voice input — transcribe and analyze" }
   ]
 }
