@@ -38,7 +38,16 @@ export default function LoginPage() {
 
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          setError('Email nie został potwierdzony. Sprawdź skrzynkę (w tym spam) lub poczekaj kilka minut.');
+        } else if (error.message.includes('Invalid login credentials')) {
+          setError('Nieprawidłowy email lub hasło.');
+        } else {
+          throw error;
+        }
+        return;
+      }
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -53,13 +62,29 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: { locale: 'pl' },
+        }
       });
-      if (error) throw error;
-      setMessage('Check your email to confirm your account');
+      if (error) {
+        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+          setError('Ten email jest już zarejestrowany. Zaloguj się.');
+        } else {
+          throw error;
+        }
+        return;
+      }
+      // If autoconfirm is ON → session exists immediately → go to dashboard
+      if (data.session) {
+        router.push('/dashboard');
+        return;
+      }
+      // If email confirm is ON → show message
+      setMessage('Sprawdź email — wysłaliśmy link aktywacyjny. Sprawdź też folder spam.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
