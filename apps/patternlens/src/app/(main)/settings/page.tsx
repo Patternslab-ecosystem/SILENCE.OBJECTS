@@ -232,8 +232,8 @@ function SettingsContent() {
                 <>
                   <div className="bg-[#1a1f28] rounded-lg p-4 mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-[#6e7681]">Wykorzystane w tym tygodniu</span>
-                      <span className="text-sm font-mono text-[#f5f7fa]">{objectCount}/7</span>
+                      <span className="text-xs text-[#6e7681]">Cloud obiekty użyte</span>
+                      <span className="text-sm font-mono text-[#f5f7fa]">{objectCount}</span>
                     </div>
                     <div className="w-full h-2 bg-[#2d3748] rounded-full overflow-hidden">
                       <div

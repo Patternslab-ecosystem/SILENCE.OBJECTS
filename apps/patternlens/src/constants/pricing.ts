@@ -46,7 +46,7 @@ export const FREE_TIER = {
   objectsPerWeek: 7,
   timeCapsules: 1,
   features: [
-    'Do 7 Obiektów tygodniowo',
+    'Nieograniczone lokalne obiekty',
     '1 Time Capsule',
     'Dual Lens interpretacje',
     'Archiwum (ostatnie 7)',

@@ -111,7 +111,7 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-6 space-y-2">
             <li>AI models do not retain memory of your conversations between sessions</li>
             <li>Your data is not used to train AI models</li>
-            <li>AI-generated content is for informational purposes only and does not constitute professional advice</li>
+            <li>AI-generated content presents structural hypotheses only and does not constitute therapy, diagnosis, or professional advice</li>
             <li>We use Claude API (Anthropic) for AI processing, subject to their data processing terms</li>
           </ul>
         </section>

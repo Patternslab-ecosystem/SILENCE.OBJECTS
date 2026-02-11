@@ -101,7 +101,7 @@ export function PaywallModal({ isOpen, onClose, trigger = "upgrade", featureName
   const getSubtitle = () => {
     switch (trigger) {
       case "limit":
-        return "Wykorzystałeś 7 Obiektów w tym tygodniu";
+        return "Osiagnięto limit cloud obiektów. Ulepsz do PRO.";
       case "feature":
         return `${featureName} wymaga planu PRO`;
       default:

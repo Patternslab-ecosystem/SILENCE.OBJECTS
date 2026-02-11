@@ -477,11 +477,22 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Footer */}
-        <div style={{ textAlign: 'center', marginTop: 28 }}>
-          <p style={{ color: '#55555e', fontSize: 11, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
-            Structural analysis tool. Not advice or diagnosis.
+        {/* DIPLO Disclaimer */}
+        <div style={{
+          marginTop: 20,
+          padding: '12px 16px',
+          background: '#111113',
+          border: '1px solid #222228',
+          borderRadius: 10,
+        }}>
+          <p style={{ color: '#888893', fontSize: 12, fontFamily: "'Outfit', sans-serif", lineHeight: 1.5, textAlign: 'center' }}>
+            Structural analysis tool. Not therapy, diagnosis, or advice.
+            All outputs are structural hypotheses, not facts.
           </p>
+        </div>
+
+        {/* Footer */}
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
           <p style={{ fontSize: 12, color: '#55555e' }}>
             <a href="/terms" style={{ color: '#4a8fe2', textDecoration: 'none' }}>Terms</a>
             {' · '}

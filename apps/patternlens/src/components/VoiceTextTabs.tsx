@@ -147,7 +147,7 @@ export function VoiceTextTabs({ onSuccess, canCreate = true, remaining }: VoiceT
       {/* Limit warning */}
       {!canCreate && (
         <div className="limit-warning">
-          <p>Osiagnieto tygodniowy limit ({remaining === 0 ? '0' : '7'}/7 obiektow)</p>
+          <p>Osiagnieto limit obiektow. Ulepsz do PRO po wiecej.</p>
           <a href="/upgrade" className="btn btn-secondary btn-sm">Ulepsz do PRO</a>
         </div>
       )}

@@ -118,8 +118,8 @@ export default function TermsPage() {
 
           <h3 className="text-lg font-medium text-[#f5f7fa] mb-3">7.1 Free Tier</h3>
           <p className="mb-4">
-            The free tier provides limited access to the Service, including a maximum of
-            7 analyses per week.
+            The free tier provides access to the Service with unlimited local objects,
+            core pattern detection, and 12 archetypes. Cloud features may have usage limits.
           </p>
 
           <h3 className="text-lg font-medium text-[#f5f7fa] mb-3">7.2 PRO Subscription</h3>

@@ -95,7 +95,7 @@ export const PL = {
       free: 'Darmowy',
       pro: 'PRO',
       upgrade: 'Ulepsz do PRO',
-      objectsThisWeek: 'Obiekty w tym tygodniu',
+      objectsThisWeek: 'Cloud obiekty użyte',
     },
     preferences: {
       minimalMode: {

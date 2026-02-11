@@ -64,9 +64,10 @@ export default function UpgradePage() {
             </div>
             
             <ul className="features">
-              <li>✓ 7 obiektów tygodniowo</li>
+              <li>✓ Nieograniczone lokalne obiekty</li>
               <li>✓ Podwójna soczewka (A/B)</li>
-              <li>✓ Bezpieczne przechowywanie</li>
+              <li>✓ Bazowe wykrywanie wzorców</li>
+              <li>✓ 12 archetypów</li>
               <li className="disabled">✗ Synteza wzorców</li>
               <li className="disabled">✗ Ghost Patterns</li>
               <li className="disabled">✗ Eksport danych</li>
@@ -131,7 +132,7 @@ export default function UpgradePage() {
               <div className="feature-icon">♾️</div>
               <h4>Bez limitów</h4>
               <p className="text-secondary">
-                Analizuj tyle sytuacji, ile potrzebujesz. Bez tygodniowych ograniczeń.
+                Analizuj tyle sytuacji, ile potrzebujesz. Pełna moc analizy.
               </p>
             </div>
 
@@ -176,7 +177,7 @@ export default function UpgradePage() {
             <div className="faq-item glass-card">
               <h4>Co się stanie z moimi danymi po anulowaniu?</h4>
               <p className="text-secondary">
-                Twoje obiekty pozostają dostępne. Wrócisz tylko do limitu 7/tydzień.
+                Twoje obiekty pozostają dostępne. Wrócisz do planu FREE z lokalnymi obiektami.
               </p>
             </div>
 
@@ -194,6 +195,22 @@ export default function UpgradePage() {
               </p>
             </div>
           </div>
+        </section>
+
+        {/* DIPLO Disclaimer */}
+        <section style={{
+          maxWidth: 600,
+          margin: '0 auto',
+          padding: '16px 20px',
+          background: 'rgba(34,34,40,0.5)',
+          border: '1px solid var(--color-border, #222228)',
+          borderRadius: 10,
+          textAlign: 'center',
+        }}>
+          <p style={{ color: '#888893', fontSize: 12, lineHeight: 1.5 }}>
+            Structural analysis tool. Not therapy, diagnosis, or advice.
+            All outputs are structural hypotheses, not facts.
+          </p>
         </section>
       </main>
 
