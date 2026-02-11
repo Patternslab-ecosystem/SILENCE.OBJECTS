@@ -55,7 +55,7 @@ export function TextInput({ onSubmit, loading = false, disabled = false, onCance
       {showResources && !showCrisisModal && (
         <SafetyBanner
           variant="warning"
-          message="If you are experiencing distress, crisis resources are available."
+          message="Content flagged — crisis resources are available if needed."
         />
       )}
 

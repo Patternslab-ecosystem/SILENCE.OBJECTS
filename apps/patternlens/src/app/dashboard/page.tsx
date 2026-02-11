@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
+import { SystemOverview } from '@/components/SystemOverview';
 import AnalysisInput from '@/components/AnalysisInput';
 import ObjectCard from '@/components/ObjectCard';
 import { CrisisModal } from '@/components/safety/CrisisModal';
@@ -97,6 +98,13 @@ export default function DashboardPage() {
             {t.dashboard.subtitle}
           </p>
         </section>
+
+        {/* System Overview */}
+        <SystemOverview
+          objectCount={objects.length}
+          completedCount={completedObjects.length}
+          pendingCount={pendingObjects.length}
+        />
 
         {/* Stats */}
         <section style={{
